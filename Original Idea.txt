@@ -1,0 +1,74 @@
+
+I want to build a React app (responsive for both tablet, PC and mobile) for travel planning with almost zero-cost, skip any charging API, below is the basic idea of my app.
+Help to think about the architecture of the app, feel free to comment and provide suggestion.
+
+-----------------------------------------------------------------------------------------------------------------------
+
+General:
+1. Plan your personal trip
+2. Clerk login
+3. Explore Common Itinerary (pending, can skip now)
+	-> Click and go to others detail page (no edit button)
+	-> click to clone others location (user have to choose the your own trip and select date)
+
+
+-----------------------------------------------------------------------------------------------------------------------
+The apps can build more multiple trips, and for each of the trip, the function should be like below:
+
+1. Packing checklist:
+- add, delete and updates items
+- click to mark complete and incomplete
+- drag and drop the items to re-order them
+- coloring for easy categorizing --> update state of your latest picked color for next new item
+
+
+
+2. Add friends : people who travel together
+- input traveler name + email for co-working
+- for further sharing cost function
+- Icons (with free icon library) --> better distinguish the identity
+
+
+
+3. Destination Planning (Itinerary)
+- input Title, Google Map link, remark, url for more detail (e.g. website of the  destination), date range (or include time)
+	- display time if provided
+	-> Title as display card title
+	-> Google Map Link: trigger function to explore the page and capture the place name (both Eng. , Chinese etc.) , latitude, longitude, iframe html
+- day by day (e.g. if 6 days, 6 sub tabs with specific date in yyyy-mm-dd)
+- with ordering, drag and drop to allow re-order
+- Generate two google map link ( "a" or "button" element), format: "https://www.google.com/maps/dir/?api=1&origin=[From]&destination=[to]"
+	-> 1. From you current location to destination: "https://www.google.com/maps/dir/?api=1&origin=My+Location&destination=[encoded address]"
+	-> 2. From previous location to destination
+- Google Maps URL parser to display google map, click on it and route to google map
+
+
+
+4. Cost Calculation
+- Input:
+	-> By Event(e.g. Lunch, Dinner, Transportation) or Link to above location 
+	-> price
+	-> input datetime, or now
+	-> who paid the bill (from point 2)
+	-> charge to (not include paid person) (from point 2)
+- Calculate the amount that users owe/paid
+- Get total expenditure/ per traveler
+
+
+-----------------------------------------------------------------------------------------------------------------------
+
+Other details of the App
+
+- Framework: NextJs + TypeScript
+- Login authentication: Clerk
+- Drag and Drop Function: dnd kit (useSortable)
+- Database: Dexie.js
+	-> all table must linked to their parent table, e.g. Place must have foreign key: TripID
+	-> All foreign keys must Named as xxx_ID
+	-> add system user table, link Trip table to userID (from Clerk)
+- pages : Homepage(navigation), MyTrips (include previous work and search bar for quicker search), TripDetail (each single trip), Explore (pending)
+- Can skip all "pending" items
+- skip the login part under development mode (means to skip clerk part), allowing the data save into local storage, use a parameter "IsDevelop" to control
+
+
+ask me question for verify, feel free to provide suggestion.
