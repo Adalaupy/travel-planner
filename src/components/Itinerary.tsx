@@ -265,70 +265,7 @@ export const Itinerary: React.FC<Props> = ({ tripId }) => {
         </SortableContext>
       </DndContext>
 
-      <div className={styles.dayTabs}>
-        {days.map((date, idx) => (
-          <button
-            key={idx}
-            className={`${styles.dayTab} ${selectedDay === idx ? styles.dayTabActive : ''}`}
-            onClick={() => setSelectedDay(idx)}
-          >
-            Day {idx + 1}<br/><span className={styles.dayTabDate}>{date}</span>
-          </button>
-        ))}
-      </div>
 
-      <div className={styles.addItineraryRow}>
-        <input placeholder="Title" value={title} onChange={e => setTitle(e.target.value)} />
-        <input type="time" step="900" value={time} onChange={e => setTime(e.target.value)} placeholder="Time (optional)" />
-        <input 
-          placeholder="Google Maps Link" 
-          value={mapLink} 
-          onChange={e => {
-            setMapLink(e.target.value)
-            setParsedData(null) // Clear when user changes link
-          }}
-          onBlur={parseCurrentMapLink} // Parse when user finishes typing
-        />
-        <input placeholder="URL (optional)" value={url} onChange={e => setUrl(e.target.value)} />
-        <input placeholder="Remark (optional)" value={remark} onChange={e => setRemark(e.target.value)} />
-        <button onClick={addItem} disabled={parsing}>
-          {parsing ? 'Parsing...' : 'Add'}
-        </button>
-      </div>
-
-      {parsedData && (
-        <div className={styles.parsedDataDisplay}>
-          <strong>Parsed Map Data:</strong>
-          <div>Name: {parsedData.name || 'N/A'}</div>
-          <div>Latitude: {parsedData.lat?.toFixed(6) || 'N/A'}</div>
-          <div>Longitude: {parsedData.lng?.toFixed(6) || 'N/A'}</div>
-        </div>
-      )}
-
-      {dayItems.length > 0 && (
-        <div className={styles.daySummary}>
-          <strong>📅 Day {selectedDay + 1} Summary ({dayItems.length} destination{dayItems.length > 1 ? 's' : ''})</strong>
-          <a href={generateDaySummaryLink()} target="_blank" rel="noopener noreferrer" className={styles.daySummaryLink}>
-            🗺️ View All Destinations on Map
-          </a>
-        </div>
-      )}
-
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-        <SortableContext items={dayItems.map(i => i.Itinerary_ID!)} strategy={verticalListSortingStrategy}>
-          <ul className={styles.itineraryList}>
-            {dayItems.map((item, idx) => (
-              <SortableItineraryItem
-                key={item.Itinerary_ID}
-                item={item}
-                idx={idx}
-                dayItems={dayItems}
-                removeItem={removeItem}
-              />
-            ))}
-          </ul>
-        </SortableContext>
-      </DndContext>
     </div>
   )
 }
