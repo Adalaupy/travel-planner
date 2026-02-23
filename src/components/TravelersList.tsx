@@ -9,6 +9,18 @@ import {
   FaMale,
   FaChild,
   FaUserCircle,
+  FaRegGrinBeam,
+  FaRegGrinAlt,
+  FaRegGrinSquint,
+  FaRegLaughWink,
+  FaRegKiss,
+  FaSmileWink,
+  FaRegGrinTongueSquint,
+  FaRegDizzy,
+  FaRegGrinTears ,
+  FaRegGrin,
+  FaRegGrimace,
+
 } from "react-icons/fa";
 
 type Props = { tripId: number };
@@ -22,12 +34,26 @@ const ICONS = [
     label: "Default (Reusable)",
     reusable: true,
   },
-  { id: "FaUser", Comp: FaUser, label: "User", reusable: false },
-  { id: "FaUserTie", Comp: FaUserTie, label: "Tie", reusable: false },
-  { id: "FaUsers", Comp: FaUsers, label: "Group", reusable: false },
-  { id: "FaFemale", Comp: FaFemale, label: "Female", reusable: false },
-  { id: "FaMale", Comp: FaMale, label: "Male", reusable: false },
-  { id: "FaChild", Comp: FaChild, label: "Child", reusable: false },
+  { id: "FaUser", Comp: FaUser,  reusable: false },
+  { id: "FaUserTie", Comp: FaUserTie,  reusable: false },
+  { id: "FaUsers", Comp: FaUsers, reusable: false },
+  { id: "FaFemale", Comp: FaFemale, reusable: false },
+  { id: "FaMale", Comp: FaMale,  reusable: false },
+  { id: "FaChild", Comp: FaChild,reusable: false },
+  { id: "FaRegGrinBeam" , Comp:   FaRegGrinBeam,  reusable: false},
+  { id: "FaRegGrinAlt" , Comp:   FaRegGrinAlt,reusable: false},
+  { id: "FaRegGrinSquint" , Comp:   FaRegGrinSquint,reusable: false},
+  { id: "FaRegLaughWink" , Comp:   FaRegLaughWink,reusable: false},
+  { id: "FaRegKiss" , Comp:   FaRegKiss,reusable: false},
+  { id: "FaSmileWink" , Comp:   FaSmileWink,reusable: false},
+  { id: "FaRegGrinTongueSquint" , Comp:   FaRegGrinTongueSquint,reusable: false},
+  { id: "FaRegDizzy" , Comp:   FaRegDizzy,reusable: false},
+  { id: "FaRegGrinTears " , Comp:   FaRegGrinTears ,reusable: false},
+  { id: "FaRegGrin" , Comp:   FaRegGrin,reusable: false},
+  { id: "FaRegGrimace" , Comp:   FaRegGrimace,reusable: false},
+
+
+
 ];
 
 export const TravelersList: React.FC<Props> = ({ tripId }) => {
@@ -123,7 +149,7 @@ export const TravelersList: React.FC<Props> = ({ tripId }) => {
         >
           {(() => {
             const Comp = ICONS.find((ic) => ic.id === icon)?.Comp || FaUser;
-            return <Comp size={20} color="#333" />;
+            return <Comp size={20} color="#4d00f4" />;
           })()}
         </button>
         <button onClick={addTraveler}>Add</button>
@@ -157,10 +183,10 @@ export const TravelersList: React.FC<Props> = ({ tripId }) => {
                       }
                     }}
                     aria-pressed={selected}
-                    title={ic.label}
+                    title={ic.id}
                     disabled={disabled}
                   >
-                    <ic.Comp size={24} color="#333" />
+                    <ic.Comp size={24} color="#4d00f4" />
                   </button>
                 );
               })}
@@ -181,7 +207,7 @@ export const TravelersList: React.FC<Props> = ({ tripId }) => {
             <div className={styles.travelerIcon}>
               {(() => {
                 const Comp = ICONS.find((i) => i.id === t.icon)?.Comp || FaUser;
-                return <Comp size={20} color="#333" />;
+                return <Comp size={20} color="#4d00f4"/>;
               })()}
             </div>
             <div className={styles.travelerInfo}>
