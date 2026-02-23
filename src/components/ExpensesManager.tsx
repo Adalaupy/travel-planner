@@ -244,7 +244,16 @@ export const ExpensesManager: React.FC<Props> = ({ tripId }) => {
             </button>
           </div>
         </div>
-        <button onClick={addExpense}>Add</button>
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            justifyContent: "center",
+            marginTop: "20px",
+          }}
+        >
+          <button onClick={addExpense}>Add</button>
+        </div>
       </div>
 
       <ul className={styles.expensesList}>
@@ -285,14 +294,15 @@ export const ExpensesManager: React.FC<Props> = ({ tripId }) => {
             const bal = balances[t.Traveler_ID!];
             const netStr =
               bal.net >= 0
-                ? `+$${bal.net.toFixed(2)}`
-                : `-$${Math.abs(bal.net).toFixed(2)}`;
+                ? ` +$${bal.net.toFixed(2)}`
+                : ` -$${Math.abs(bal.net).toFixed(1)}`;
+            const netColor = bal.net > 0 ? 'green' : 'red'
+
             return (
               <li key={t.Traveler_ID} className={styles.balanceItem}>
                 <span className={styles.balanceName}>{t.name}</span>
                 <span className={styles.balanceDetails}>
-                  Paid: ${bal.paid.toFixed(2)} | Owe: ${bal.owe.toFixed(2)} |
-                  Net: <strong>{netStr}</strong>
+                  Paid: ${bal.paid.toFixed(2)}  |  Owe: ${bal.owe.toFixed(2)}  |  Net:  <strong style={{color: netColor}}>{netStr}</strong>
                 </span>
               </li>
             );

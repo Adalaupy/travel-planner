@@ -72,10 +72,20 @@ export default function MyTrips() {
         return;
       }
       const data = await exportTripsData(selectedTripsForExport);
-      downloadBackup(
-        data,
-        `travel-planner-export-${new Date().toISOString().split("T")[0]}.json`,
-      );
+      
+      // Build filename from trip title(s)
+      let filename = "travel-planner-export";
+      if (selectedTripsForExport.length === 1) {
+        const trip = trips.find(t => t.Trip_ID === selectedTripsForExport[0]);
+        if (trip && trip.title) {
+          filename = trip.title.replace(/\s+/g, "-").toLowerCase();
+        }
+      } else {
+        filename = `travel-planner-export-${selectedTripsForExport.length}-trips`;
+      }
+      filename += `-${new Date().toISOString().split("T")[0]}.json`;
+      
+      downloadBackup(data, filename);
       alert("Trips exported successfully!");
       setShowExportDialog(false);
       setSelectedTripsForExport([]);
