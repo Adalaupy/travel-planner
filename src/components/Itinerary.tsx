@@ -118,11 +118,53 @@ export const Itinerary: React.FC<Props> = ({ tripId }) => {
   useEffect(() => {
     const loadTripDates = async () => {
       const trip = await db.trips.get(tripId);
-      if (trip && trip.startDate && trip.endDate) {
-        setTripStartDate(trip.startDate);
-        setDraftStartDate(trip.startDate);
-        setTripEndDate(trip.endDate);
-        setDraftEndDate(trip.endDate);
+      const itineraryItems = await db.itinerary
+        .where("Trip_ID")
+        .equals(tripId)
+        .toArray();
+
+      // Get max dayIndex from itinerary if items exist
+      let maxDayIndex = -1;
+      if (itineraryItems.length > 0) {
+        maxDayIndex = Math.max(...itineraryItems.map((item) => item.dayIndex));
+      }
+
+      if (trip && trip.startDate) {
+        const startDate = trip.startDate;
+        let endDate = trip.endDate;
+
+        // If no endDate in trip but have itinerary items, calculate from max dayIndex
+        if (!endDate && maxDayIndex >= 0) {
+          const start = new Date(startDate);
+          const end = new Date(start);
+          end.setDate(start.getDate() + maxDayIndex);
+          endDate = end.toISOString().split("T")[0];
+        }
+
+        // If still no endDate, default to 1 day after start
+        if (!endDate) {
+          const start = new Date(startDate);
+          const nextDay = new Date(start);
+          nextDay.setDate(start.getDate() + 1);
+          endDate = nextDay.toISOString().split("T")[0];
+        }
+
+        setTripStartDate(startDate);
+        setDraftStartDate(startDate);
+        setTripEndDate(endDate);
+        setDraftEndDate(endDate);
+      } else if (maxDayIndex >= 0) {
+        // No trip, but have itinerary items - derive dates from them
+        const today = new Date();
+        const startDate = today.toISOString().split("T")[0];
+        const end = new Date(today);
+        end.setDate(today.getDate() + maxDayIndex);
+        const endDate = end.toISOString().split("T")[0];
+
+        setTripStartDate(startDate);
+        setDraftStartDate(startDate);
+        setTripEndDate(endDate);
+        setDraftEndDate(endDate);
       }
     };
     loadTripDates();
