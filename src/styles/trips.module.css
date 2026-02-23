@@ -117,6 +117,7 @@
   font-size: 0.95rem;
   transition: background 0.2s;
   border-bottom: 1px solid #f3f4f6;
+  color: #1f2937;
 }
 
 .menuItem:last-child {
@@ -125,6 +126,7 @@
 
 .menuItem:hover {
   background: #f9fafb;
+  color: #1f2937;
 }
 
 .empty {
@@ -147,6 +149,99 @@
 .empty p {
   margin: 0;
   font-size: 1rem;
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.modalContent h3 {
+  margin: 0 0 16px;
+  font-size: 1.1rem;
+  color: #1f2937;
+}
+
+.tripCheckboxList {
+  margin-bottom: 20px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.tripCheckbox {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.tripCheckbox:hover {
+  background: #f3f4f6;
+}
+
+.tripCheckbox input {
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.tripCheckbox span {
+  color: #1f2937;
+  font-weight: 500;
+}
+
+.modalButtonGroup {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.modalPrimaryBtn {
+  padding: 10px 16px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.modalPrimaryBtn:hover {
+  background: #2563eb;
+}
+
+.modalSecondaryBtn {
+  padding: 10px 16px;
+  background: #e5e7eb;
+  color: #1f2937;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.modalSecondaryBtn:hover {
+  background: #d1d5db;
 }
 
 .tripGrid {

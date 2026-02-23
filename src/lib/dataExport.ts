@@ -15,6 +15,24 @@ export async function exportAllData(): Promise<string> {
   return JSON.stringify(data, null, 2)
 }
 
+export async function exportTripsData(tripIds: number[]): Promise<string> {
+  const trips = await db.trips.bulkGet(tripIds)
+  const tripsData = trips.filter(t => t !== undefined)
+  
+  const tripsExport = await Promise.all(
+    tripsData.map(async (trip) => ({
+      trip,
+      places: await db.places.where('Trip_ID').equals(trip.Trip_ID!).toArray(),
+      itinerary: await db.itinerary.where('Trip_ID').equals(trip.Trip_ID!).toArray(),
+      packing: await db.packing.where('Trip_ID').equals(trip.Trip_ID!).toArray(),
+      travelers: await db.travelers.where('Trip_ID').equals(trip.Trip_ID!).toArray(),
+      expenses: await db.expenses.where('Trip_ID').equals(trip.Trip_ID!).toArray()
+    }))
+  )
+  
+  return JSON.stringify(tripsExport, null, 2)
+}
+
 export async function importAllData(jsonString: string): Promise<{ success: boolean; error?: string }> {
   try {
     const data = JSON.parse(jsonString)
@@ -40,6 +58,73 @@ export async function importAllData(jsonString: string): Promise<{ success: bool
     if (data.packing && Array.isArray(data.packing)) await db.packing.bulkAdd(data.packing)
     if (data.travelers && Array.isArray(data.travelers)) await db.travelers.bulkAdd(data.travelers)
     if (data.expenses && Array.isArray(data.expenses)) await db.expenses.bulkAdd(data.expenses)
+    
+    return { success: true }
+  } catch (error) {
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error occurred' 
+    }
+  }
+}
+
+export async function importTripsData(jsonString: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    let tripsData = JSON.parse(jsonString)
+    
+    // Handle both array format and single object
+    if (!Array.isArray(tripsData)) {
+      tripsData = [tripsData]
+    }
+    
+    if (!Array.isArray(tripsData) || tripsData.length === 0) {
+      return { success: false, error: 'Invalid backup file: expected array of trip data' }
+    }
+    
+    // Get next available user ID or create a default user
+    let defaultUserId = 1
+    const users = await db.users.toArray()
+    if (users.length > 0) {
+      defaultUserId = Math.max(...users.map(u => u.User_ID || 0)) + 1
+    }
+    
+    // Import each trip with its related data
+    for (const tripData of tripsData) {
+      const trip = tripData.trip
+      if (!trip) {
+        return { success: false, error: 'Invalid trip data: missing trip object' }
+      }
+      
+      // Remove old IDs to let database auto-generate new ones
+      const newTrip = { ...trip, Trip_ID: undefined, User_ID: defaultUserId }
+      const newTripId = await db.trips.add(newTrip)
+      
+      // Import related data with new trip ID
+      if (tripData.places && Array.isArray(tripData.places)) {
+        const newPlaces = tripData.places.map((p: any) => ({ ...p, Place_ID: undefined, Trip_ID: newTripId }))
+        await db.places.bulkAdd(newPlaces)
+      }
+      
+      if (tripData.travelers && Array.isArray(tripData.travelers)) {
+        const newTravelers = tripData.travelers.map((t: any) => ({ ...t, Traveler_ID: undefined, Trip_ID: newTripId }))
+        await db.travelers.bulkAdd(newTravelers)
+      }
+      
+      if (tripData.itinerary && Array.isArray(tripData.itinerary)) {
+        const newItinerary = tripData.itinerary.map((i: any) => ({ ...i, Itinerary_ID: undefined, Trip_ID: newTripId }))
+        await db.itinerary.bulkAdd(newItinerary)
+      }
+      
+      if (tripData.packing && Array.isArray(tripData.packing)) {
+        const newPacking = tripData.packing.map((p: any) => ({ ...p, Packing_ID: undefined, Trip_ID: newTripId }))
+        await db.packing.bulkAdd(newPacking)
+      }
+      
+      if (tripData.expenses && Array.isArray(tripData.expenses)) {
+        const newExpenses = tripData.expenses.map((e: any) => ({ ...e, Expense_ID: undefined, Trip_ID: newTripId }))
+        await db.expenses.bulkAdd(newExpenses)
+      }
+    }
     
     return { success: true }
   } catch (error) {

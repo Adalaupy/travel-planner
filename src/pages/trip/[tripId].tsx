@@ -1,42 +1,64 @@
-import { useRouter } from 'next/router'
-import React, { useEffect, useState } from 'react'
-import Link from 'next/link'
-import TripDetailTabs from './TripDetailTabs'
-import { TripProvider } from '../../context/TripContext'
-import { getOrCreateTripBySlug } from '../../lib/tripService'
-import PackingChecklist from '../../components/PackingChecklist'
-import TravelersList from '../../components/TravelersList'
-import ExpensesManager from '../../components/ExpensesManager'
-import Itinerary from '../../components/Itinerary'
-import styles from '../../styles/tripDetail.module.css'
+import { useRouter } from "next/router";
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import TripDetailTabs from "./TripDetailTabs";
+import { TripProvider } from "../../context/TripContext";
+import { getOrCreateTripBySlug } from "../../lib/tripService";
+import PackingChecklist from "../../components/PackingChecklist";
+import TravelersList from "../../components/TravelersList";
+import ExpensesManager from "../../components/ExpensesManager";
+import Itinerary from "../../components/Itinerary";
+import styles from "../../styles/tripDetail.module.css";
 
 export default function TripDetailPage() {
-  const router = useRouter()
-  const { tripId } = router.query
-  const slug = Array.isArray(tripId) ? tripId[0] : tripId || 'untitled'
-  const [numericId, setNumericId] = useState<number | null>(null)
-  const [tripTitle, setTripTitle] = useState('')
-  const [editingTitle, setEditingTitle] = useState(false)
-  const [newTitle, setNewTitle] = useState('')
+  const router = useRouter();
+  const { tripId } = router.query;
+  const tripIdParam = Array.isArray(tripId) ? tripId[0] : tripId;
+  const [numericId, setNumericId] = useState<number | null>(null);
+  const [tripTitle, setTripTitle] = useState("");
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
   // TripContext sync will be handled inside TripProvider
 
   useEffect(() => {
-    const ensure = async () => {
-      const t = await getOrCreateTripBySlug(String(slug))
-      setNumericId(t.Trip_ID ?? null)
-      setTripTitle(t.title || slug)
-      setNewTitle(t.title || slug)
-    }
-    ensure()
-  }, [slug])
+    if (!tripIdParam) return;
 
-  const [activeTab, setActiveTab] = useState<'itinerary' | 'packing' | 'travelers' | 'expenses'>('itinerary');
+    const ensure = async () => {
+      // Check if tripIdParam is a numeric ID
+      const numericIdValue = Number(tripIdParam);
+      if (
+        !isNaN(numericIdValue) &&
+        String(numericIdValue) === String(tripIdParam)
+      ) {
+        // It's a numeric ID, look up directly
+        const trip = await (
+          await import("../../lib/db")
+        ).db.trips.get(numericIdValue);
+        if (trip) {
+          setNumericId(trip.Trip_ID ?? null);
+          setTripTitle(trip.title || "Untitled");
+          setNewTitle(trip.title || "Untitled");
+          return;
+        }
+      }
+      // Otherwise, treat as slug and use getOrCreateTripBySlug
+      const t = await getOrCreateTripBySlug(String(tripIdParam));
+      setNumericId(t.Trip_ID ?? null);
+      setTripTitle(t.title || String(tripIdParam));
+      setNewTitle(t.title || String(tripIdParam));
+    };
+    ensure();
+  }, [tripIdParam]);
+
+  const [activeTab, setActiveTab] = useState<
+    "itinerary" | "packing" | "travelers" | "expenses"
+  >("itinerary");
 
   const tabList = [
-    { key: 'itinerary', label: 'Itinerary' },
-    { key: 'packing', label: 'Packing Checklist' },
-    { key: 'travelers', label: 'Travelers' },
-    { key: 'expenses', label: 'Expenses' },
+    { key: "itinerary", label: "Itinerary" },
+    { key: "packing", label: "Packing Checklist" },
+    { key: "travelers", label: "Travelers" },
+    { key: "expenses", label: "Expenses" },
   ];
 
   return (
@@ -47,39 +69,63 @@ export default function TripDetailPage() {
       <div className={styles.header}>
         {editingTitle ? (
           <form
-            onSubmit={async e => {
-              e.preventDefault()
-              if (!newTitle.trim() || !numericId) return
-              if (tripCtx.updateTripTitle) {
-                await tripCtx.updateTripTitle(numericId, newTitle.trim())
-                setTripTitle(newTitle.trim())
-              } else {
-                await (await import('../../lib/db')).db.trips.update(numericId, { title: newTitle.trim(), updatedAt: Date.now() })
-                setTripTitle(newTitle.trim())
-              }
-              setEditingTitle(false)
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (!newTitle.trim() || !numericId) return;
+              await (
+                await import("../../lib/db")
+              ).db.trips.update(numericId, {
+                title: newTitle.trim(),
+                updatedAt: Date.now(),
+              });
+              setTripTitle(newTitle.trim());
+              setEditingTitle(false);
             }}
-            style={{ display: 'flex', alignItems: 'center', gap: 12 }}
+            style={{ display: "flex", alignItems: "center", gap: 12 }}
           >
             <input
               value={newTitle}
-              onChange={e => setNewTitle(e.target.value)}
+              onChange={(e) => setNewTitle(e.target.value)}
               className={styles.titleInput}
-              style={{ fontSize: '2rem', fontWeight: 700, padding: '8px 16px', borderRadius: 8, border: '1px solid #d1d5db', width: '100%' }}
+              style={{
+                fontSize: "2rem",
+                fontWeight: 700,
+                padding: "8px 16px",
+                borderRadius: 8,
+                border: "1px solid #d1d5db",
+                width: "100%",
+              }}
               autoFocus
             />
-            <button type="submit" style={{ padding: '8px 16px' }}>Save</button>
-            <button type="button" style={{ padding: '8px 16px', background: '#eee', color: '#333' }} onClick={() => { setEditingTitle(false); setNewTitle(tripTitle) }}>Cancel</button>
+            <button type="submit" style={{ padding: "8px 16px" }}>
+              Save
+            </button>
+            <button
+              type="button"
+              style={{ padding: "8px 16px", background: "#eee", color: "#333" }}
+              onClick={() => {
+                setEditingTitle(false);
+                setNewTitle(tripTitle);
+              }}
+            >
+              Cancel
+            </button>
           </form>
         ) : (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <h1 style={{ margin: 0 }}>{tripTitle}</h1>
-            <button type="button" style={{ padding: '8px 16px' }} onClick={() => setEditingTitle(true)}>Rename</button>
+            <button
+              type="button"
+              style={{ padding: "8px 16px" }}
+              onClick={() => setEditingTitle(true)}
+            >
+              Rename
+            </button>
           </div>
         )}
       </div>
       {numericId ? (
-        <TripProvider slug={String(slug)}>
+        <TripProvider slug={String(tripIdParam)}>
           <TripDetailTabs
             numericId={numericId}
             tripTitle={tripTitle}
@@ -101,5 +147,5 @@ export default function TripDetailPage() {
         </div>
       )}
     </main>
-  )
+  );
 }
