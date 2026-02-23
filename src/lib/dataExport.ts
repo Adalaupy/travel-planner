@@ -17,7 +17,7 @@ export async function exportAllData(): Promise<string> {
 
 export async function exportTripsData(tripIds: number[]): Promise<string> {
   const trips = await db.trips.bulkGet(tripIds)
-  const tripsData = trips.filter(t => t !== undefined)
+  const tripsData = trips.filter((t): t is typeof t & {} => t !== undefined)
   
   const tripsExport = await Promise.all(
     tripsData.map(async (trip) => ({
