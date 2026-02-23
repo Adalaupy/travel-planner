@@ -1,0 +1,190 @@
+[
+  {
+    "trip": {
+      "title": "Vietname - Hanoi",
+      "updatedAt": 1771817352083,
+      "Trip_ID": 31,
+      "startDate": "2025-08-09",
+      "endDate": "2025-08-14"
+    },
+    "places": [],
+    "itinerary": [
+      {
+        "Trip_ID": 31,
+        "dayIndex": 0,
+        "title": "Pistachio Hotel Sapa",
+        "remark": "Hotel in Sapa",
+        "mapLink": "https://www.google.com/maps/place/Pistachio+Hotel+Sapa/@22.3347116,103.8387484,17z/data=!3m1!4b1!4m9!3m8!1s0x36cd416eb779007b:0x21a522f38131c6e2!5m2!4m1!1i2!8m2!3d22.3347116!4d103.8387484!16s%2Fg%2F11gnrsk53b?entry=ttu&g_ep=EgoyMDI2MDIxOC4wIKXMDSoASAFQAw%3D%3D",
+        "lat": 22.3347116,
+        "lng": 103.8387484,
+        "placeName": "Pistachio Hotel Sapa",
+        "Itinerary_ID": 9
+      },
+      {
+        "Trip_ID": 31,
+        "dayIndex": 1,
+        "title": "Sun Station",
+        "mapLink": "https://www.google.com/maps/place/Ga+M%C6%B0%E1%BB%9Dng+Hoa+-+Sun+Station/@22.3349243,103.8408285,17z/data=!3m1!4b1!4m6!3m5!1s0x36cd41d6f42f909f:0xc86d3d9ba82e6554!8m2!3d22.3349243!4d103.8408285!16s%2Fg%2F11fmq9y51k?entry=ttu&g_ep=EgoyMDI2MDIxOC4wIKXMDSoASAFQAw%3D%3D",
+        "lat": 22.3349243,
+        "lng": 103.8408285,
+        "placeName": "Ga Mường Hoa - Sun Station",
+        "Itinerary_ID": 10,
+        "order": 1
+      },
+      {
+        "Trip_ID": 31,
+        "dayIndex": 1,
+        "title": "番西邦峰",
+        "url": "https://www.google.com/maps/d/edit?hl=zh-TW&mid=14FedArul_w8X05JAUbfFmB-j51iQ7H8&ll=22.30421747911423%2C103.77910694826399&z=16#:~:text=https%3A//www.bring%2Dyou.info/zh%2Dtw/fansipan",
+        "mapLink": "https://www.google.com/maps/place/%E7%95%AA%E8%A5%BF%E9%82%A6%E5%B3%B0/@22.3033329,103.775,15z/data=!3m1!4b1!4m6!3m5!1s0x36cd448786c84543:0x98e9595d4892bc5a!8m2!3d22.3033333!4d103.775!16zL20vMDdoOHl5?entry=ttu&g_ep=EgoyMDI2MDIxOC4wIKXMDSoASAFQAw%3D%3D",
+        "lat": 22.3033329,
+        "lng": 103.775,
+        "placeName": "番西邦峰",
+        "Itinerary_ID": 11,
+        "order": 0
+      },
+      {
+        "Trip_ID": 31,
+        "dayIndex": 1,
+        "title": "Cat Cat Village",
+        "mapLink": "https://www.google.com/maps/place/Cat+Cat+Village,+San+S%E1%BA%A3+H%E1%BB%93,+%E6%B2%99%E5%A3%A9%E7%B8%A3%E8%80%81%E8%A1%97%E8%B6%8A%E5%8D%97/@22.3293552,103.8326991,17z/data=!3m1!4b1!4m6!3m5!1s0x36cd4142ca3d7545:0xef763b1d2cb7b28e!8m2!3d22.3301416!4d103.8324947!16s%2Fg%2F1tczyts4?entry=ttu&g_ep=EgoyMDI2MDIxOC4wIKXMDSoASAFQAw%3D%3D",
+        "lat": 22.3293552,
+        "lng": 103.8326991,
+        "placeName": "Cat Cat Village, San Sả Hồ, 沙壩縣老街越南",
+        "Itinerary_ID": 12,
+        "order": 2
+      },
+      {
+        "Trip_ID": 31,
+        "dayIndex": 1,
+        "title": "Little Vietnam Restaurant",
+        "remark": "坐落於沙壩市區精華地段，Little Vietnam Restaurant 是不少旅人心中的「家常越南菜」代表。這裡的牛肉河粉（Phở）湯頭香濃醇厚，使用慢火熬煮的高湯搭配新鮮食材，喝下一口立刻驅散高山的寒意。",
+        "mapLink": "https://www.google.com/maps/place/Little+Vietnam+Restaurant/@22.332662,103.8434178,17z/data=!3m1!4b1!4m6!3m5!1s0x36cd413e15276049:0x15fa61e69c1edd57!8m2!3d22.332662!4d103.8434178!16s%2Fg%2F11cm0tbh95?entry=ttu&g_ep=EgoyMDI2MDIxOC4wIKXMDSoASAFQAw%3D%3D",
+        "lat": 22.332662,
+        "lng": 103.8434178,
+        "placeName": "Little Vietnam Restaurant",
+        "Itinerary_ID": 13
+      }
+    ],
+    "packing": [
+      {
+        "Trip_ID": 31,
+        "title": "ID card",
+        "completed": false,
+        "color": "#5afc03",
+        "order": 1,
+        "Packing_ID": 2
+      },
+      {
+        "Trip_ID": 31,
+        "title": "Cloth",
+        "completed": false,
+        "color": "#e42525",
+        "order": 2,
+        "Packing_ID": 3
+      },
+      {
+        "Trip_ID": 31,
+        "title": "Jacket",
+        "completed": false,
+        "color": "#171616",
+        "order": 4,
+        "Packing_ID": 4
+      },
+      {
+        "Trip_ID": 31,
+        "title": "Ipad",
+        "completed": false,
+        "color": "#e42525",
+        "order": 3,
+        "Packing_ID": 5
+      }
+    ],
+    "travelers": [
+      {
+        "Trip_ID": 31,
+        "name": "Betty",
+        "email": "",
+        "icon": "FaChild",
+        "Traveler_ID": 1
+      },
+      {
+        "Trip_ID": 31,
+        "name": "Peter",
+        "email": "",
+        "icon": "FaUserCircle",
+        "Traveler_ID": 2
+      },
+      {
+        "Trip_ID": 31,
+        "name": "Sam",
+        "email": "",
+        "icon": "FaUserTie",
+        "Traveler_ID": 3
+      },
+      {
+        "Trip_ID": 31,
+        "name": "Kitty",
+        "email": "",
+        "icon": "FaUserCircle",
+        "Traveler_ID": 4
+      }
+    ],
+    "expenses": [
+      {
+        "Trip_ID": 31,
+        "title": "Dinner",
+        "amount": 2000,
+        "payer_ID": 2,
+        "chargedTo": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "datetime": "2025-08-09T00:00:00.000Z",
+        "Expense_ID": 2
+      },
+      {
+        "Trip_ID": 31,
+        "title": "Park Ticket",
+        "amount": 4000,
+        "payer_ID": 3,
+        "chargedTo": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "datetime": "2025-08-09T00:00:00.000Z",
+        "Expense_ID": 3
+      },
+      {
+        "Trip_ID": 31,
+        "title": "Lunch",
+        "amount": 400,
+        "payer_ID": 1,
+        "chargedTo": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "datetime": "2025-08-09T00:00:00.000Z",
+        "Expense_ID": 6
+      },
+      {
+        "Trip_ID": 31,
+        "title": "Soven",
+        "amount": 200,
+        "payer_ID": 2,
+        "chargedTo": [
+          2,
+          1
+        ],
+        "datetime": "2025-08-09T00:00:00.000Z",
+        "Expense_ID": 7
+      }
+    ]
+  }
+]
