@@ -1,6 +1,6 @@
 
 I want to build a React app (responsive for both tablet, PC and mobile) for travel planning with almost zero-cost, skip any charging API, below is the basic idea of my app.
-Help to think about the architecture of the app, feel free to comment and provide suggestion.
+Help to think about the architecture of the app.
 
 -----------------------------------------------------------------------------------------------------------------------
 
