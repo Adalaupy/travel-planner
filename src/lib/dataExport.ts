@@ -99,17 +99,6 @@ export async function importTripsData(jsonString: string): Promise<{ success: bo
       const newTrip = { ...trip, Trip_ID: undefined, User_ID: defaultUserId }
       const newTripId = await db.trips.add(newTrip)
       
-    // Import each trip with its related data
-    for (const tripData of tripsData) {
-      const trip = tripData.trip
-      if (!trip) {
-        return { success: false, error: 'Invalid trip data: missing trip object' }
-      }
-      
-      // Remove old IDs to let database auto-generate new ones
-      const newTrip = { ...trip, Trip_ID: undefined, User_ID: defaultUserId }
-      const newTripId = await db.trips.add(newTrip)
-      
       // Create ID mapping maps
       const placeIdMap = new Map<number, number>()
       const travelerIdMap = new Map<number, number>()
@@ -174,7 +163,6 @@ export async function importTripsData(jsonString: string): Promise<{ success: bo
         })
         await db.expenses.bulkAdd(newExpenses)
       }
-    }
     }
     
     return { success: true }
