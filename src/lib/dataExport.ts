@@ -99,19 +99,55 @@ export async function importTripsData(jsonString: string): Promise<{ success: bo
       const newTrip = { ...trip, Trip_ID: undefined, User_ID: defaultUserId }
       const newTripId = await db.trips.add(newTrip)
       
-      // Import related data with new trip ID
+    // Import each trip with its related data
+    for (const tripData of tripsData) {
+      const trip = tripData.trip
+      if (!trip) {
+        return { success: false, error: 'Invalid trip data: missing trip object' }
+      }
+      
+      // Remove old IDs to let database auto-generate new ones
+      const newTrip = { ...trip, Trip_ID: undefined, User_ID: defaultUserId }
+      const newTripId = await db.trips.add(newTrip)
+      
+      // Create ID mapping maps
+      const placeIdMap = new Map<number, number>()
+      const travelerIdMap = new Map<number, number>()
+
+      // Import places and build ID map
       if (tripData.places && Array.isArray(tripData.places)) {
-        const newPlaces = tripData.places.map((p: any) => ({ ...p, Place_ID: undefined, Trip_ID: newTripId }))
-        await db.places.bulkAdd(newPlaces)
+        for (const p of tripData.places) {
+          const oldId = p.Place_ID
+          const newPlace = { ...p, Place_ID: undefined, Trip_ID: newTripId }
+          const newId = await db.places.add(newPlace)
+          if (oldId !== undefined) {
+            placeIdMap.set(oldId, newId)
+          }
+        }
       }
       
+      // Import travelers and build ID map
       if (tripData.travelers && Array.isArray(tripData.travelers)) {
-        const newTravelers = tripData.travelers.map((t: any) => ({ ...t, Traveler_ID: undefined, Trip_ID: newTripId }))
-        await db.travelers.bulkAdd(newTravelers)
+        for (const t of tripData.travelers) {
+          const oldId = t.Traveler_ID
+          const newTraveler = { ...t, Traveler_ID: undefined, Trip_ID: newTripId }
+          const newId = await db.travelers.add(newTraveler)
+          if (oldId !== undefined) {
+            travelerIdMap.set(oldId, newId)
+          }
+        }
       }
       
+      // Import itinerary with remapped place IDs
       if (tripData.itinerary && Array.isArray(tripData.itinerary)) {
-        const newItinerary = tripData.itinerary.map((i: any) => ({ ...i, Itinerary_ID: undefined, Trip_ID: newTripId }))
+        const newItinerary = tripData.itinerary.map((i: any) => {
+          const newItem = { ...i, Itinerary_ID: undefined, Trip_ID: newTripId }
+          // Remap place_ID if it exists
+          if (i.place_ID !== undefined && placeIdMap.has(i.place_ID)) {
+            newItem.place_ID = placeIdMap.get(i.place_ID)
+          }
+          return newItem
+        })
         await db.itinerary.bulkAdd(newItinerary)
       }
       
@@ -120,10 +156,25 @@ export async function importTripsData(jsonString: string): Promise<{ success: bo
         await db.packing.bulkAdd(newPacking)
       }
       
+      // Import expenses with remapped traveler IDs
       if (tripData.expenses && Array.isArray(tripData.expenses)) {
-        const newExpenses = tripData.expenses.map((e: any) => ({ ...e, Expense_ID: undefined, Trip_ID: newTripId }))
+        const newExpenses = tripData.expenses.map((e: any) => {
+          const newExpense = { ...e, Expense_ID: undefined, Trip_ID: newTripId }
+          // Remap payer_ID
+          if (e.payer_ID !== undefined && travelerIdMap.has(e.payer_ID)) {
+            newExpense.payer_ID = travelerIdMap.get(e.payer_ID)
+          }
+          // Remap chargedTo array
+          if (Array.isArray(e.chargedTo)) {
+            newExpense.chargedTo = e.chargedTo
+              .map((oldTravelerId: number) => travelerIdMap.get(oldTravelerId))
+              .filter((id: number | undefined): id is number => id !== undefined)
+          }
+          return newExpense
+        })
         await db.expenses.bulkAdd(newExpenses)
       }
+    }
     }
     
     return { success: true }
