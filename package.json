@@ -5,8 +5,10 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "export": "GITHUB_PAGES=true next build",
     "start": "next start",
-    "lint": "eslint . --ext .ts,.tsx"
+    "lint": "eslint . --ext .ts,.tsx",
+    "deploy": "npm run export && git add out/ && git commit -m 'Deploy to GitHub Pages' && git push"
   },
   "dependencies": {
     "@clerk/clerk-react": "4.15.0",
