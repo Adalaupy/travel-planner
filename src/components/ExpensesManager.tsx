@@ -123,7 +123,7 @@ export const ExpensesManager: React.FC<Props> = ({ tripId }) => {
 
     expenses.forEach((exp) => {
       const payer = exp.payer_ID;
-      if (payer) balances[payer].paid += exp.amount;
+      if (payer && balances[payer]) balances[payer].paid += exp.amount;
 
       const charged = exp.chargedTo || [];
       const share = charged.length ? exp.amount / charged.length : 0;
