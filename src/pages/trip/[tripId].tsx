@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import TripDetailTabs from "./TripDetailTabs";
+import TripDetailTabs from "../../components/TripDetailTabs";
 import { TripProvider } from "../../context/TripContext";
 import { getOrCreateTripBySlug } from "../../lib/tripService";
 import PackingChecklist from "../../components/PackingChecklist";
@@ -55,10 +55,10 @@ export default function TripDetailPage() {
   >("itinerary");
 
   const tabList = [
-    { key: "itinerary", label: "Itinerary" },
-    { key: "packing", label: "Packing Checklist" },
-    { key: "travelers", label: "Travelers" },
-    { key: "expenses", label: "Expenses" },
+    { key: "itinerary" as const, label: "Itinerary" },
+    { key: "packing" as const, label: "Packing Checklist" },
+    { key: "travelers" as const, label: "Travelers" },
+    { key: "expenses" as const, label: "Expenses" },
   ];
 
   return (
