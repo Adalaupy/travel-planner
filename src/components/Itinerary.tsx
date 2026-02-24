@@ -435,7 +435,7 @@ function SortableItineraryItem({
     transition,
     zIndex: isDragging ? 10 : undefined,
     boxShadow: isDragging ? "0 8px 24px rgba(59,130,246,0.15)" : undefined,
-    background: isDragging ? "#f0f6ff" : undefined,
+    background: isDragging ? "var(--panel-2)" : undefined,
   };
   const prevItem = idx > 0 ? dayItems[idx - 1] : null;
   let dirFromCurrent = "";

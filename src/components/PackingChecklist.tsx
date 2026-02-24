@@ -176,13 +176,6 @@ export const PackingChecklist = ({ tripId: _ }: Props = {}) => {
     setItems((prev) =>
       prev.map((p) => (p.__dexieid === id ? { ...p, color } : p)),
     );
-    // optionally remember last color in localStorage
-    try {
-      localStorage.setItem("packing:lastColor", color);
-      setLastColor(color);
-    } catch (e) {
-      // ignore
-    }
   };
 
   const arrayMoveLocal = (arr: PackingItem[], from: number, to: number) => {
