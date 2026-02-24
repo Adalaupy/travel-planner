@@ -1,16 +1,20 @@
-import { useEffect, useState } from "react";
-import { db, ExpenseItem, TravelerItem } from "../lib/db";
+import { useEffect, useState, useMemo } from "react";
+import { useTrip } from "../context/TripContext";
+import { ExpenseItem, TravelerItem } from "../lib/db";
+import { getExpenses, getTravelers, getTrip, addExpense, deleteExpense } from "../lib/syncService";
 import styles from "../styles/components.module.css";
 
-type Props = { tripId: number };
+type Props = { tripId?: number };
 
-export const ExpensesManager = ({ tripId }: Props) => {
+export const ExpensesManager = ({ tripId: _ }: Props = {}) => {
+  const { trip } = useTrip();
+  const tripId = trip?.trip_id || null;
   const [expenses, setExpenses] = useState<ExpenseItem[]>([]);
   const [travelers, setTravelers] = useState<TravelerItem[]>([]);
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
-  const [payerId, setPayerId] = useState<number | undefined>();
-  const [chargedTo, setChargedTo] = useState<number[]>([]);
+  const [payerId, setPayerId] = useState<string | undefined>();
+  const [chargedTo, setChargedTo] = useState<string[]>([]);
   const [tripStartDate, setTripStartDate] = useState<string>("");
   const [date, setDate] = useState(
     () => new Date().toISOString().split("T")[0],
@@ -20,20 +24,20 @@ export const ExpensesManager = ({ tripId }: Props) => {
     let mounted = true;
     const load = async () => {
       const [expData, travData, tripData] = await Promise.all([
-        db.expenses.where("Trip_ID").equals(tripId).toArray(),
-        db.travelers.where("Trip_ID").equals(tripId).toArray(),
-        db.trips.get(tripId),
+        getExpenses(tripId),
+        getTravelers(tripId),
+        getTrip(tripId || null as any),
       ]);
       if (mounted) {
         setExpenses(expData);
         setTravelers(travData);
         // Set trip start date and use it as default for expenses
         const startDate =
-          tripData?.startDate || new Date().toISOString().split("T")[0];
+          (tripData as any)?.start_date || new Date().toISOString().split("T")[0];
         setTripStartDate(startDate);
         setDate(startDate);
         if (travData.length && !payerId) {
-          const firstId = travData[0].Traveler_ID!;
+          const firstId = String(travData[0].__dexieid ?? travData[0].traveler_id);
           setPayerId(firstId);
           setChargedTo([firstId]);
         }
@@ -43,14 +47,11 @@ export const ExpensesManager = ({ tripId }: Props) => {
 
     // Poll for new travelers every 2 seconds
     const interval = setInterval(async () => {
-      const travData = await db.travelers
-        .where("Trip_ID")
-        .equals(tripId)
-        .toArray();
+      const travData = await getTravelers(tripId);
       if (mounted && travData.length !== travelers.length) {
         setTravelers(travData);
         if (travData.length && !payerId) {
-          const firstId = travData[0].Traveler_ID!;
+          const firstId = String(travData[0].__dexieid ?? travData[0].traveler_id);
           setPayerId(firstId);
           setChargedTo([firstId]);
         }
@@ -70,42 +71,63 @@ export const ExpensesManager = ({ tripId }: Props) => {
     }
   }, [payerId]);
 
-  const addExpense = async () => {
-    if (!title.trim() || !amount || !payerId) return;
+  const addExpenseHandler = async () => {
+    if (!tripId) {
+      alert("Trip not loaded yet. Please try again.");
+      return;
+    }
+    if (!title.trim()) {
+      alert("Please enter a title.");
+      return;
+    }
+    if (!amount) {
+      alert("Please enter an amount.");
+      return;
+    }
+    let resolvedPayerId = payerId;
+    if (!resolvedPayerId && travelers.length) {
+      resolvedPayerId = String(travelers[0].__dexieid ?? travelers[0].traveler_id);
+      setPayerId(resolvedPayerId);
+      setChargedTo([resolvedPayerId]);
+    }
+    if (!resolvedPayerId || resolvedPayerId === "undefined") {
+      alert("Please add at least one traveler first.");
+      return;
+    }
     const amt = parseFloat(amount);
     if (isNaN(amt) || amt <= 0) return;
-    const charged = chargedTo.length
-      ? chargedTo
-      : travelers.map((t) => t.Traveler_ID!);
-    const id = await db.expenses.add({
-      Trip_ID: tripId,
+    const charged = chargedTo.length ? chargedTo : [resolvedPayerId];
+    const exp = await addExpense(tripId, {
       title: title.trim(),
       amount: amt,
-      payer_ID: payerId,
-      chargedTo: charged,
+      payer_id: resolvedPayerId,
+      charged_to: charged,
       datetime: date ? new Date(date).toISOString() : new Date().toISOString(),
     });
-    const exp = await db.expenses.get(id);
-    setExpenses((prev) => [...prev, exp as ExpenseItem]);
-    setTitle("");
-    setAmount("");
-    setChargedTo([]);
-    setDate(tripStartDate);
+    if (exp) {
+      setExpenses((prev) => [...prev, exp]);
+      setTitle("");
+      setAmount("");
+      setChargedTo([resolvedPayerId]);
+      setDate(tripStartDate);
+    }
   };
 
-  const removeExpense = async (id: number) => {
-    await db.expenses.delete(id);
-    setExpenses((prev) => prev.filter((e) => e.Expense_ID !== id));
+  const removeExpenseHandler = async (id: number) => {
+    const success = await deleteExpense(tripId, id);
+    if (success) {
+      setExpenses((prev) => prev.filter((e) => e.__dexieid !== id));
+    }
   };
 
-  const toggleCharged = (tId: number) => {
+  const toggleCharged = (tId: string) => {
     setChargedTo((prev) =>
       prev.includes(tId) ? prev.filter((x) => x !== tId) : [...prev, tId],
     );
   };
 
   const selectAllCharged = () => {
-    const allTravelers = travelers.map((t) => t.Traveler_ID!);
+    const allTravelers = travelers.map((t) => String(t.__dexieid ?? t.traveler_id));
     if (chargedTo.length === allTravelers.length) {
       setChargedTo([]);
     } else {
@@ -115,26 +137,27 @@ export const ExpensesManager = ({ tripId }: Props) => {
 
   // Calculate balances: who paid vs who owes
   const calculateBalances = () => {
-    const balances: Record<number, { paid: number; owe: number; net: number }> =
+    const balances: Record<string, { paid: number; owe: number; net: number }> =
       {};
     travelers.forEach((t) => {
-      balances[t.Traveler_ID!] = { paid: 0, owe: 0, net: 0 };
+      const key = String(t.__dexieid ?? t.traveler_id);
+      balances[key] = { paid: 0, owe: 0, net: 0 };
     });
 
     expenses.forEach((exp) => {
-      const payer = exp.payer_ID;
+      const payer = exp.payer_id ? String(exp.payer_id) : null;
       if (payer && balances[payer]) balances[payer].paid += exp.amount;
 
-      const charged = exp.chargedTo || [];
+      const charged = exp.charged_to || [];
       const share = charged.length ? exp.amount / charged.length : 0;
       charged.forEach((tId) => {
-        if (balances[tId]) balances[tId].owe += share;
+        const key = String(tId);
+        if (balances[key]) balances[key].owe += share;
       });
     });
 
     Object.keys(balances).forEach((k) => {
-      const id = Number(k);
-      balances[id].net = balances[id].paid - balances[id].owe;
+      balances[k].net = balances[k].paid - balances[k].owe;
     });
 
     return balances;
@@ -145,15 +168,16 @@ export const ExpensesManager = ({ tripId }: Props) => {
   // Calculate suggested transfers to settle balances
   const calculateSettlements = () => {
     const settlements: { from: string; to: string; amount: number }[] = [];
-    const creditors: { id: number; name: string; amount: number }[] = [];
-    const debtors: { id: number; name: string; amount: number }[] = [];
+    const creditors: { id: string; name: string; amount: number }[] = [];
+    const debtors: { id: string; name: string; amount: number }[] = [];
 
     travelers.forEach((t) => {
-      const bal = balances[t.Traveler_ID!];
+      const key = String(t.__dexieid ?? t.traveler_id);
+      const bal = balances[key];
       if (bal.net > 0.01) {
-        creditors.push({ id: t.Traveler_ID!, name: t.name, amount: bal.net });
+        creditors.push({ id: String(t.__dexieid ?? t.traveler_id), name: t.name, amount: bal.net });
       } else if (bal.net < -0.01) {
-        debtors.push({ id: t.Traveler_ID!, name: t.name, amount: -bal.net });
+        debtors.push({ id: String(t.__dexieid ?? t.traveler_id), name: t.name, amount: -bal.net });
       }
     });
 
@@ -184,7 +208,14 @@ export const ExpensesManager = ({ tripId }: Props) => {
     return settlements;
   };
 
-  const settlements = calculateSettlements();
+  const settlementsTravelers = useMemo(() => {
+    return travelers.map((t) => ({
+      id: String(t.__dexieid ?? t.traveler_id),
+      name: t.name,
+    }));
+  }, [travelers]);
+
+  const settlementsBalances = useMemo(() => calculateBalances(), [travelers, expenses]);
 
   return (
     <div className={styles.expensesContainer}>
@@ -210,25 +241,25 @@ export const ExpensesManager = ({ tripId }: Props) => {
         />
         <select
           value={payerId || ""}
-          onChange={(e) => setPayerId(Number(e.target.value))}
+          onChange={(e) => setPayerId(e.target.value)}
         >
           {travelers.map((t) => (
-            <option key={t.Traveler_ID} value={t.Traveler_ID}>
+            <option key={String(t.__dexieid ?? t.traveler_id)} value={String(t.__dexieid ?? t.traveler_id)}>
               {t.name}
             </option>
           ))}
         </select>
         <div className={styles.chargedToRow}>
-          <div style={{ marginBottom: 4 }}>
-            <label>Charged to (leave empty for all):</label>
+          <div style={{ marginBottom: 4}}>
+            <label>Charged to (defaults to payer):</label>
           </div>
           <div className={styles.chargedToList}>
             {travelers.map((t) => (
-              <label key={t.Traveler_ID} className={styles.checkboxLabel}>
+              <label key={String(t.__dexieid ?? t.traveler_id)} className={styles.checkboxLabel}>
                 <input
                   type="checkbox"
-                  checked={chargedTo.includes(t.Traveler_ID!)}
-                  onChange={() => toggleCharged(t.Traveler_ID!)}
+                  checked={chargedTo.includes(String(t.__dexieid ?? t.traveler_id))}
+                  onChange={() => toggleCharged(String(t.__dexieid ?? t.traveler_id))}
                 />
                 {t.name}
               </label>
@@ -252,23 +283,27 @@ export const ExpensesManager = ({ tripId }: Props) => {
             marginTop: "20px",
           }}
         >
-          <button onClick={addExpense}>Add</button>
+          <button onClick={addExpenseHandler}>Add</button>
         </div>
       </div>
 
       <ul className={styles.expensesList}>
         {expenses.map((exp) => {
-          const payer = travelers.find((t) => t.Traveler_ID === exp.payer_ID);
+          const payer = travelers.find(
+            (t) => String(t.__dexieid ?? t.traveler_id) === String(exp.payer_id),
+          );
           const charged =
-            exp.chargedTo
-              ?.map((id) => travelers.find((t) => t.Traveler_ID === id)?.name)
+            exp.charged_to
+              ?.map((id) =>
+                travelers.find((t) => String(t.__dexieid ?? t.traveler_id) === String(id))?.name,
+              )
               .filter(Boolean)
               .join(", ") || "All";
           const expDate = exp.datetime
             ? new Date(exp.datetime).toLocaleDateString()
             : "";
           return (
-            <li key={exp.Expense_ID} className={styles.expenseItem}>
+            <li key={exp.__dexieid} className={styles.expenseItem}>
               <div className={styles.expenseInfo}>
                 <div className={styles.expenseTitle}>{exp.title}</div>
                 <div className={styles.expenseMeta}>
@@ -278,7 +313,7 @@ export const ExpensesManager = ({ tripId }: Props) => {
               </div>
               <button
                 className={styles.deleteBtn}
-                onClick={() => removeExpense(exp.Expense_ID!)}
+                onClick={() => removeExpenseHandler(exp.__dexieid!)}
               >
                 Remove
               </button>
@@ -291,18 +326,19 @@ export const ExpensesManager = ({ tripId }: Props) => {
         <h3>Balances</h3>
         <ul className={styles.balancesList}>
           {travelers.map((t) => {
-            const bal = balances[t.Traveler_ID!];
+            const key = String(t.__dexieid ?? t.traveler_id);
+            const bal = settlementsBalances[key];
             const netStr =
-              bal.net >= 0
+              bal && bal.net >= 0
                 ? ` +$${bal.net.toFixed(2)}`
-                : ` -$${Math.abs(bal.net).toFixed(1)}`;
-            const netColor = bal.net > 0 ? 'green' : 'red'
+                : bal ? ` -$${Math.abs(bal.net).toFixed(2)}` : " $0.00";
+            const netColor = bal && bal.net > 0 ? 'green' : 'red'
 
             return (
-              <li key={t.Traveler_ID} className={styles.balanceItem}>
+              <li key={t.__dexieid} className={styles.balanceItem}>
                 <span className={styles.balanceName}>{t.name}</span>
                 <span className={styles.balanceDetails}>
-                  Paid: ${bal.paid.toFixed(2)}  |  Owe: ${bal.owe.toFixed(2)}  |  Net:  <strong style={{color: netColor}}>{netStr}</strong>
+                  Paid: ${bal?.paid.toFixed(2) || "0.00"}  |  Owe: ${bal?.owe.toFixed(2) || "0.00"}  |  Net:  <strong style={{color: netColor}}>{netStr}</strong>
                 </span>
               </li>
             );
@@ -310,11 +346,11 @@ export const ExpensesManager = ({ tripId }: Props) => {
         </ul>
       </div>
 
-      {settlements.length > 0 && (
+      {calculateSettlements().length > 0 && (
         <div className={styles.settlementsSection}>
           <h3>Suggested Transfers to Settle Up</h3>
           <ul className={styles.settlementsList}>
-            {settlements.map((s, idx) => (
+            {calculateSettlements().map((s, idx) => (
               <li key={idx} className={styles.settlementItem}>
                 <strong>{s.from}</strong> pays <strong>{s.to}</strong>:{" "}
                 <span className={styles.settlementAmount}>

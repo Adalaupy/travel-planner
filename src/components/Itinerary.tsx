@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTrip } from "../context/TripContext";
 import {
   DndContext,
   closestCenter,
@@ -13,21 +14,29 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { db, ItineraryItem as ItineraryItemType } from "../lib/db";
+import { getItineraryItems, addItineraryItem, deleteItineraryItem, updateTrip } from "../lib/syncService";
 import { parseMapLink } from "../lib/mapParser";
 import styles from "../styles/components.module.css";
 
-type Props = { tripId: number };
+type Props = { tripId?: number };
 
-export const Itinerary = ({ tripId }: Props) => {
+export const Itinerary = ({ tripId: _ }: Props = {}) => {
+  const { trip } = useTrip();
+  const tripId = trip?.trip_id;
   // Apply the selected date range to the trip
   const applyDateRange = async () => {
+    // Check if dates actually changed
+    const datesChanged = 
+      draftStartDate !== tripStartDate || draftEndDate !== tripEndDate;
+    
+    if (!datesChanged) return;
+    
     setTripStartDate(draftStartDate);
     setTripEndDate(draftEndDate);
-    // Update the trips table in database
-    await db.trips.update(tripId, {
+    // Update via syncService (handles both Dexie and Supabase)
+    await updateTrip(tripId || null, {
       startDate: draftStartDate,
       endDate: draftEndDate,
-      updatedAt: Date.now(),
     });
   };
   // Track if user manually changed end date
@@ -100,11 +109,11 @@ export const Itinerary = ({ tripId }: Props) => {
   useEffect(() => {
     let mounted = true;
     const load = async () => {
-      let data = await db.itinerary.where("Trip_ID").equals(tripId).toArray();
+      let data = await getItineraryItems(tripId || null);
       // Ensure order property exists and sort by it
       data = data.map((item, idx) => ({ ...item, order: item.order ?? idx }));
       data.sort(
-        (a, b) => a.dayIndex - b.dayIndex || (a.order ?? 0) - (b.order ?? 0),
+        (a, b) => a.day_index - b.day_index || (a.order ?? 0) - (b.order ?? 0),
       );
       if (mounted) setItems(data);
     };
@@ -117,21 +126,18 @@ export const Itinerary = ({ tripId }: Props) => {
   // Load trip dates from database
   useEffect(() => {
     const loadTripDates = async () => {
-      const trip = await db.trips.get(tripId);
-      const itineraryItems = await db.itinerary
-        .where("Trip_ID")
-        .equals(tripId)
-        .toArray();
+      if (!trip) return;
+      const itineraryItems = await getItineraryItems(tripId || null);
 
       // Get max dayIndex from itinerary if items exist
       let maxDayIndex = -1;
       if (itineraryItems.length > 0) {
-        maxDayIndex = Math.max(...itineraryItems.map((item) => item.dayIndex));
+        maxDayIndex = Math.max(...itineraryItems.map((item) => item.day_index));
       }
 
-      if (trip && trip.startDate) {
-        const startDate = trip.startDate;
-        let endDate = trip.endDate;
+      if (trip && trip.start_date) {
+        const startDate = trip.start_date;
+        let endDate = trip.end_date;
 
         // If no endDate in trip but have itinerary items, calculate from max dayIndex
         if (!endDate && maxDayIndex >= 0) {
@@ -173,14 +179,14 @@ export const Itinerary = ({ tripId }: Props) => {
   // Helper to update order in DB and state
   const updateOrder = async (newDayItems: ItineraryItemType[]) => {
     await Promise.all(
-      newDayItems.map((item, idx) =>
-        db.itinerary.update(item.Itinerary_ID!, { order: idx }),
-      ),
+      newDayItems.map((item, idx) => {
+        return db.itinerary.update(item.__dexieid!, { order: idx });
+      }),
     );
     setItems((prev) => {
-      const other = prev.filter((i) => i.dayIndex !== selectedDay);
+      const other = prev.filter((i) => i.day_index !== selectedDay);
       return [...other, ...newDayItems].sort(
-        (a, b) => a.dayIndex - b.dayIndex || (a.order ?? 0) - (b.order ?? 0),
+        (a, b) => a.day_index - b.day_index || (a.order ?? 0) - (b.order ?? 0),
       );
     });
   };
@@ -219,36 +225,38 @@ export const Itinerary = ({ tripId }: Props) => {
       };
     }
     const finalTitle = title.trim() || placeData.name || "Untitled";
-    const id = await db.itinerary.add({
-      Trip_ID: tripId,
+    const it = await addItineraryItem(tripId || null, {
       dayIndex: selectedDay,
       title: finalTitle,
       time: time || undefined,
-      place_ID: undefined,
       url: url.trim() || undefined,
       remark: remark.trim() || undefined,
       mapLink: mapLink.trim() || undefined,
       lat: placeData.lat,
       lng: placeData.lng,
       placeName: placeData.name,
+      order: items.filter((i) => i.day_index === selectedDay).length,
     });
-    const it = await db.itinerary.get(id);
-    setItems((prev) => [...prev, it as ItineraryItemType]);
-    setTitle("");
-    setTime("");
-    setMapLink("");
-    setUrl("");
-    setRemark("");
-    setParsedData(null);
+    if (it) {
+      setItems((prev) => [...prev, it]);
+      setTitle("");
+      setTime("");
+      setMapLink("");
+      setUrl("");
+      setRemark("");
+      setParsedData(null);
+    }
   };
 
   const removeItem = async (id: number) => {
-    await db.itinerary.delete(id);
-    setItems((prev) => prev.filter((i) => i.Itinerary_ID !== id));
+    const success = await deleteItineraryItem(tripId, id);
+    if (success) {
+      setItems((prev) => prev.filter((i) => i.__dexieid !== id));
+    }
   };
 
   const dayItems = items
-    .filter((i) => i.dayIndex === selectedDay)
+    .filter((i) => i.day_index === selectedDay)
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
   // Generate Google Maps link for all destinations in the current day
@@ -257,8 +265,8 @@ export const Itinerary = ({ tripId }: Props) => {
     const locations = dayItems.map((item) => {
       if (item.lat && item.lng) {
         return `${item.lat},${item.lng}`;
-      } else if (item.placeName) {
-        return encodeURIComponent(item.placeName);
+      } else if (item.place_name) {
+        return encodeURIComponent(item.place_name);
       } else {
         return encodeURIComponent(item.title);
       }
@@ -269,8 +277,8 @@ export const Itinerary = ({ tripId }: Props) => {
   const onDragEnd = async (event: any) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
-    const oldIndex = dayItems.findIndex((i) => i.Itinerary_ID === active.id);
-    const newIndex = dayItems.findIndex((i) => i.Itinerary_ID === over.id);
+    const oldIndex = dayItems.findIndex((i) => i.__dexieid === active.id);
+    const newIndex = dayItems.findIndex((i) => i.__dexieid === over.id);
     const newOrder = arrayMoveLocal(dayItems, oldIndex, newIndex);
     await updateOrder(newOrder);
   };
@@ -382,13 +390,13 @@ export const Itinerary = ({ tripId }: Props) => {
         onDragEnd={onDragEnd}
       >
         <SortableContext
-          items={dayItems.map((i) => i.Itinerary_ID!)}
+          items={dayItems.map((i) => i.__dexieid!)}
           strategy={verticalListSortingStrategy}
         >
           <ul className={styles.itineraryList}>
             {dayItems.map((item, idx) => (
               <SortableItineraryItem
-                key={item.Itinerary_ID}
+                key={item.__dexieid}
                 item={item}
                 idx={idx}
                 dayItems={dayItems}
@@ -421,7 +429,7 @@ function SortableItineraryItem({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: item.Itinerary_ID! });
+  } = useSortable({ id: item.__dexieid! });
   const style = {
     transform: transform ? CSS.Transform.toString(transform) : undefined,
     transition,
@@ -435,13 +443,13 @@ function SortableItineraryItem({
   const destinationParam =
     item.lat && item.lng
       ? `${item.lat},${item.lng}`
-      : encodeURIComponent(item.placeName || item.title);
+      : encodeURIComponent(item.place_name || item.title);
   dirFromCurrent = `https://www.google.com/maps/dir/?api=1&origin=My+Location&destination=${destinationParam}`;
   if (prevItem) {
     const originParam =
       prevItem.lat && prevItem.lng
         ? `${prevItem.lat},${prevItem.lng}`
-        : encodeURIComponent(prevItem.placeName || prevItem.title);
+        : encodeURIComponent(prevItem.place_name || prevItem.title);
     dirFromPrev = `https://www.google.com/maps/dir/?api=1&origin=${originParam}&destination=${destinationParam}`;
   }
   return (
@@ -459,9 +467,9 @@ function SortableItineraryItem({
           )}
           {item.title}
         </div>
-        {(item.placeName || item.lat || item.lng) && (
+        {(item.place_name || item.lat || item.lng) && (
           <div className={styles.itineraryParsedInfo}>
-            {item.placeName && <span>📍 {item.placeName}</span>}
+            {item.place_name && <span>📍 {item.place_name}</span>}
             {item.lat && item.lng && (
               <span className={styles.coords}>
                 {" "}
@@ -474,9 +482,9 @@ function SortableItineraryItem({
           <div className={styles.itineraryRemark}>{item.remark}</div>
         )}
         <div className={styles.itineraryLinks}>
-          {item.mapLink && (
+          {item.map_link && (
             <a
-              href={item.mapLink}
+              href={item.map_link}
               target="_blank"
               rel="noopener noreferrer"
               className={styles.mapLink}
@@ -519,7 +527,7 @@ function SortableItineraryItem({
         onClick={(e) => {
           e.stopPropagation();
           e.preventDefault();
-          removeItem(item.Itinerary_ID!);
+          removeItem(item.__dexieid!);
         }}
         onPointerDown={(e) => e.stopPropagation()}
         type="button"

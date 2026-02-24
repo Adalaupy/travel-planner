@@ -16,7 +16,7 @@
 .header h1 {
   margin: 0;
   font-size: 2rem;
-  color: #1f2937;
+  color: var(--text);
 }
 
 .createTrip {
@@ -26,31 +26,34 @@
 
 .input {
   padding: 10px 16px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border);
   border-radius: 8px;
   font-size: 0.95rem;
   min-width: 200px;
+  background: var(--panel-2);
+  color: var(--text);
 }
 
 .input:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--ring);
 }
 
 .createBtn {
   padding: 10px 20px;
-  background: #3b82f6;
-  color: white;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #04121a;
   border: none;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s;
+  box-shadow: 0 12px 24px rgba(2, 6, 23, 0.45);
 }
 
 .createBtn:hover {
-  background: #2563eb;
+  background: linear-gradient(135deg, #22d3ee, #7dd3fc);
 }
 
 .search {
@@ -63,15 +66,17 @@
 .searchInput {
   flex: 1;
   padding: 12px 16px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border);
   border-radius: 8px;
   font-size: 0.95rem;
+  background: var(--panel-2);
+  color: var(--text);
 }
 
 .searchInput:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--ring);
 }
 
 .backupSection {
@@ -80,28 +85,29 @@
 
 .backupBtn {
   padding: 10px 20px;
-  background: #10b981;
-  color: white;
+  background: linear-gradient(135deg, #0f766e, #22d3ee);
+  color: #04121a;
   border: none;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s;
   white-space: nowrap;
+  box-shadow: 0 12px 24px rgba(2, 6, 23, 0.45);
 }
 
 .backupBtn:hover {
-  background: #059669;
+  background: linear-gradient(135deg, #22d3ee, #7dd3fc);
 }
 
 .backupMenu {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: var(--panel);
+  border: 1px solid var(--border);
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 18px 30px rgba(2, 6, 23, 0.55);
   min-width: 180px;
   z-index: 10;
   overflow: hidden;
@@ -110,14 +116,14 @@
 .menuItem {
   width: 100%;
   padding: 12px 16px;
-  background: white;
+  background: transparent;
   border: none;
   text-align: left;
   cursor: pointer;
   font-size: 0.95rem;
   transition: background 0.2s;
-  border-bottom: 1px solid #f3f4f6;
-  color: #1f2937;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+  color: var(--text);
 }
 
 .menuItem:last-child {
@@ -125,14 +131,14 @@
 }
 
 .menuItem:hover {
-  background: #f9fafb;
-  color: #1f2937;
+  background: rgba(34, 211, 238, 0.12);
+  color: var(--text);
 }
 
 .empty {
   text-align: center;
   padding: 80px 20px;
-  color: #6b7280;
+  color: var(--muted);
 }
 
 .emptyIcon {
@@ -142,7 +148,7 @@
 
 .empty h2 {
   font-size: 1.5rem;
-  color: #374151;
+  color: var(--text);
   margin: 0 0 8px;
 }
 
@@ -157,7 +163,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(2, 6, 23, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -165,18 +171,19 @@
 }
 
 .modalContent {
-  background: white;
+  background: var(--panel);
   border-radius: 8px;
   padding: 24px;
   max-width: 400px;
   width: 90%;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--border);
+  box-shadow: 0 18px 30px rgba(2, 6, 23, 0.55);
 }
 
 .modalContent h3 {
   margin: 0 0 16px;
   font-size: 1.1rem;
-  color: #1f2937;
+  color: var(--text);
 }
 
 .tripCheckboxList {
@@ -195,7 +202,7 @@
 }
 
 .tripCheckbox:hover {
-  background: #f3f4f6;
+  background: rgba(34, 211, 238, 0.12);
 }
 
 .tripCheckbox input {
@@ -204,7 +211,7 @@
 }
 
 .tripCheckbox span {
-  color: #1f2937;
+  color: var(--text);
   font-weight: 500;
 }
 
@@ -216,8 +223,8 @@
 
 .modalPrimaryBtn {
   padding: 10px 16px;
-  background: #3b82f6;
-  color: white;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #04121a;
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -226,13 +233,13 @@
 }
 
 .modalPrimaryBtn:hover {
-  background: #2563eb;
+  background: linear-gradient(135deg, #22d3ee, #7dd3fc);
 }
 
 .modalSecondaryBtn {
   padding: 10px 16px;
-  background: #e5e7eb;
-  color: #1f2937;
+  background: #1f2937;
+  color: var(--text);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -241,7 +248,7 @@
 }
 
 .modalSecondaryBtn:hover {
-  background: #d1d5db;
+  background: #0f172a;
 }
 
 .tripGrid {
@@ -251,18 +258,18 @@
 }
 
 .tripCard {
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--panel);
+  border: 1px solid var(--border);
   border-radius: 18px;
   padding: 28px;
   position: relative;
   transition: transform 0.2s, box-shadow 0.2s;
-  box-shadow: 0 4px 24px rgba(59,130,246,0.08);
+  box-shadow: 0 18px 32px rgba(2, 6, 23, 0.55);
 }
 
 .tripCard:hover {
   transform: translateY(-4px) scale(1.02);
-  box-shadow: 0 8px 32px rgba(59,130,246,0.13);
+  box-shadow: 0 22px 40px rgba(2, 6, 23, 0.65);
 }
 
 .tripLink {
@@ -274,19 +281,19 @@
 .tripCard h3 {
   margin: 0 0 12px;
   font-size: 1.25rem;
-  color: #1f2937;
+  color: var(--text);
 }
 
 .tripDates {
   margin: 0 0 8px;
-  color: #3b82f6;
+  color: var(--accent);
   font-size: 0.9rem;
   font-weight: 500;
 }
 
 .tripUpdated {
   margin: 0;
-  color: #9ca3af;
+  color: var(--muted);
   font-size: 0.85rem;
 }
 
@@ -298,7 +305,7 @@
   border: none;
   font-size: 1.25rem;
   cursor: pointer;
-  opacity: 0.5;
+  opacity: 0.6;
   transition: opacity 0.2s, transform 0.2s;
   padding: 4px;
 }
@@ -312,39 +319,39 @@
   .main {
     padding: 20px 16px;
   }
-  
+
   .header {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .header h1 {
     font-size: 1.75rem;
   }
-  
+
   .createTrip {
     width: 100%;
     flex-direction: column;
   }
-  
+
   .input {
     width: 100%;
   }
-  
+
   .search {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .backupBtn {
     width: 100%;
   }
-  
+
   .backupMenu {
     left: 0;
     right: 0;
   }
-  
+
   .tripGrid {
     grid-template-columns: 1fr;
   }

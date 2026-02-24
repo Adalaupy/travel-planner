@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import TripDetailTabs from "../../components/TripDetailTabs";
 import { TripProvider } from "../../context/TripContext";
-import { getOrCreateTripBySlug } from "../../lib/tripService";
+import { getTrip, syncTripFromSupabase, updateTrip } from "../../lib/syncService";
+import { db } from "../../lib/db";
 import styles from "../../styles/tripDetail.module.css";
 
 export default function TripDetailPage() {
@@ -20,31 +21,67 @@ export default function TripDetailPage() {
     if (!tripIdParam) return;
 
     const ensure = async () => {
-      // Check if tripIdParam is a numeric ID
-      const numericIdValue = Number(tripIdParam);
-      if (
-        !isNaN(numericIdValue) &&
-        String(numericIdValue) === String(tripIdParam)
-      ) {
-        // It's a numeric ID, look up directly
-        const trip = await (
-          await import("../../lib/db")
-        ).db.trips.get(numericIdValue);
-        if (trip) {
-          setNumericId(trip.Trip_ID ?? null);
-          setTripTitle(trip.title || "Untitled");
-          setNewTitle(trip.title || "Untitled");
-          return;
+      let trip = null;
+      
+      // Try to find by trip_id first (could be UUID or numeric string)
+      trip = await db.trips.where('trip_id').equals(tripIdParam).first();
+      
+      // If not found and looks like a number, try as __dexieid
+      if (!trip) {
+        const numId = parseInt(tripIdParam as string, 10);
+        if (!isNaN(numId)) {
+          trip = await db.trips.get(numId);
         }
       }
-      // Otherwise, treat as slug and use getOrCreateTripBySlug
-      const t = await getOrCreateTripBySlug(String(tripIdParam));
-      setNumericId(t.Trip_ID ?? null);
-      setTripTitle(t.title || String(tripIdParam));
-      setNewTitle(t.title || String(tripIdParam));
-    };
+      
+      if (!trip) {
+        const remote = await getTrip(tripIdParam as string)
+        if (remote) {
+          const remoteTripId = remote.trip_id ?? remote.id ?? String(tripIdParam)
+          const existing = await db.trips.where('trip_id').equals(remoteTripId).first()
+          if (existing?.__dexieid) {
+            await db.trips.update(existing.__dexieid, {
+              title: remote.title || "Untitled",
+              trip_id: remoteTripId,
+              is_public: remote.is_public,
+              start_date: remote.start_date,
+              end_date: remote.end_date,
+              owner_id: remote.owner_id,
+              created_at: remote.created_at,
+              updated_at: remote.updated_at,
+              issync: true,
+            })
+            trip = await db.trips.get(existing.__dexieid)
+          } else {
+            const numericId = await db.trips.add({
+              title: remote.title || "Untitled",
+              trip_id: remoteTripId,
+              is_public: remote.is_public,
+              start_date: remote.start_date,
+              end_date: remote.end_date,
+              owner_id: remote.owner_id,
+              created_at: remote.created_at,
+              updated_at: remote.updated_at,
+              issync: true,
+            })
+            trip = await db.trips.get(numericId)
+          }
+          await syncTripFromSupabase(remoteTripId)
+        }
+      }
+
+      if (trip?.trip_id) {
+        await syncTripFromSupabase(trip.trip_id)
+      }
+
+      if (trip) {
+        setNumericId(trip.__dexieid || null);
+        setTripTitle(trip.title || "Untitled");
+        setNewTitle(trip.title || "Untitled");
+      }
+    }
     ensure();
-  }, [tripIdParam]);
+  }, [tripIdParam])
 
   const [activeTab, setActiveTab] = useState<
     "itinerary" | "packing" | "travelers" | "expenses"
@@ -67,13 +104,14 @@ export default function TripDetailPage() {
           <form
             onSubmit={async (e) => {
               e.preventDefault();
-              if (!newTitle.trim() || !numericId) return;
-              await (
-                await import("../../lib/db")
-              ).db.trips.update(numericId, {
+              if (!newTitle.trim() || !numericId || !tripIdParam) return;
+              
+              // Update via syncService (handles both Dexie and Supabase)
+              // Pass tripIdParam which can be UUID or numeric
+              await updateTrip(tripIdParam, {
                 title: newTitle.trim(),
-                updatedAt: Date.now(),
-              });
+              })
+              
               setTripTitle(newTitle.trim());
               setEditingTitle(false);
             }}

@@ -16,7 +16,9 @@ export const TripProvider = ({ slug, children }: { slug: string; children: React
   useEffect(() => {
     let mounted = true
     const load = async () => {
-      const existing = await db.trips.where('title').equals(slug).first()
+      const existing =
+        (await db.trips.where('trip_id').equals(slug).first()) ||
+        (await db.trips.where('title').equals(slug).first())
       if (mounted) setTrip(existing || null)
     }
     load()
@@ -28,7 +30,9 @@ export const TripProvider = ({ slug, children }: { slug: string; children: React
   const ensureTrip = async (s: string) => {
     let t = await db.trips.where('title').equals(s).first()
     if (!t) {
-      const id = await db.trips.add({ title: s, startDate: undefined, endDate: undefined, User_ID: undefined, updatedAt: Date.now() })
+      const id = await db.trips.add({ title: s, start_date: undefined, end_date: undefined, owner_id: undefined, updated_at: Date.now() })
+      // For offline trips, use __dexieId as the trip_id string
+      await db.trips.update(id, { trip_id: String(id) })
       t = await db.trips.get(id)
     }
     setTrip(t || null)
@@ -36,13 +40,13 @@ export const TripProvider = ({ slug, children }: { slug: string; children: React
   }
 
   const updateTripTitle = async (id: number, newTitle: string) => {
-    await db.trips.update(id, { title: newTitle, updatedAt: Date.now() })
+    await db.trips.update(id, { title: newTitle, updated_at: Date.now() })
     const updated = await db.trips.get(id)
     setTrip(updated || null)
   }
 
   return (
-    <TripContext.Provider value={{ trip, tripId: trip?.Trip_ID, ensureTrip, updateTripTitle }}>
+    <TripContext.Provider value={{ trip, tripId: trip?.__dexieid, ensureTrip, updateTripTitle }}>
       {children}
     </TripContext.Provider>
   )

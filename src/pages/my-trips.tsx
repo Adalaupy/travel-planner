@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/router";
-import { db, TripItem } from "../lib/db";
+import { TripItem } from "../lib/db";
+import { getUserTrips, createTrip, deleteTrip as deleteFromSync } from "../lib/syncService";
 import {
   exportTripsData,
   importTripsData,
@@ -18,7 +19,7 @@ export default function MyTrips() {
   const [isCreating, setIsCreating] = useState(false);
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [selectedTripsForExport, setSelectedTripsForExport] = useState<
-    number[]
+    Array<string | number>
   >([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -28,37 +29,42 @@ export default function MyTrips() {
   }, []);
 
   const loadTrips = async () => {
-    const allTrips = await db.trips.toArray();
-    allTrips.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+    const allTrips = await getUserTrips();
     setTrips(allTrips);
   };
 
-  const createTrip = async () => {
-    if (!newTripTitle.trim() || isCreating) return;
+  const createTripHandler = async () => {
+    if (!newTripTitle.trim()) {
+      alert("Please enter a trip title");
+      return;
+    }
+    
+    if (isCreating) return;
 
     setIsCreating(true);
     try {
-      const id = await db.trips.add({
-        title: newTripTitle.trim(),
-        updatedAt: Date.now(),
-      });
-      setNewTripTitle("");
-      await loadTrips();
-      router.push(`/trip/${id}`);
+      const result = await createTrip(newTripTitle.trim());
+      if (result) {
+        setNewTripTitle("");
+        await loadTrips();
+        // Use trip_id (sync key) if available, otherwise use __dexieid
+        router.push(`/trip/${result.trip_id || result.__dexieid}`);
+      }
     } finally {
       setIsCreating(false);
     }
   };
 
-  const deleteTrip = async (id: number) => {
+  const deleteTrip = async (trip: any) => {
     if (!confirm("Delete this trip? This cannot be undone.")) return;
-    await db.trips.delete(id);
-    // Also delete related data
-    await db.packing.where("Trip_ID").equals(id).delete();
-    await db.travelers.where("Trip_ID").equals(id).delete();
-    await db.expenses.where("Trip_ID").equals(id).delete();
-    await db.itinerary.where("Trip_ID").equals(id).delete();
-    await loadTrips();
+    // Use the original ID (UUID or numeric) from Supabase
+    const tripId = trip.trip_id || trip.__dexieid;
+    const success = await deleteFromSync(tripId);
+    if (success) {
+      await loadTrips();
+    } else {
+      alert("Failed to delete trip");
+    }
   };
 
   const handleExportClick = () => {
@@ -76,7 +82,10 @@ export default function MyTrips() {
       // Build filename from trip title(s)
       let filename = "travel-planner-export";
       if (selectedTripsForExport.length === 1) {
-        const trip = trips.find(t => t.Trip_ID === selectedTripsForExport[0]);
+        const selectedId = String(selectedTripsForExport[0]);
+        const trip = trips.find(
+          (t) => String(t.trip_id ?? t.__dexieid) === selectedId,
+        );
         if (trip && trip.title) {
           filename = trip.title.replace(/\s+/g, "-").toLowerCase();
         }
@@ -134,7 +143,7 @@ export default function MyTrips() {
   };
 
   const filteredTrips = trips.filter((trip) =>
-    trip.title.toLowerCase().includes(searchQuery.toLowerCase()),
+    (trip.title || "").toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
@@ -150,14 +159,14 @@ export default function MyTrips() {
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 e.preventDefault();
-                createTrip();
+                createTripHandler();
               }
             }}
             className={styles.input}
           />
           <button
             type="button"
-            onClick={createTrip}
+            onClick={createTripHandler}
             className={styles.createBtn}
             disabled={isCreating}
           >
@@ -205,27 +214,33 @@ export default function MyTrips() {
           >
             <h3>Select Trips to Export</h3>
             <div className={styles.tripCheckboxList}>
-              {trips.map((trip) => (
-                <label key={trip.Trip_ID} className={styles.tripCheckbox}>
+              {trips.map((trip) => {
+                const exportId = trip.trip_id ?? trip.__dexieid
+                if (!exportId) return null
+                return (
+                <label key={String(exportId)} className={styles.tripCheckbox}>
                   <input
                     type="checkbox"
-                    checked={selectedTripsForExport.includes(trip.Trip_ID!)}
+                    checked={selectedTripsForExport.some(
+                      (id) => String(id) === String(exportId),
+                    )}
                     onChange={(e) => {
                       if (e.target.checked) {
                         setSelectedTripsForExport((prev) => [
                           ...prev,
-                          trip.Trip_ID!,
+                          exportId,
                         ]);
                       } else {
                         setSelectedTripsForExport((prev) =>
-                          prev.filter((id) => id !== trip.Trip_ID!),
+                          prev.filter((id) => String(id) !== String(exportId)),
                         );
                       }
                     }}
                   />
                   <span>{trip.title}</span>
                 </label>
-              ))}
+                )
+              })}
             </div>
             <div className={styles.modalButtonGroup}>
               <button onClick={handleExport} className={styles.modalPrimaryBtn}>
@@ -259,25 +274,31 @@ export default function MyTrips() {
       ) : (
         <div className={styles.tripGrid}>
           {filteredTrips.map((trip) => {
+            const linkId = trip.trip_id || trip.__dexieid
+            if (!linkId) {
+              console.warn('Trip missing id fields:', trip)
+              return null
+            }
+
             return (
-              <div key={trip.Trip_ID} className={styles.tripCard}>
+              <div key={String(linkId)} className={styles.tripCard}>
                 <Link
-                  href={`/trip/${trip.Trip_ID}`}
+                  href={`/trip/${linkId}`}
                   className={styles.tripLink}
                 >
                   <h3>{trip.title}</h3>
-                  {trip.startDate && trip.endDate && (
-                    <p className={styles.tripDates}>
-                      {trip.startDate} to {trip.endDate}
-                    </p>
+                  {trip.start_date && trip.end_date && (
+                    <div className={styles.tripMeta}>
+                      {trip.start_date} to {trip.end_date}
+                    </div>
                   )}
                   <p className={styles.tripUpdated}>
                     Updated:{" "}
-                    {new Date(trip.updatedAt || 0).toLocaleDateString()}
+                    {new Date(trip.updated_at || 0).toLocaleDateString()}
                   </p>
                 </Link>
                 <button
-                  onClick={() => deleteTrip(trip.Trip_ID!)}
+                  onClick={() => deleteTrip(trip)}
                   className={styles.deleteBtn}
                   title="Delete trip"
                 >

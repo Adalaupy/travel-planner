@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTrip } from "../context/TripContext";
 import {
   DndContext,
   closestCenter,
@@ -13,11 +14,14 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { db, PackingItem } from "../lib/db";
+import { getPackingItems, addPackingItem, updatePackingItem, deletePackingItem } from "../lib/syncService";
 import styles from "../styles/components.module.css";
 
-type Props = { tripId: number };
+type Props = { tripId?: number };
 
-export const PackingChecklist = ({ tripId }: Props) => {
+export const PackingChecklist = ({ tripId: _ }: Props = {}) => {
+  const { trip } = useTrip();
+  const tripId = trip?.trip_id;
   const [items, setItems] = useState<PackingItem[]>([]);
   const [text, setText] = useState("");
   const [lastColor, setLastColor] = useState("#ffffff");
@@ -41,7 +45,7 @@ export const PackingChecklist = ({ tripId }: Props) => {
       transform,
       transition,
       isDragging,
-    } = useSortable({ id: item.Packing_ID! });
+    } = useSortable({ id: item.__dexieid || 0 });
 
     // Convert hex color to rgba with transparency
     const hexToRgba = (hex: string, alpha: number = 0.2) => {
@@ -61,18 +65,18 @@ export const PackingChecklist = ({ tripId }: Props) => {
 
     const handleToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
       e.stopPropagation();
-      onToggle(item.Packing_ID!);
+      onToggle(item.__dexieid || 0);
     };
 
     const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       e.stopPropagation();
-      onColorChange(item.Packing_ID!, e.target.value);
+      onColorChange(item.__dexieid || 0, e.target.value);
     };
 
     const handleDelete = (e: React.MouseEvent) => {
       e.stopPropagation();
       e.preventDefault();
-      onDelete(item.Packing_ID!);
+      onDelete(item.__dexieid || 0);
     };
 
     const handlePointerDown = (e: React.PointerEvent) => {
@@ -116,10 +120,7 @@ export const PackingChecklist = ({ tripId }: Props) => {
   useEffect(() => {
     let mounted = true;
     const load = async () => {
-      const data = await db.packing
-        .where("Trip_ID")
-        .equals(tripId)
-        .sortBy("order");
+      const data = await getPackingItems(tripId || null);
       if (mounted) setItems(data);
     };
     load();
@@ -141,38 +142,39 @@ export const PackingChecklist = ({ tripId }: Props) => {
   const addItem = async () => {
     if (!text.trim()) return;
     const order = items.length ? Math.max(...items.map((i) => i.order)) + 1 : 1;
-    const id = await db.packing.add({
-      Trip_ID: tripId,
+    const it = await addPackingItem(tripId || null, {
       title: text.trim(),
-      completed: false,
       color: lastColor || "#ffffff",
       order,
     });
-    const it = await db.packing.get(id);
-    setItems((prev) => [...prev, it as PackingItem]);
-    setText("");
+    if (it) {
+      setItems((prev) => [...prev, it]);
+      setText("");
+    }
   };
 
   const toggle = async (id: number) => {
-    const it = await db.packing.get(id);
+    const it = items.find((p) => p.__dexieid === id);
     if (!it) return;
-    await db.packing.update(id, { completed: !it.completed });
+    await updatePackingItem(tripId, id, { completed: !it.completed });
     setItems((prev) =>
       prev.map((p) =>
-        p.Packing_ID === id ? { ...p, completed: !p.completed } : p,
+        p.__dexieid === id ? { ...p, completed: !p.completed } : p,
       ),
     );
   };
 
   const del = async (id: number) => {
-    await db.packing.delete(id);
-    setItems((prev) => prev.filter((p) => p.Packing_ID !== id));
+    const success = await deletePackingItem(tripId, id);
+    if (success) {
+      setItems((prev) => prev.filter((p) => p.__dexieid !== id));
+    }
   };
 
   const changeColor = async (id: number, color: string) => {
-    await db.packing.update(id, { color });
+    await updatePackingItem(tripId, id, { color });
     setItems((prev) =>
-      prev.map((p) => (p.Packing_ID === id ? { ...p, color } : p)),
+      prev.map((p) => (p.__dexieid === id ? { ...p, color } : p)),
     );
     // optionally remember last color in localStorage
     try {
@@ -193,13 +195,13 @@ export const PackingChecklist = ({ tripId }: Props) => {
   const onDragEnd = async (event: any) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
-    const oldIndex = items.findIndex((i) => i.Packing_ID === active.id);
-    const newIndex = items.findIndex((i) => i.Packing_ID === over.id);
+    const oldIndex = items.findIndex((i) => i.__dexieid === active.id);
+    const newIndex = items.findIndex((i) => i.__dexieid === over.id);
     const newOrder = arrayMoveLocal(items, oldIndex, newIndex);
     // update orders in DB
     for (let i = 0; i < newOrder.length; i++) {
       const item = newOrder[i];
-      await db.packing.update(item.Packing_ID!, { order: i + 1 });
+      await db.packing.update(item.__dexieid!, { order: i + 1 });
     }
     setItems(newOrder);
   };
@@ -234,13 +236,13 @@ export const PackingChecklist = ({ tripId }: Props) => {
         onDragEnd={onDragEnd}
       >
         <SortableContext
-          items={items.map((i) => i.Packing_ID!)}
+          items={items.map((i) => i.__dexieid!)}
           strategy={verticalListSortingStrategy}
         >
           <div className={styles.packingList}>
             {items.map((item) => (
               <SortableItem
-                key={item.Packing_ID}
+                key={item.__dexieid}
                 item={item}
                 onToggle={toggle}
                 onDelete={del}

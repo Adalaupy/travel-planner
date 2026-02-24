@@ -1,7 +1,8 @@
 .header {
-  background: #ffffff;
-  border-bottom: 1px solid #e5e7eb;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  background: rgba(11, 15, 20, 0.92);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 14px 24px rgba(2, 6, 23, 0.45);
+  backdrop-filter: blur(10px);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -19,7 +20,7 @@
 .logo {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--text);
   text-decoration: none;
   display: flex;
   align-items: center;
@@ -27,7 +28,7 @@
 }
 
 .logo:hover {
-  color: #3b82f6;
+  color: var(--accent);
 }
 
 .nav {
@@ -36,44 +37,45 @@
 }
 
 .navLink {
-  color: #6b7280;
+  color: var(--muted);
   text-decoration: none;
   font-weight: 500;
   font-size: 0.95rem;
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: 999px;
   transition: all 0.2s;
 }
 
 .navLink:hover {
-  color: #3b82f6;
-  background: #eff6ff;
+  color: var(--accent);
+  background: rgba(34, 211, 238, 0.14);
 }
 
 .navLinkActive {
-  color: #3b82f6;
+  color: var(--accent);
   text-decoration: none;
   font-weight: 600;
   font-size: 0.95rem;
   padding: 8px 12px;
-  border-radius: 6px;
-  background: #eff6ff;
+  border-radius: 999px;
+  background: rgba(34, 211, 238, 0.18);
 }
 
 @media (max-width: 640px) {
   .container {
     padding: 12px 16px;
   }
-  
+
   .logo {
     font-size: 1.25rem;
   }
-  
+
   .nav {
     gap: 12px;
   }
-  
-  .navLink, .navLinkActive {
+
+  .navLink,
+  .navLinkActive {
     font-size: 0.9rem;
     padding: 6px 10px;
   }

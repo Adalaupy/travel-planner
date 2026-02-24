@@ -1,46 +1,80 @@
 import { db } from './db'
+import { importTripsToSupabase } from './syncService'
+
+function stripDexieId<T extends Record<string, any>>(item: T): Omit<T, '__dexieid' | '__dexieId'> {
+  const { __dexieid, __dexieId, ...rest } = item
+  return rest
+}
 
 export async function exportAllData(): Promise<string> {
   const data = {
     version: 2, // DB schema version
     exportDate: new Date().toISOString(),
-    users: await db.users.toArray(),
-    trips: await db.trips.toArray(),
-    places: await db.places.toArray(),
-    itinerary: await db.itinerary.toArray(),
-    packing: await db.packing.toArray(),
-    travelers: await db.travelers.toArray(),
-    expenses: await db.expenses.toArray()
+    users: (await db.users.toArray()).map(stripDexieId),
+    trips: (await db.trips.toArray()).map(stripDexieId),
+    places: (await db.places.toArray()).map(stripDexieId),
+    itinerary: (await db.itinerary.toArray()).map(stripDexieId),
+    packing: (await db.packing.toArray()).map(stripDexieId),
+    travelers: (await db.travelers.toArray()).map(stripDexieId),
+    expenses: (await db.expenses.toArray()).map(stripDexieId)
   }
   return JSON.stringify(data, null, 2)
 }
 
-export async function exportTripsData(tripIds: number[]): Promise<string> {
-  const trips = await db.trips.bulkGet(tripIds)
-  const tripsData = trips.filter((t): t is typeof t & {} => t !== undefined)
-  
-  const tripsExport = await Promise.all(
-    tripsData.map(async (trip) => ({
-      trip,
-      places: await db.places.where('Trip_ID').equals(trip.Trip_ID!).toArray(),
-      itinerary: await db.itinerary.where('Trip_ID').equals(trip.Trip_ID!).toArray(),
-      packing: await db.packing.where('Trip_ID').equals(trip.Trip_ID!).toArray(),
-      travelers: await db.travelers.where('Trip_ID').equals(trip.Trip_ID!).toArray(),
-      expenses: await db.expenses.where('Trip_ID').equals(trip.Trip_ID!).toArray()
-    }))
+export async function exportTripsData(tripIds: Array<string | number>): Promise<string> {
+  const numericIds = tripIds
+    .map((id) => (typeof id === 'number' ? id : Number(id)))
+    .filter((id) => !Number.isNaN(id))
+
+  const stringIds = tripIds
+    .map((id) => String(id))
+    .filter((id) => id && Number.isNaN(Number(id)))
+
+  const numericTrips = numericIds.length ? await db.trips.bulkGet(numericIds) : []
+  const stringTrips = stringIds.length
+    ? await db.trips.where('trip_id').anyOf(stringIds).toArray()
+    : []
+
+  const tripsData = [...numericTrips, ...stringTrips].filter(
+    (t): t is typeof t & {} => t !== undefined
   )
-  
+
+  const tripsExport = await Promise.all(
+    tripsData.map(async (trip) => {
+      const tripKey = trip.trip_id ?? (trip.__dexieid ? String(trip.__dexieid) : undefined)
+      const legacyKey = trip.__dexieid ? String(trip.__dexieid) : undefined
+      const keys = [tripKey, legacyKey].filter((v): v is string => !!v)
+      const uniqueKeys = Array.from(new Set(keys))
+
+      const [places, itinerary, packing, travelers, expenses] = await Promise.all([
+        uniqueKeys.length ? db.places.where('trip_id').anyOf(uniqueKeys).toArray() : [],
+        uniqueKeys.length ? db.itinerary.where('trip_id').anyOf(uniqueKeys).toArray() : [],
+        uniqueKeys.length ? db.packing.where('trip_id').anyOf(uniqueKeys).toArray() : [],
+        uniqueKeys.length ? db.travelers.where('trip_id').anyOf(uniqueKeys).toArray() : [],
+        uniqueKeys.length ? db.expenses.where('trip_id').anyOf(uniqueKeys).toArray() : [],
+      ])
+      return {
+        trip: stripDexieId(trip),
+        places: places.map(stripDexieId),
+        itinerary: itinerary.map(stripDexieId),
+        packing: packing.map(stripDexieId),
+        travelers: travelers.map(stripDexieId),
+        expenses: expenses.map(stripDexieId)
+      }
+    })
+  )
+
   return JSON.stringify(tripsExport, null, 2)
 }
 
 export async function importAllData(jsonString: string): Promise<{ success: boolean; error?: string }> {
   try {
     const data = JSON.parse(jsonString)
-    
+
     if (!data.version || typeof data.version !== 'number') {
       return { success: false, error: 'Invalid backup file: missing version' }
     }
-    
+
     // Clear existing data
     await db.users.clear()
     await db.trips.clear()
@@ -49,21 +83,21 @@ export async function importAllData(jsonString: string): Promise<{ success: bool
     await db.packing.clear()
     await db.travelers.clear()
     await db.expenses.clear()
-    
+
     // Import data
-    if (data.users && Array.isArray(data.users)) await db.users.bulkAdd(data.users)
-    if (data.trips && Array.isArray(data.trips)) await db.trips.bulkAdd(data.trips)
-    if (data.places && Array.isArray(data.places)) await db.places.bulkAdd(data.places)
-    if (data.itinerary && Array.isArray(data.itinerary)) await db.itinerary.bulkAdd(data.itinerary)
-    if (data.packing && Array.isArray(data.packing)) await db.packing.bulkAdd(data.packing)
-    if (data.travelers && Array.isArray(data.travelers)) await db.travelers.bulkAdd(data.travelers)
-    if (data.expenses && Array.isArray(data.expenses)) await db.expenses.bulkAdd(data.expenses)
-    
+    if (data.users && Array.isArray(data.users)) await db.users.bulkAdd(data.users.map(stripDexieId))
+    if (data.trips && Array.isArray(data.trips)) await db.trips.bulkAdd(data.trips.map(stripDexieId))
+    if (data.places && Array.isArray(data.places)) await db.places.bulkAdd(data.places.map(stripDexieId))
+    if (data.itinerary && Array.isArray(data.itinerary)) await db.itinerary.bulkAdd(data.itinerary.map(stripDexieId))
+    if (data.packing && Array.isArray(data.packing)) await db.packing.bulkAdd(data.packing.map(stripDexieId))
+    if (data.travelers && Array.isArray(data.travelers)) await db.travelers.bulkAdd(data.travelers.map(stripDexieId))
+    if (data.expenses && Array.isArray(data.expenses)) await db.expenses.bulkAdd(data.expenses.map(stripDexieId))
+
     return { success: true }
   } catch (error) {
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error occurred' 
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred'
     }
   }
 }
@@ -71,92 +105,98 @@ export async function importAllData(jsonString: string): Promise<{ success: bool
 export async function importTripsData(jsonString: string): Promise<{ success: boolean; error?: string }> {
   try {
     let tripsData = JSON.parse(jsonString)
-    
+
     // Handle both array format and single object
     if (!Array.isArray(tripsData)) {
       tripsData = [tripsData]
     }
-    
+
     if (!Array.isArray(tripsData) || tripsData.length === 0) {
       return { success: false, error: 'Invalid backup file: expected array of trip data' }
     }
-    
+
     // Get next available user ID or create a default user
-    let defaultUserId = 1
+    let defaultUserId: string | null | undefined = undefined
     const users = await db.users.toArray()
     if (users.length > 0) {
-      defaultUserId = Math.max(...users.map(u => u.User_ID || 0)) + 1
+      defaultUserId = users[0].user_id ?? undefined
     }
-    
+
+    const supabasePayloads: any[] = []
+
     // Import each trip with its related data
     for (const tripData of tripsData) {
       const trip = tripData.trip
       if (!trip) {
         return { success: false, error: 'Invalid trip data: missing trip object' }
       }
-      
+
       // Remove old IDs to let database auto-generate new ones
-      const newTrip = { ...trip, Trip_ID: undefined, User_ID: defaultUserId }
-      const newTripId = await db.trips.add(newTrip)
-      
+      const newTrip = { ...stripDexieId(trip), trip_id: undefined, user_id: defaultUserId }
+      const newTripDexieId = await db.trips.add(newTrip)
+      const newTripId = String(newTripDexieId)
+      await db.trips.update(newTripDexieId, { trip_id: newTripId })
+      supabasePayloads.push({ ...tripData, local_trip_id: newTripId })
+
       // Create ID mapping maps
-      const placeIdMap = new Map<number, number>()
-      const travelerIdMap = new Map<number, number>()
+      const placeIdMap = new Map<string, string>()
+      const travelerIdMap = new Map<string, number>()
 
       // Import places and build ID map
       if (tripData.places && Array.isArray(tripData.places)) {
         for (const p of tripData.places) {
-          const oldId = p.Place_ID
-          const newPlace = { ...p, Place_ID: undefined, Trip_ID: newTripId }
-          const newId = await db.places.add(newPlace)
+          const oldId = p.place_id
+          const newPlace = { ...stripDexieId(p), place_id: undefined, trip_id: newTripId }
+          const newDexieId = await db.places.add(newPlace)
+          await db.places.update(newDexieId, { place_id: String(newDexieId) })
           if (oldId !== undefined) {
-            placeIdMap.set(oldId, newId)
+            placeIdMap.set(String(oldId), String(newDexieId))
           }
         }
       }
-      
+
       // Import travelers and build ID map
       if (tripData.travelers && Array.isArray(tripData.travelers)) {
         for (const t of tripData.travelers) {
-          const oldId = t.Traveler_ID
-          const newTraveler = { ...t, Traveler_ID: undefined, Trip_ID: newTripId }
-          const newId = await db.travelers.add(newTraveler)
+          const oldId = t.traveler_id
+          const newTraveler = { ...stripDexieId(t), traveler_id: undefined, trip_id: newTripId }
+          const newDexieId = await db.travelers.add(newTraveler)
+          await db.travelers.update(newDexieId, { traveler_id: String(newDexieId) })
           if (oldId !== undefined) {
-            travelerIdMap.set(oldId, newId)
+            travelerIdMap.set(String(oldId), newDexieId)
           }
         }
       }
-      
+
       // Import itinerary with remapped place IDs
       if (tripData.itinerary && Array.isArray(tripData.itinerary)) {
         const newItinerary = tripData.itinerary.map((i: any) => {
-          const newItem = { ...i, Itinerary_ID: undefined, Trip_ID: newTripId }
-          // Remap place_ID if it exists
-          if (i.place_ID !== undefined && placeIdMap.has(i.place_ID)) {
-            newItem.place_ID = placeIdMap.get(i.place_ID)
+          const newItem = { ...stripDexieId(i), itinerary_id: undefined, trip_id: newTripId }
+          const oldPlaceId = i.place_id
+          if (oldPlaceId !== undefined && placeIdMap.has(String(oldPlaceId))) {
+            newItem.place_id = placeIdMap.get(String(oldPlaceId))
           }
           return newItem
         })
         await db.itinerary.bulkAdd(newItinerary)
       }
-      
+
       if (tripData.packing && Array.isArray(tripData.packing)) {
-        const newPacking = tripData.packing.map((p: any) => ({ ...p, Packing_ID: undefined, Trip_ID: newTripId }))
+        const newPacking = tripData.packing.map((p: any) => ({ ...stripDexieId(p), packing_id: undefined, trip_id: newTripId }))
         await db.packing.bulkAdd(newPacking)
       }
-      
+
       // Import expenses with remapped traveler IDs
       if (tripData.expenses && Array.isArray(tripData.expenses)) {
         const newExpenses = tripData.expenses.map((e: any) => {
-          const newExpense = { ...e, Expense_ID: undefined, Trip_ID: newTripId }
-          // Remap payer_ID
-          if (e.payer_ID !== undefined && travelerIdMap.has(e.payer_ID)) {
-            newExpense.payer_ID = travelerIdMap.get(e.payer_ID)
+          const newExpense = { ...stripDexieId(e), expense_id: undefined, trip_id: newTripId }
+          const oldPayerId = e.payer_id
+          if (oldPayerId !== undefined && travelerIdMap.has(String(oldPayerId))) {
+            newExpense.payer_id = travelerIdMap.get(String(oldPayerId))
           }
-          // Remap chargedTo array
-          if (Array.isArray(e.chargedTo)) {
-            newExpense.chargedTo = e.chargedTo
-              .map((oldTravelerId: number) => travelerIdMap.get(oldTravelerId))
+          if (Array.isArray(e.charged_to)) {
+            newExpense.charged_to = e.charged_to
+              .map((oldTravelerId: number) => travelerIdMap.get(String(oldTravelerId)))
               .filter((id: number | undefined): id is number => id !== undefined)
           }
           return newExpense
@@ -164,12 +204,27 @@ export async function importTripsData(jsonString: string): Promise<{ success: bo
         await db.expenses.bulkAdd(newExpenses)
       }
     }
-    
+
+    // Sync imported trips to Supabase (including related items)
+    const syncResults = await importTripsToSupabase(supabasePayloads, { includeRelated: true })
+    for (const result of syncResults) {
+      if (!result.localTripId || !result.supaTripId) continue
+      await db.trips.where('trip_id').equals(result.localTripId).modify({
+        trip_id: result.supaTripId,
+        issync: true,
+      })
+      await db.places.where('trip_id').equals(result.localTripId).modify({ trip_id: result.supaTripId })
+      await db.itinerary.where('trip_id').equals(result.localTripId).modify({ trip_id: result.supaTripId })
+      await db.packing.where('trip_id').equals(result.localTripId).modify({ trip_id: result.supaTripId })
+      await db.travelers.where('trip_id').equals(result.localTripId).modify({ trip_id: result.supaTripId })
+      await db.expenses.where('trip_id').equals(result.localTripId).modify({ trip_id: result.supaTripId })
+    }
+
     return { success: true }
   } catch (error) {
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error occurred' 
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred'
     }
   }
 }

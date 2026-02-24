@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { db, TravelerItem } from "../lib/db";
+import { useTrip } from "../context/TripContext";
+import { TravelerItem } from "../lib/db";
+import { getTravelers, addTraveler, deleteTraveler } from "../lib/syncService";
 import styles from "../styles/components.module.css";
 import {
   FaUser,
@@ -23,7 +25,7 @@ import {
 
 } from "react-icons/fa";
 
-type Props = { tripId: number };
+type Props = { tripId?: number };
 
 const REUSABLE_ICON_ID = "FaUserCircle";
 
@@ -54,7 +56,9 @@ const ICONS = [
 
 ];
 
-export const TravelersList = ({ tripId }: Props) => {
+export const TravelersList = ({ tripId }: Props = {}) => {
+  const { trip } = useTrip();
+  const actualTripId = trip?.trip_id;
   const [items, setItems] = useState<TravelerItem[]>([]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -73,14 +77,14 @@ export const TravelersList = ({ tripId }: Props) => {
   useEffect(() => {
     let mounted = true;
     const load = async () => {
-      const data = await db.travelers.where("Trip_ID").equals(tripId).toArray();
+      const data = await getTravelers(actualTripId || null);
       if (mounted) setItems(data);
     };
     load();
     return () => {
       mounted = false;
     };
-  }, [tripId]);
+  }, [actualTripId]);
 
   // Auto-select first available icon when travelers change
   useEffect(() => {
@@ -94,35 +98,37 @@ export const TravelersList = ({ tripId }: Props) => {
     }
   }, [items, icon]);
 
-  const addTraveler = async () => {
+  const addTravelerHandler = async () => {
     if (!name.trim()) return;
     // prevent adding if icon is already used (except for reusable icon)
     if (icon !== REUSABLE_ICON_ID && items.some((t) => t.icon === icon)) {
       alert("Icon already used by another traveler. Choose a different icon.");
       return;
     }
-    const id = await db.travelers.add({
-      Trip_ID: tripId,
+    const t = await addTraveler(actualTripId || null, {
       name: name.trim(),
       email: email.trim(),
       icon,
     });
-    const t = await db.travelers.get(id);
-    setItems((prev) => [...prev, t as TravelerItem]);
-    setName("");
-    setEmail("");
-    try {
-      localStorage.setItem("travelers:lastIcon", icon);
-    } catch (e) {}
-    // Auto-select next available icon (or default to reusable if all taken)
-    const usedAfterAdd = new Set([...items.map((i) => i.icon), icon]);
-    const next = ICONS.find((ic) => !usedAfterAdd.has(ic.id) || ic.reusable);
-    if (next) setIcon(next.id);
+    if (t) {
+      setItems((prev) => [...prev, t]);
+      setName("");
+      setEmail("");
+      try {
+        localStorage.setItem("travelers:lastIcon", icon);
+      } catch (e) {}
+      // Auto-select next available icon (or default to reusable if all taken)
+      const usedAfterAdd = new Set([...items.map((i) => i.icon), icon]);
+      const next = ICONS.find((ic) => !usedAfterAdd.has(ic.id) || ic.reusable);
+      if (next) setIcon(next.id);
+    }
   };
 
-  const removeTraveler = async (id: number) => {
-    await db.travelers.delete(id);
-    setItems((prev) => prev.filter((p) => p.Traveler_ID !== id));
+  const removeTravelerHandler = async (id: number) => {
+    const success = await deleteTraveler(actualTripId || null, id);
+    if (success) {
+      setItems((prev) => prev.filter((p) => p.__dexieid !== id));
+    }
   };
 
   return (
@@ -150,7 +156,7 @@ export const TravelersList = ({ tripId }: Props) => {
             return <Comp size={20} color="#4d00f4" />;
           })()}
         </button>
-        <button onClick={addTraveler}>Add</button>
+        <button onClick={addTravelerHandler}>Add</button>
       </div>
 
       {showIconPicker && (
@@ -201,7 +207,7 @@ export const TravelersList = ({ tripId }: Props) => {
 
       <ul className={styles.travelersList}>
         {items.map((t) => (
-          <li key={t.Traveler_ID} className={styles.travelerItem}>
+          <li key={t.__dexieid} className={styles.travelerItem}>
             <div className={styles.travelerIcon}>
               {(() => {
                 const Comp = ICONS.find((i) => i.id === t.icon)?.Comp || FaUser;
@@ -214,7 +220,7 @@ export const TravelersList = ({ tripId }: Props) => {
             </div>
             <button
               className={styles.deleteBtn}
-              onClick={() => removeTraveler(t.Traveler_ID!)}
+              onClick={() => removeTravelerHandler(t.__dexieid!)}
             >
               Remove
             </button>

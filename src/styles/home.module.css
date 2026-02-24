@@ -7,10 +7,12 @@
 .hero {
   text-align: center;
   padding: 60px 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 16px;
-  color: white;
+  background: radial-gradient(120% 120% at 10% 0%, #1f2937 0%, #0b0f14 60%, #0f1623 100%);
+  border-radius: 18px;
+  color: #e5e7eb;
   margin-bottom: 60px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
 }
 
 .title {
@@ -23,28 +25,29 @@
 .subtitle {
   font-size: 1.25rem;
   margin: 0 0 32px;
-  opacity: 0.95;
+  opacity: 0.9;
   max-width: 600px;
   margin-left: auto;
   margin-right: auto;
+  color: #cbd5f5;
 }
 
 .cta {
   display: inline-block;
   padding: 14px 32px;
-  background: white;
-  color: #667eea;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #04121a;
   text-decoration: none;
-  border-radius: 8px;
-  font-weight: 600;
+  border-radius: 999px;
+  font-weight: 700;
   font-size: 1.1rem;
   transition: transform 0.2s, box-shadow 0.2s;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 14px 28px rgba(2, 6, 23, 0.4);
 }
 
 .cta:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 18px 36px rgba(2, 6, 23, 0.5);
 }
 
 .features {
@@ -57,15 +60,16 @@
 .feature {
   text-align: center;
   padding: 32px 24px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: var(--panel);
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  box-shadow: 0 12px 22px rgba(2, 6, 23, 0.45);
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .feature:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 18px 32px rgba(2, 6, 23, 0.55);
 }
 
 .featureIcon {
@@ -76,12 +80,12 @@
 .feature h3 {
   font-size: 1.25rem;
   margin: 0 0 12px;
-  color: #1f2937;
+  color: var(--text);
 }
 
 .feature p {
   margin: 0;
-  color: #6b7280;
+  color: var(--muted);
   font-size: 0.95rem;
   line-height: 1.5;
 }
@@ -90,20 +94,20 @@
   .main {
     padding: 20px 16px;
   }
-  
+
   .hero {
     padding: 40px 20px;
     margin-bottom: 40px;
   }
-  
+
   .title {
     font-size: 2rem;
   }
-  
+
   .subtitle {
     font-size: 1rem;
   }
-  
+
   .features {
     grid-template-columns: 1fr;
     gap: 24px;
