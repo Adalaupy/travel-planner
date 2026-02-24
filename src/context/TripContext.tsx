@@ -10,7 +10,7 @@ type TripContextValue = {
 
 const TripContext = createContext<TripContextValue | undefined>(undefined)
 
-export const TripProvider: React.FC<{ slug: string; children: React.ReactNode }> = ({ slug, children }) => {
+export const TripProvider = ({ slug, children }: { slug: string; children: React.ReactNode }) => {
   const [trip, setTrip] = useState<TripItem | null | undefined>(undefined)
 
   useEffect(() => {

@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { db, ExpenseItem, TravelerItem } from "../lib/db";
 import styles from "../styles/components.module.css";
 
 type Props = { tripId: number };
 
-export const ExpensesManager: React.FC<Props> = ({ tripId }) => {
+export const ExpensesManager = ({ tripId }: Props) => {
   const [expenses, setExpenses] = useState<ExpenseItem[]>([]);
   const [travelers, setTravelers] = useState<TravelerItem[]>([]);
   const [title, setTitle] = useState("");

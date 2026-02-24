@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   DndContext,
   closestCenter,
@@ -18,7 +18,7 @@ import styles from "../styles/components.module.css";
 
 type Props = { tripId: number };
 
-export const Itinerary: React.FC<Props> = ({ tripId }) => {
+export const Itinerary = ({ tripId }: Props) => {
   // Apply the selected date range to the trip
   const applyDateRange = async () => {
     setTripStartDate(draftStartDate);
@@ -422,7 +422,7 @@ function SortableItineraryItem({
     transition,
     isDragging,
   } = useSortable({ id: item.Itinerary_ID! });
-  const style: React.CSSProperties = {
+  const style = {
     transform: transform ? CSS.Transform.toString(transform) : undefined,
     transition,
     zIndex: isDragging ? 10 : undefined,

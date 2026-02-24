@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { db, TravelerItem } from "../lib/db";
 import styles from "../styles/components.module.css";
 import {
@@ -40,23 +40,21 @@ const ICONS = [
   { id: "FaFemale", Comp: FaFemale, reusable: false },
   { id: "FaMale", Comp: FaMale,  reusable: false },
   { id: "FaChild", Comp: FaChild,reusable: false },
-  { id: "FaRegGrinBeam" , Comp:   FaRegGrinBeam,  reusable: false},
-  { id: "FaRegGrinAlt" , Comp:   FaRegGrinAlt,reusable: false},
-  { id: "FaRegGrinSquint" , Comp:   FaRegGrinSquint,reusable: false},
-  { id: "FaRegLaughWink" , Comp:   FaRegLaughWink,reusable: false},
-  { id: "FaRegKiss" , Comp:   FaRegKiss,reusable: false},
-  { id: "FaSmileWink" , Comp:   FaSmileWink,reusable: false},
-  { id: "FaRegGrinTongueSquint" , Comp:   FaRegGrinTongueSquint,reusable: false},
-  { id: "FaRegDizzy" , Comp:   FaRegDizzy,reusable: false},
+  { id: "FaRegGrinBeam", Comp: FaRegGrinBeam,  reusable: false},
+  { id: "FaRegGrinAlt", Comp: FaRegGrinAlt,reusable: false},
+  { id: "FaRegGrinSquint", Comp:  FaRegGrinSquint,reusable: false},
+  { id: "FaRegLaughWink" , Comp: FaRegLaughWink,reusable: false},
+  { id: "FaRegKiss" , Comp: FaRegKiss,reusable: false},
+  { id: "FaSmileWink", Comp: FaSmileWink,reusable: false},
+  { id: "FaRegGrinTongueSquint", Comp:   FaRegGrinTongueSquint,reusable: false},
+  { id: "FaRegDizzy", Comp: FaRegDizzy,reusable: false},
   { id: "FaRegGrinTears " , Comp:   FaRegGrinTears ,reusable: false},
-  { id: "FaRegGrin" , Comp:   FaRegGrin,reusable: false},
-  { id: "FaRegGrimace" , Comp:   FaRegGrimace,reusable: false},
-
-
+  { id: "FaRegGrin", Comp: FaRegGrin,reusable: false},
+  { id: "FaRegGrimace", Comp: FaRegGrimace,reusable: false},
 
 ];
 
-export const TravelersList: React.FC<Props> = ({ tripId }) => {
+export const TravelersList = ({ tripId }: Props) => {
   const [items, setItems] = useState<TravelerItem[]>([]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");

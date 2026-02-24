@@ -1,4 +1,4 @@
-import React from "react";
+import { useEffect } from "react";
 import { useTrip } from "../context/TripContext";
 import PackingChecklist from "./PackingChecklist";
 import TravelersList from "./TravelersList";
@@ -24,7 +24,7 @@ interface TripDetailTabsProps {
   styles: Record<string, string>;
 }
 
-const TripDetailTabs: React.FC<TripDetailTabsProps> = ({
+const TripDetailTabs = ({
   numericId,
   tripTitle,
   setTripTitle,
@@ -36,9 +36,9 @@ const TripDetailTabs: React.FC<TripDetailTabsProps> = ({
   setActiveTab,
   tabList,
   styles,
-}) => {
+}: TripDetailTabsProps) => {
   const tripCtx = useTrip();
-  React.useEffect(() => {
+  useEffect(() => {
     if (
       tripCtx.trip &&
       tripCtx.trip.title &&

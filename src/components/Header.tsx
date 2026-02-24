@@ -1,9 +1,9 @@
-import React from 'react'
+
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import styles from '../styles/header.module.css'
 
-export const Header: React.FC = () => {
+export const Header = () => {
   const router = useRouter()
   const isHome = router.pathname === '/'
   const isMyTrips = router.pathname === '/my-trips'

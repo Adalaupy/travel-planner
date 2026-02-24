@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   DndContext,
   closestCenter,
@@ -17,7 +17,7 @@ import styles from "../styles/components.module.css";
 
 type Props = { tripId: number };
 
-export const PackingChecklist: React.FC<Props> = ({ tripId }) => {
+export const PackingChecklist = ({ tripId }: Props) => {
   const [items, setItems] = useState<PackingItem[]>([]);
   const [text, setText] = useState("");
   const [lastColor, setLastColor] = useState("#ffffff");
@@ -51,7 +51,7 @@ export const PackingChecklist: React.FC<Props> = ({ tripId }) => {
       return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     };
 
-    const style: React.CSSProperties = {
+    const style = {
       transform: transform ? CSS.Transform.toString(transform) : undefined,
       transition,
       zIndex: isDragging ? 10 : undefined,

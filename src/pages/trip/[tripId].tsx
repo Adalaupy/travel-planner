@@ -1,13 +1,9 @@
 import { useRouter } from "next/router";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import TripDetailTabs from "../../components/TripDetailTabs";
 import { TripProvider } from "../../context/TripContext";
 import { getOrCreateTripBySlug } from "../../lib/tripService";
-import PackingChecklist from "../../components/PackingChecklist";
-import TravelersList from "../../components/TravelersList";
-import ExpensesManager from "../../components/ExpensesManager";
-import Itinerary from "../../components/Itinerary";
 import styles from "../../styles/tripDetail.module.css";
 
 export default function TripDetailPage() {
