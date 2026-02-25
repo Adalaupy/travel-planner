@@ -27,6 +27,9 @@ export const PackingChecklist = ({ tripId: _ }: Props = {}) => {
   const [lastColor, setLastColor] = useState("#ffffff");
   const sensors = useSensors(useSensor(PointerSensor));
 
+  // Helper to get unique ID: use packing_id if available (Supabase), fallback to __dexieid (offline)
+  const getItemId = (item: PackingItem): string | number => item.packing_id || item.__dexieid || 0;
+
   function SortableItem({
     item,
     onToggle,
@@ -34,10 +37,11 @@ export const PackingChecklist = ({ tripId: _ }: Props = {}) => {
     onColorChange,
   }: {
     item: PackingItem;
-    onToggle: (id: number) => void;
-    onDelete: (id: number) => void;
-    onColorChange: (id: number, color: string) => void;
+    onToggle: (id: string | number) => void;
+    onDelete: (id: string | number) => void;
+    onColorChange: (id: string | number, color: string) => void;
   }) {
+    const itemId = getItemId(item);
     const {
       attributes,
       listeners,
@@ -45,7 +49,7 @@ export const PackingChecklist = ({ tripId: _ }: Props = {}) => {
       transform,
       transition,
       isDragging,
-    } = useSortable({ id: item.__dexieid || 0 });
+    } = useSortable({ id: itemId });
 
     // Convert hex color to rgba with transparency
     const hexToRgba = (hex: string, alpha: number = 0.2) => {
@@ -60,23 +64,23 @@ export const PackingChecklist = ({ tripId: _ }: Props = {}) => {
       transition,
       zIndex: isDragging ? 10 : undefined,
       boxShadow: isDragging ? "0 8px 24px rgba(59,130,246,0.15)" : undefined,
-      backgroundColor: hexToRgba(item.color || "#ffffff", 0.2),
+      backgroundColor: hexToRgba(item.color || "#ffffff", 0.3),
     };
 
     const handleToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
       e.stopPropagation();
-      onToggle(item.__dexieid || 0);
+      onToggle(itemId);
     };
 
     const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       e.stopPropagation();
-      onColorChange(item.__dexieid || 0, e.target.value);
+      onColorChange(itemId, e.target.value);
     };
 
     const handleDelete = (e: React.MouseEvent) => {
       e.stopPropagation();
       e.preventDefault();
-      onDelete(item.__dexieid || 0);
+      onDelete(itemId);
     };
 
     const handlePointerDown = (e: React.PointerEvent) => {
@@ -105,6 +109,7 @@ export const PackingChecklist = ({ tripId: _ }: Props = {}) => {
           onChange={handleColorChange}
           onPointerDown={handlePointerDown}
         />
+
         <button
           className={styles.deleteBtn}
           onClick={handleDelete}
@@ -153,28 +158,38 @@ export const PackingChecklist = ({ tripId: _ }: Props = {}) => {
     }
   };
 
-  const toggle = async (id: number) => {
-    const it = items.find((p) => p.__dexieid === id);
+  const toggle = async (id: string | number) => {
+    const it = items.find((p) => getItemId(p) === id);
     if (!it) return;
-    await updatePackingItem(tripId, id, { completed: !it.completed });
+    const itemId = it.__dexieid || it.packing_id || undefined;
+    if (!itemId) return;
+    await updatePackingItem(tripId, itemId, { completed: !it.completed });
     setItems((prev) =>
       prev.map((p) =>
-        p.__dexieid === id ? { ...p, completed: !p.completed } : p,
+        getItemId(p) === id ? { ...p, completed: !p.completed } : p,
       ),
     );
   };
 
-  const del = async (id: number) => {
-    const success = await deletePackingItem(tripId, id);
+  const del = async (id: string | number) => {
+    const it = items.find((p) => getItemId(p) === id);
+    if (!it) return;
+    const itemId = it.__dexieid || it.packing_id || undefined;
+    if (!itemId) return;
+    const success = await deletePackingItem(tripId, itemId);
     if (success) {
-      setItems((prev) => prev.filter((p) => p.__dexieid !== id));
+      setItems((prev) => prev.filter((p) => getItemId(p) !== id));
     }
   };
 
-  const changeColor = async (id: number, color: string) => {
-    await updatePackingItem(tripId, id, { color });
+  const changeColor = async (id: string | number, color: string) => {
+    const it = items.find((p) => getItemId(p) === id);
+    if (!it) return;
+    const itemId = it.__dexieid || it.packing_id || undefined;
+    if (!itemId) return;
+    await updatePackingItem(tripId, itemId, { color });
     setItems((prev) =>
-      prev.map((p) => (p.__dexieid === id ? { ...p, color } : p)),
+      prev.map((p) => (getItemId(p) === id ? { ...p, color } : p)),
     );
   };
 
@@ -188,13 +203,16 @@ export const PackingChecklist = ({ tripId: _ }: Props = {}) => {
   const onDragEnd = async (event: any) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
-    const oldIndex = items.findIndex((i) => i.__dexieid === active.id);
-    const newIndex = items.findIndex((i) => i.__dexieid === over.id);
+    const oldIndex = items.findIndex((i) => getItemId(i) === active.id);
+    const newIndex = items.findIndex((i) => getItemId(i) === over.id);
     const newOrder = arrayMoveLocal(items, oldIndex, newIndex);
     // update orders in DB
     for (let i = 0; i < newOrder.length; i++) {
       const item = newOrder[i];
-      await db.packing.update(item.__dexieid!, { order: i + 1 });
+      const dexieId = item.__dexieid;
+      if (dexieId) {
+        await db.packing.update(dexieId, { order: i + 1 });
+      }
     }
     setItems(newOrder);
   };
@@ -229,19 +247,22 @@ export const PackingChecklist = ({ tripId: _ }: Props = {}) => {
         onDragEnd={onDragEnd}
       >
         <SortableContext
-          items={items.map((i) => i.__dexieid!)}
+          items={items.map((i) => getItemId(i))}
           strategy={verticalListSortingStrategy}
         >
           <div className={styles.packingList}>
-            {items.map((item) => (
-              <SortableItem
-                key={item.__dexieid}
-                item={item}
-                onToggle={toggle}
-                onDelete={del}
-                onColorChange={changeColor}
-              />
-            ))}
+            {items.map((item) => {
+              const itemId = getItemId(item);
+              return (
+                <SortableItem
+                  key={itemId}
+                  item={item}
+                  onToggle={toggle}
+                  onDelete={del}
+                  onColorChange={changeColor}
+                />
+              );
+            })}
           </div>
         </SortableContext>
       </DndContext>

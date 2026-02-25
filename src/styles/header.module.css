@@ -1,11 +1,11 @@
 .header {
-  background: rgba(11, 15, 20, 0.92);
-  border-bottom: 1px solid var(--border);
-  box-shadow: 0 14px 24px rgba(2, 6, 23, 0.45);
-  backdrop-filter: blur(10px);
+  background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+  border-bottom: 2px solid #cbd5e1;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
   position: sticky;
   top: 0;
   z-index: 100;
+  backdrop-filter: blur(10px);
 }
 
 .container {
@@ -18,17 +18,22 @@
 }
 
 .logo {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: 700;
-  color: var(--text);
+  background: linear-gradient(135deg, #475569, #334155);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   text-decoration: none;
   display: flex;
   align-items: center;
   gap: 8px;
+  letter-spacing: -0.02em;
+  transition: transform 0.2s;
 }
 
 .logo:hover {
-  color: var(--accent);
+  transform: scale(1.05);
 }
 
 .nav {
@@ -42,23 +47,24 @@
   font-weight: 500;
   font-size: 0.95rem;
   padding: 8px 12px;
-  border-radius: 999px;
+  border-radius: 6px;
   transition: all 0.2s;
 }
 
 .navLink:hover {
   color: var(--accent);
-  background: rgba(34, 211, 238, 0.14);
+  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
 }
 
 .navLinkActive {
-  color: var(--accent);
+  color: #ffffff;
   text-decoration: none;
   font-weight: 600;
   font-size: 0.95rem;
   padding: 8px 12px;
-  border-radius: 999px;
-  background: rgba(34, 211, 238, 0.18);
+  border-radius: 6px;
+  background: linear-gradient(135deg, #cc51a7, #e086c5);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.2);
 }
 
 @media (max-width: 640px) {
@@ -67,7 +73,7 @@
   }
 
   .logo {
-    font-size: 1.25rem;
+    font-size: 1.2rem;
   }
 
   .nav {

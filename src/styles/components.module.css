@@ -1,45 +1,60 @@
 .packingContainer {
   max-width: 900px;
   margin: 16px auto;
-  padding: 12px;
-  background: var(--panel);
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  box-shadow: 0 18px 30px rgba(2, 6, 23, 0.55);
+  padding: 20px;
+  background: linear-gradient(to bottom, #ffffff, #f8fafc);
+  border-radius: 16px;
+  border: 2px solid #e2e8f0;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
 }
 
 .addRow {
   display: flex;
   gap: 25px;
-
   margin-bottom: 12px;
 }
 
 .addRow input {
-  padding: 8px;
+  padding: 10px 14px;
   background: var(--panel-2);
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.addRow input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--ring);
 }
 
 .addRow button {
-  padding: 8px 12px;
-  width: 90px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  color: #04121a;
+  padding: 10px 18px;
+  width: auto;
+  min-width: 90px;
+  background: linear-gradient(135deg, #64748b, #475569);
+  color: #ffffff;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-weight: 600;
-  box-shadow: 0 12px 22px rgba(2, 6, 23, 0.45);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+}
+
+.addRow button:hover {
+  background: linear-gradient(135deg, #475569, #334155);
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.25);
+  transform: translateY(-2px);
 }
 
 .defaultColorInput {
   width: 50px;
   height: 50px;
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: 50%;
-  box-shadow: 0 12px 18px rgba(2, 6, 23, 0.4);
+  box-shadow: var(--shadow);
   background: var(--panel-2);
   cursor: pointer;
   transition: border-color 0.2s, box-shadow 0.2s;
@@ -50,17 +65,17 @@
 .defaultColorInput:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 4px var(--ring);
+  box-shadow: 0 0 0 3px var(--ring);
 }
 
 .travelersContainer {
-  max-width: 900px;
+  max-width: 1100px;
   margin: 16px auto;
-  padding: 12px;
-  background: var(--panel);
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  box-shadow: 0 18px 30px rgba(2, 6, 23, 0.55);
+  padding: 20px;
+  background: linear-gradient(to bottom, #ffffff, #efd2fb);
+  border-radius: 16px;
+  border: 2px solid #7e8165;
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.1);
 }
 
 .addTravelerRow {
@@ -71,11 +86,19 @@
 
 .addTravelerRow input,
 .addTravelerRow select {
-  padding: 8px;
+  padding: 10px 14px;
   background: var(--panel-2);
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.addTravelerRow input:focus,
+.addTravelerRow select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--ring);
 }
 
 .travelersList {
@@ -91,21 +114,29 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px;
+  padding: 12px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--panel-2);
+  transition: box-shadow 0.2s;
+}
+
+.travelerItem:hover {
+  box-shadow: var(--shadow);
 }
 
 .travelerIcon {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(15, 23, 42, 0.6);
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
   border-radius: 50%;
   padding: 0;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
 }
 
 .travelerInfo {
@@ -134,10 +165,12 @@
   border-radius: 6px;
   cursor: pointer;
   padding: 0;
+  transition: background 0.2s, border-color 0.2s;
 }
 
 .iconTrigger:hover {
-  background: rgba(34, 211, 238, 0.12);
+  background: var(--bg-2);
+  border-color: var(--accent);
 }
 
 .modalOverlay {
@@ -146,7 +179,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(2, 6, 23, 0.7);
+  background: rgba(0, 0, 0, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -155,22 +188,24 @@
 
 .modalContent {
   background: var(--panel);
-  border-radius: 8px;
-  padding: 20px;
+  border-radius: 12px;
+  padding: 24px;
   max-width: 400px;
   width: 90%;
   border: 1px solid var(--border);
-  box-shadow: 0 18px 30px rgba(2, 6, 23, 0.55);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.12);
 }
 
 .modalContent h3 {
   margin: 0 0 16px;
+  font-size: 1.25rem;
+  font-weight: 700;
 }
 
 .iconGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
-  gap: 8px;
+  gap: 12px;
   margin-bottom: 16px;
 }
 
@@ -182,19 +217,22 @@
   justify-content: center;
   background: var(--panel-2);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   padding: 0;
-
+  font-size: 1.5rem;
+  transition: background 0.2s, border-color 0.2s, transform 0.1s;
 }
 
 .iconButton:hover {
-  background: rgba(34, 211, 238, 0.12);
+  background: var(--bg-2);
+  transform: scale(1.05);
 }
 
 .iconSelected {
   outline: 2px solid var(--accent);
-  background: rgba(34, 211, 238, 0.18);
+  background: rgba(0, 102, 204, 0.08);
+  border-color: var(--accent);
 }
 
 .iconDisabled {
@@ -204,23 +242,29 @@
 
 .iconReusable {
   border: 2px dashed #14b8a6;
-  background: rgba(20, 184, 166, 0.15);
+  background: rgba(20, 184, 166, 0.1);
 }
 
 .iconReusable:hover {
-  background: rgba(20, 184, 166, 0.22);
+  background: rgba(20, 184, 166, 0.15);
 }
 
 .closeBtn {
-  padding: 8px 16px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  color: #04121a;
+  padding: 10px 16px;
+  background: var(--accent);
+  color: #ffffff;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   width: 100%;
   font-weight: 600;
-  box-shadow: 0 12px 22px rgba(2, 6, 23, 0.45);
+  transition: background 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 102, 204, 0.12);
+}
+
+.closeBtn:hover {
+  background: var(--accent-2);
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.18);
 }
 
 .packingList {
@@ -232,28 +276,33 @@
 .packingItem {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px;
+  gap: 12px;
+  padding: 12px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--panel-2);
+  transition: box-shadow 0.2s;
+}
+
+.packingItem:hover {
+  box-shadow: var(--shadow);
 }
 
 .packingTitle {
   flex: 1;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text);
   letter-spacing: -0.01em;
-  font-size: 1.05rem;
+  font-size: 1rem;
 }
 
 .colorInput {
-  width: 28px;
-  height: 30px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--border);
+  border-radius: 6px;
   padding: 2px;
-  box-shadow: 0 10px 18px rgba(2, 6, 23, 0.4);
+  box-shadow: var(--shadow);
   background: var(--panel-2);
   cursor: pointer;
   transition: border-color 0.2s, box-shadow 0.2s;
@@ -266,45 +315,41 @@
 }
 
 .deleteBtn {
-  background: #ff6b6b;
+  background: #ef4444;
   color: #fff;
   border: none;
   padding: 8px 14px;
-  border-radius: 8px;
+  border-radius: 6px;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 0.95rem;
   cursor: pointer;
-  box-shadow: 0 12px 22px rgba(2, 6, 23, 0.45);
-  transition: background 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.12);
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
 }
 
 .deleteBtn:hover {
   background: #dc2626;
-  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.15);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.18);
+  transform: translateY(-1px);
 }
 
 .expensesContainer {
-  --ink: var(--text);
-  --muted: var(--muted);
-  --accent: var(--accent);
-  --accent-2: var(--accent-2);
-  --panel: var(--panel);
-  --edge: var(--border);
   max-width: 1020px;
   margin: 22px auto;
-  padding: 22px;
-  background: var(--panel);
+  padding: 24px;
+  background: linear-gradient(to bottom, #ffffff, #e2fff0);
   border-radius: 16px;
-  border: 1px solid var(--border);
-  box-shadow: 0 20px 40px rgba(2, 6, 23, 0.55);
-  font-family: "Space Grotesk", "Segoe UI", sans-serif;
+  border: 2px solid #3d4f43;
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.1);
+  font-family: inherit;
 }
 
 .expensesContainer h2 {
-  font-size: 1.6rem;
-  color: var(--ink);
+  font-size: 1.5rem;
+  color: var(--text);
   letter-spacing: -0.02em;
   margin-bottom: 12px;
+  font-weight: 800;
 }
 
 .addExpenseRow {
@@ -312,24 +357,22 @@
   gap: 16px;
   margin-bottom: 18px;
   flex-wrap: wrap;
-  background: var(--panel);
-  padding: 20px 18px;
-  border-radius: 14px;
-  border: 1px solid var(--edge);
-  box-shadow: 0 14px 26px rgba(2, 6, 23, 0.55);
-  backdrop-filter: blur(8px);
+  background: var(--panel-2);
+  padding: 18px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
 }
 
 .addExpenseRow input,
 .addExpenseRow select {
-  padding: 12px 14px;
-  border-radius: 12px;
+  padding: 10px 14px;
+  border-radius: 6px;
   border: 1px solid var(--border);
-  font-size: 0.98rem;
-  background: var(--panel-2);
+  font-size: 0.95rem;
+  background: var(--panel);
   color: var(--text);
-  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
-  box-shadow: 0 10px 18px rgba(2, 6, 23, 0.35);
+  transition: border-color 0.2s, box-shadow 0.2s;
   margin-bottom: 6px;
 }
 
@@ -341,37 +384,37 @@
 .addExpenseRow select:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.25);
-  transform: translateY(-1px);
+  box-shadow: 0 0 0 3px var(--ring);
 }
 
 .addExpenseRow button {
-  padding: 12px 18px;
-  border-radius: 12px;
+  padding: 10px 18px;
+  border-radius: 6px;
   border: none;
   font-weight: 700;
-  color: #f8fafc;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  box-shadow: 0 12px 22px rgba(2, 6, 23, 0.45);
-  transition: transform 0.2s, box-shadow 0.2s;
-  text-shadow: 0 2px 4px rgba(2, 6, 23, 0.75);
+  color: #ffffff;
+  background: var(--accent);
+  box-shadow: 0 2px 8px rgba(0, 102, 204, 0.12);
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
 }
 
 .addExpenseRow button:hover {
+  background: var(--accent-2);
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.18);
   transform: translateY(-1px);
-  box-shadow: 0 16px 26px rgba(2, 6, 23, 0.6);
 }
 
 .chargedToRow {
   margin-bottom: 0;
-  background: rgba(15, 23, 42, 0.65);
+  background: var(--bg-2);
   padding: 12px 14px;
-  border-radius: 14px;
-  border: 1px dashed rgba(148, 163, 184, 0.25);
-  box-shadow: inset 0 1px 0 rgba(15, 23, 42, 0.65);
+  border-radius: 8px;
+  border: 1px solid var(--border);
   display: flex;
   flex-wrap: wrap;
-
+  gap: 30px;
+  padding: 12px 8px;
+  width: 100%;
 }
 
 .chargedToRow label {
@@ -379,49 +422,56 @@
   display: block;
   margin-bottom: 4px;
   min-width: 120px;
-  color: var(--ink);
+  color: var(--text);
 }
 
 .checkboxLabel {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid var(--edge);
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: var(--panel);
+  border: 1px solid var(--border);
   font-size: 0.9rem;
-  color: var(--muted);
-  box-shadow: 0 10px 18px rgba(2, 6, 23, 0.45);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.checkboxLabel:hover {
+  border-color: var(--accent);
+  background: var(--bg-2);
 }
 
 .selectAllBtn {
-  padding: 8px 16px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  color: #f8fafc;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #10b981, #34d399);
+  color: #ffffff;
   border: none;
-  border-radius: 999px;
-  font-weight: 600;
-  font-size: 1rem;
+  border-radius: 20px;
+  font-weight: 400;
+  font-size: 0.95rem;
   cursor: pointer;
-  box-shadow: 0 12px 22px rgba(2, 6, 23, 0.45);
-  transition: background 0.2s, box-shadow 0.2s;
-  text-shadow: 0 2px 4px rgba(2, 6, 23, 0.75);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+  transition: all 0.2s ease;
+  margin-top: 50px;
+
 }
 
 .selectAllBtn:hover {
-  background: linear-gradient(135deg, #22d3ee, #7dd3fc);
-  box-shadow: 0 16px 26px rgba(2, 6, 23, 0.6);
+  background: linear-gradient(135deg, #059669, #10b981);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+  transform: translateY(-2px);
 }
 
 
 .chargedToList {
-  display: flex;
+  /* display: flex; */
   width: 100%;
-  gap: 8px;
-  flex-wrap: wrap;
+  padding-right: 20px;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
 }
 
 .expensesList {
@@ -437,11 +487,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 14px;
-  border: 1px solid var(--edge);
-  border-radius: 10px;
-  background: rgba(15, 23, 42, 0.55);
-  box-shadow: 0 12px 22px rgba(2, 6, 23, 0.45);
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel-2);
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.2s;
+}
+
+.expenseItem:hover {
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.1);
 }
 
 .expenseInfo {
@@ -451,7 +506,7 @@
 .expenseTitle {
   font-weight: 700;
   margin-bottom: 4px;
-  color: var(--ink);
+  color: var(--text);
   letter-spacing: -0.01em;
 }
 
@@ -463,12 +518,13 @@
 .balancesSection {
   margin-top: 20px;
   padding-top: 16px;
-  border-top: 2px solid var(--edge);
+  border-top: 2px solid var(--border);
 }
 
 .balancesSection h3 {
   margin: 0 0 12px;
-  color: var(--ink);
+  color: var(--text);
+  font-weight: 700;
 }
 
 .balancesList {
@@ -481,22 +537,23 @@
 }
 
 .balanceItem {
-  padding: 10px 12px;
-  background: rgba(15, 23, 42, 0.6);
-  border-radius: 10px;
-  border: 1px solid var(--edge);
-  box-shadow: 0 10px 18px rgba(2, 6, 23, 0.45);
+  padding: 12px 14px;
+  background: var(--bg-2);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .balanceName {
-  font-weight: 600;
+  font-weight: 700;
+  color: var(--text);
 }
 
 .balanceDetails {
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: var(--muted);
   display: flex;
 }
@@ -504,12 +561,13 @@
 .settlementsSection {
   margin-top: 20px;
   padding-top: 16px;
-  border-top: 2px solid var(--edge);
+  border-top: 2px solid var(--border);
 }
 
 .settlementsSection h3 {
   margin: 0 0 12px;
-  color: var(--accent);
+  color: var(--text);
+  font-weight: 700;
 }
 
 .settlementsList {
@@ -522,150 +580,181 @@
 }
 
 .settlementItem {
-  padding: 12px 14px;
-  background: rgba(34, 211, 238, 0.12);
-  border: 1px solid rgba(34, 211, 238, 0.35);
-  border-radius: 10px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, rgba(0, 102, 204, 0.05), rgba(0, 102, 204, 0.02));
+  border: 1px solid rgba(0, 102, 204, 0.15);
+  border-radius: 8px;
   color: var(--accent);
+  font-weight: 500;
 }
 
 .settlementAmount {
   color: var(--accent);
-  font-weight: 600;
+  font-weight: 700;
   font-size: 1.05rem;
 }
 
 /* Itinerary styles */
 .itineraryContainer {
-  max-width: 900px;
+  max-width: 1100px;
   margin: 16px auto;
-  padding: 12px;
-  background: var(--panel);
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  box-shadow: 0 18px 30px rgba(2, 6, 23, 0.55);
+  padding: 20px;
+  background: linear-gradient(to bottom, #ffffff, #fce7f3);
+  border-radius: 16px;
+  border: 2px solid #5b5056;
+  box-shadow: 0 8px 24px rgba(236, 72, 153, 0.1);
 }
 
 .dateRangeRow {
   display: flex;
   gap: 20px;
   margin-bottom: 30px;
-  padding: 12px;
+  padding: 16px;
   background: var(--panel-2);
-  border-radius: 6px;
+  border-radius: 8px;
   align-items: flex-end;
+  border: 1px solid var(--border);
 }
 
 .dateRangeRow label {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   font-size: 0.9rem;
   font-weight: 600;
   color: var(--text);
 }
 
 .dateRangeRow input {
-  padding: 8px;
+  padding: 10px 12px;
   border: 1px solid var(--border);
-  border-radius: 4px;
-  font-size: 0.9rem;
+  border-radius: 6px;
+  font-size: 0.95rem;
   background: var(--panel);
   color: var(--text);
 }
 
+.dateRangeRow input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--ring);
+}
+
 .applyDateBtn {
-  padding: 8px 16px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  color: #04121a;
+  padding: 10px 16px;
+  background: var(--accent);
+  color: #ffffff;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 0.9rem;
-  box-shadow: 0 12px 22px rgba(2, 6, 23, 0.45);
+  font-size: 0.95rem;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  box-shadow: 0 2px 8px rgba(0, 102, 204, 0.12);
 }
 
 .applyDateBtn:hover {
-  background: linear-gradient(135deg, #22d3ee, #7dd3fc);
+  background: var(--accent-2);
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.18);
+  transform: translateY(-1px);
 }
 
 .dayTabs {
   display: flex;
-  gap: 8px;
+  gap: 12px;
   margin-bottom: 30px;
   flex-wrap: wrap;
 }
 
 .dayTab {
-  padding: 10px 14px;
+  padding: 10px 16px;
   background: var(--panel-2);
   color: var(--text);
-  border: none;
+  border: 1px solid var(--border);
   border-radius: 6px;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   white-space: nowrap;
+  transition: background 0.2s, border-color 0.2s;
 }
 
 .dayTab:hover {
-  background: rgba(34, 211, 238, 0.12);
+  background: var(--bg-2);
+  border-color: var(--accent);
 }
 
 .dayTabActive {
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  color: #04121a;
+  background: var(--accent);
+  color: #ffffff;
+  border-color: var(--accent);
+  font-weight: 600;
 }
 
 .dayTabActive:hover {
-  background: linear-gradient(135deg, #22d3ee, #7dd3fc);
+  background: var(--accent-2);
 }
 
 .dayTabDate {
   font-size: 0.8rem;
-  opacity: 0.85;
+  opacity: 0.8;
 }
 
 .addItineraryRow {
   display: flex;
-  gap: 8px;
+  gap: 12px;
   margin-bottom: 30px;
   flex-wrap: wrap;
+  align-items: flex-end;
 }
 
 .addItineraryRow input {
-  padding: 8px;
+  padding: 10px 14px;
   min-width: 140px;
   flex: 1;
   background: var(--panel-2);
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.addItineraryRow input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--ring);
 }
 
 .addItineraryRow button {
-  padding: 8px 12px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  color: #04121a;
+  padding: 10px 18px;
+  background: var(--accent);
+  color: #ffffff;
   border: none;
   border-radius: 6px;
   font-weight: 600;
-  box-shadow: 0 12px 22px rgba(2, 6, 23, 0.45);
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  box-shadow: 0 2px 8px rgba(0, 102, 204, 0.12);
+}
+
+.addItineraryRow button:hover {
+  background: var(--accent-2);
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.18);
+  transform: translateY(-1px);
 }
 
 .parsedDataDisplay {
-  padding: 12px;
+  padding: 14px 16px;
   margin-bottom: 12px;
-  background: rgba(34, 211, 238, 0.12);
-  border: 1px solid rgba(34, 211, 238, 0.3);
-  border-radius: 6px;
-  font-size: 0.9rem;
+  background: linear-gradient(135deg, rgba(0, 102, 204, 0.05), rgba(0, 102, 204, 0.02));
+  border: 1px solid rgba(0, 102, 204, 0.15);
+  border-radius: 8px;
+  font-size: 0.95rem;
 }
 
 .parsedDataDisplay strong {
   color: var(--accent);
   display: block;
   margin-bottom: 8px;
+  font-weight: 700;
 }
 
 .parsedDataDisplay div {
@@ -674,11 +763,11 @@
 }
 
 .daySummary {
-  padding: 12px;
+  padding: 14px 16px;
   margin-bottom: 16px;
-  background: rgba(20, 184, 166, 0.12);
-  border: 2px solid rgba(20, 184, 166, 0.4);
-  border-radius: 6px;
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.05), rgba(20, 184, 166, 0.02));
+  border: 1px solid rgba(20, 184, 166, 0.2);
+  border-radius: 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -687,22 +776,26 @@
 }
 
 .daySummary strong {
-  color: #5eead4;
+  color: #0d9488;
   font-size: 0.95rem;
+  font-weight: 700;
 }
 
 .daySummaryLink {
-  padding: 8px 16px;
-  background: linear-gradient(135deg, #14b8a6, #5eead4);
-  color: #04121a;
+  padding: 10px 16px;
+  background: #0d9488;
+  color: #ffffff;
   text-decoration: none;
   border-radius: 6px;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  transition: background 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.12);
 }
 
 .daySummaryLink:hover {
-  background: linear-gradient(135deg, #2dd4bf, #99f6e4);
+  background: #059669;
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.18);
 }
 
 .itineraryList {
@@ -711,17 +804,22 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .itineraryItem {
-  padding: 12px;
+  padding: 14px 16px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   background: var(--panel-2);
+  transition: box-shadow 0.2s;
+}
+
+.itineraryItem:hover {
+  box-shadow: var(--shadow);
 }
 
 .itineraryInfo {
@@ -739,13 +837,14 @@
   font-size: 0.85rem;
   color: var(--accent);
   margin-right: 8px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .itineraryParsedInfo {
   font-size: 0.85rem;
-  color: #5eead4;
+  color: #0d9488;
   margin-bottom: 4px;
+  font-weight: 500;
 }
 
 .itineraryParsedInfo .coords {
@@ -761,39 +860,48 @@
 }
 
 .itineraryLinks {
-  margin-top: 6px;
+  margin-top: 8px;
   display: flex;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
 .dirLink {
   font-size: 0.85rem;
-  color: #5eead4;
+  color: #0d9488;
   text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
 }
 
 .dirLink:hover {
+  color: #059669;
   text-decoration: underline;
 }
 
 .mapLink {
   font-size: 0.85rem;
-  color: #f87171;
+  color: #ef4444;
   text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
 }
 
 .mapLink:hover {
+  color: #dc2626;
   text-decoration: underline;
 }
 
 .urlLink {
   font-size: 0.85rem;
-  color: #60a5fa;
+  color: var(--accent);
   text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
 }
 
 .urlLink:hover {
+  color: var(--accent-2);
   text-decoration: underline;
 }
 
@@ -805,7 +913,6 @@
   }
 
   .chargedToList label {
-
     display: flex;
     justify-content: center;
     padding: 5px;
@@ -814,7 +921,6 @@
   .addTravelerRow {
     display: grid;
     margin-bottom: 50px;
-
   }
 
   .addRow {
@@ -822,7 +928,7 @@
   }
 
   .defaultColorInput {
-    width: 90px;
+    width: 50px;
   }
 
   .addItineraryRow {
@@ -847,11 +953,6 @@
     margin-bottom: 8px;
   }
 
-  .chargedToRow {
-    flex-direction: column;
-    gap: 8px;
-    padding: 12px 8px;
-  }
 
   .chargedToList {
     flex-direction: column;

@@ -254,25 +254,29 @@ export const ExpensesManager = ({ tripId: _ }: Props = {}) => {
             <label>Charged to (defaults to payer):</label>
           </div>
           <div className={styles.chargedToList}>
-            {travelers.map((t) => (
-              <label key={String(t.__dexieid ?? t.traveler_id)} className={styles.checkboxLabel}>
-                <input
-                  type="checkbox"
-                  checked={chargedTo.includes(String(t.__dexieid ?? t.traveler_id))}
-                  onChange={() => toggleCharged(String(t.__dexieid ?? t.traveler_id))}
-                />
-                {t.name}
-              </label>
-            ))}
-            <button
-              type="button"
-              className={styles.selectAllBtn}
-              onClick={selectAllCharged}
-            >
-              {chargedTo.length === travelers.length
-                ? "Unselect All"
-                : "Select All"}
-            </button>
+            <div style={{display:"flex", gap:'15px', flexWrap:'wrap', padding: '0 20px'}}>
+              {travelers.map((t) => (
+                <label key={String(t.__dexieid ?? t.traveler_id)} className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={chargedTo.includes(String(t.__dexieid ?? t.traveler_id))}
+                    onChange={() => toggleCharged(String(t.__dexieid ?? t.traveler_id))}
+                  />
+                  {t.name}
+                </label>
+              ))}
+            </div>
+            <div style={{display: 'flex', justifyContent:'center'}}>
+              <button
+                type="button"
+                className={styles.selectAllBtn}
+                onClick={selectAllCharged}
+              >
+                {chargedTo.length === travelers.length
+                  ? "Unselect All"
+                  : "Select All"}
+              </button>
+            </div>
           </div>
         </div>
         <div

@@ -156,7 +156,7 @@ export async function syncTripFromSupabase(tripId: string): Promise<void> {
 
 export async function getUserTrips() {
     const online = await isOnline()
-    console.log(online)
+
     if (online) {
         try {
             const { data, error } = await supabase
@@ -587,46 +587,81 @@ export async function addPackingItem(
 
 export async function updatePackingItem(
     tripId: string | null | number | undefined,
-    itemId: number,
+    itemId: number | string | undefined,
     updates: { completed?: boolean; color?: string; order?: number }
 ): Promise<PackingItem | null> {
+    if (!itemId) return null
+
     const online = await isOnline()
 
-    if (!online) {
-        await db.packing.update(itemId, updates)
-        return (await db.packing.get(itemId)) ?? null
-    }
-
-    try {
-        const { data, error } = await supabase
-            .from('packing')
-            .update({
-                completed: updates.completed,
-                color: updates.color,
-                order: updates.order,
-            })
-            .eq('packing_id', String(itemId))
-            .select()
-            .single()
-
-        if (!error && data) {
-            await db.packing.update(itemId, {
-                completed: data.completed,
-                color: data.color,
-                order: data.order,
-            })
+    // If itemId is a number, it's a Dexie ID
+    if (typeof itemId === 'number') {
+        if (!online) {
+            await db.packing.update(itemId, updates)
             return (await db.packing.get(itemId)) ?? null
         }
-    } catch (err) {
-        console.log('Error updating packing item:', err)
-        await db.packing.update(itemId, updates)
-        return (await db.packing.get(itemId)) ?? null
+
+        try {
+            // Get item from Dexie to find packing_id
+            const item = await db.packing.get(itemId)
+            if (!item || !item.packing_id) {
+                // If no packing_id, can't sync to Supabase, just update locally
+                await db.packing.update(itemId, updates)
+                return (await db.packing.get(itemId)) ?? null
+            }
+
+            const { data, error } = await supabase
+                .from('packing')
+                .update({
+                    completed: updates.completed,
+                    color: updates.color,
+                    order: updates.order,
+                })
+                .eq('packing_id', item.packing_id)
+                .select()
+                .single()
+
+            if (!error && data) {
+                await db.packing.update(itemId, {
+                    completed: data.completed,
+                    color: data.color,
+                    order: data.order,
+                })
+                return (await db.packing.get(itemId)) ?? null
+            }
+        } catch (err) {
+            console.log('Error updating packing item:', err)
+            await db.packing.update(itemId, updates)
+            return (await db.packing.get(itemId)) ?? null
+        }
+    } else {
+        // itemId is a string (packing_id from Supabase)
+        try {
+            const { data, error } = await supabase
+                .from('packing')
+                .update({
+                    completed: updates.completed,
+                    color: updates.color,
+                    order: updates.order,
+                })
+                .eq('packing_id', itemId)
+                .select()
+                .single()
+
+            if (!error && data) {
+                return data as PackingItem
+            }
+        } catch (err) {
+            console.log('Error updating packing item:', err)
+        }
     }
 
     return null
 }
 
-export async function deletePackingItem(tripId: string | null | number | undefined, itemId: number): Promise<boolean> {
+export async function deletePackingItem(tripId: string | null | number | undefined, itemId: number | string | undefined): Promise<boolean> {
+    if (!itemId) return false
+
     const online = await isOnline()
 
     if (!online) {
@@ -637,7 +672,26 @@ export async function deletePackingItem(tripId: string | null | number | undefin
     }
 
     try {
-        const { error } = await supabase.from('packing').delete().eq('packing_id', String(itemId))
+        let packingId: string | null = null
+
+        // If itemId is a number, it's a Dexie ID - fetch packing_id from item
+        if (typeof itemId === 'number') {
+            const item = await db.packing.get(itemId)
+            packingId = item?.packing_id || null
+        } else {
+            // itemId is already a string (packing_id from Supabase)
+            packingId = itemId
+        }
+
+        if (!packingId) {
+            // Can't delete from Supabase without packing_id, just delete from Dexie
+            if (typeof itemId === 'number') {
+                await db.packing.delete(itemId)
+            }
+            return true
+        }
+
+        const { error } = await supabase.from('packing').delete().eq('packing_id', packingId)
 
         if (!error) {
             if (typeof itemId === 'number') {
