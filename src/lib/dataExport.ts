@@ -54,7 +54,7 @@ export async function exportTripsData(tripIds: Array<string | number>): Promise<
         if (indexed.length > 0) return indexed
         // Fallback: filter all items to handle cases where trip_id wasn't updated after sync
         const all = await table.toArray()
-        return all.filter(item =>
+        return all.filter((item: any) =>
           searchKeys.includes(String(item.trip_id)) || searchKeys.includes(item.trip_id)
         )
       }
