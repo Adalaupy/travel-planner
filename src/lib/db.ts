@@ -31,17 +31,6 @@ export interface TripItem {
   owner_id?: string | null;
 }
 
-export interface PlaceItem {
-  __dexieid?: number;
-  place_id?: string | null;
-  issync?: boolean;
-  trip_id?: string | null;
-  title: string;
-  lat?: number;
-  lng?: number;
-  url?: string;
-}
-
 export interface ItineraryItem {
   __dexieid?: number;
   itinerary_id?: string | null;
@@ -50,7 +39,6 @@ export interface ItineraryItem {
   day_index: number;
   title: string;
   time?: string;
-  place_id?: string;
   url?: string;
   remark?: string;
   map_link?: string;
@@ -96,7 +84,6 @@ export interface ExpenseItem {
 class TravelDB extends Dexie {
   users!: Table<UserItem, number>
   trips!: Table<TripItem, number>
-  places!: Table<PlaceItem, number>
   itinerary!: Table<ItineraryItem, number>
   packing!: Table<PackingItem, number>
   travelers!: Table<TravelerItem, number>
@@ -109,7 +96,6 @@ class TravelDB extends Dexie {
     this.version(1).stores({
       users: '++User_ID, clerkId, name',
       trips: '++Trip_ID, User_ID, title, startDate, endDate, updatedAt',
-      places: '++Place_ID, Trip_ID, title, lat, lng',
       itinerary: '++Itinerary_ID, Trip_ID, dayIndex, title',
       packing: '++Packing_ID, Trip_ID, order, completed',
       travelers: '++Traveler_ID, Trip_ID, name, email',
@@ -119,7 +105,6 @@ class TravelDB extends Dexie {
     this.version(2).stores({
       users: '++User_ID, clerkId, name',
       trips: '++Trip_ID, User_ID, title, startDate, endDate, updatedAt',
-      places: '++Place_ID, Trip_ID, title, lat, lng',
       itinerary: '++Itinerary_ID, Trip_ID, dayIndex, title',
       packing: '++Packing_ID, Trip_ID, order, completed',
       travelers: '++Traveler_ID, Trip_ID, name, email',
@@ -129,7 +114,6 @@ class TravelDB extends Dexie {
     this.version(3).stores({
       users: '++id, username, birthday, gender, short_code',
       trips: '++id, owner_id, title, is_public, updated_at',
-      places: '++id, trip_id, title, lat, lng',
       itinerary: '++id, trip_id, day_index, title',
       packing: '++id, trip_id, order, completed',
       travelers: '++id, trip_id, name, email',
@@ -140,7 +124,6 @@ class TravelDB extends Dexie {
     this.version(4).stores({
       users: '++__dexieId, userId, isSync',
       trips: '++__dexieId, tripId, isSync, title',
-      places: '++__dexieId, placeId, tripId, isSync',
       itinerary: '++__dexieId, itineraryId, tripId, isSync',
       packing: '++__dexieId, packingId, tripId, isSync',
       travelers: '++__dexieId, travelerId, tripId, isSync',
@@ -152,7 +135,6 @@ class TravelDB extends Dexie {
       .stores({
         users: '++__dexieid, user_id, issync, username, birthday, gender, short_code',
         trips: '++__dexieid, title, trip_id, issync, owner_id',
-        places: '++__dexieid, trip_id, place_id, issync',
         itinerary: '++__dexieid, trip_id, itinerary_id, issync',
         packing: '++__dexieid, trip_id, packing_id, issync',
         travelers: '++__dexieid, trip_id, traveler_id, issync',

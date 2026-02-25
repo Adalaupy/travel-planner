@@ -53,40 +53,23 @@ export async function syncTripFromSupabase(tripId: string): Promise<void> {
     const online = await isOnline()
     if (!online || !tripId) return
 
-    const [placesRes, itineraryRes, packingRes, travelersRes, expensesRes] = await Promise.all([
-        supabase.from('places').select('*').eq('trip_id', String(tripId)),
+    const [itineraryRes, packingRes, travelersRes, expensesRes] = await Promise.all([
         supabase.from('itinerary').select('*').eq('trip_id', String(tripId)),
         supabase.from('packing').select('*').eq('trip_id', String(tripId)),
         supabase.from('travelers').select('*').eq('trip_id', String(tripId)),
         supabase.from('expenses').select('*').eq('trip_id', String(tripId)),
     ])
 
-    if (placesRes.error) console.log('Error syncing places:', placesRes.error)
     if (itineraryRes.error) console.log('Error syncing itinerary:', itineraryRes.error)
     if (packingRes.error) console.log('Error syncing packing:', packingRes.error)
     if (travelersRes.error) console.log('Error syncing travelers:', travelersRes.error)
     if (expensesRes.error) console.log('Error syncing expenses:', expensesRes.error)
 
-    await db.transaction('rw', db.places, db.itinerary, db.packing, db.travelers, db.expenses, async () => {
-        await db.places.where('trip_id').equals(tripId).delete()
+    await db.transaction('rw', db.itinerary, db.packing, db.travelers, db.expenses, async () => {
         await db.itinerary.where('trip_id').equals(tripId).delete()
         await db.packing.where('trip_id').equals(tripId).delete()
         await db.travelers.where('trip_id').equals(tripId).delete()
         await db.expenses.where('trip_id').equals(tripId).delete()
-
-        if (placesRes.data?.length) {
-            await db.places.bulkAdd(
-                placesRes.data.map((item: any) => ({
-                    place_id: item.place_id,
-                    trip_id: item.trip_id,
-                    issync: true,
-                    title: item.title,
-                    lat: item.lat,
-                    lng: item.lng,
-                    url: item.url,
-                }))
-            )
-        }
 
         if (itineraryRes.data?.length) {
             await db.itinerary.bulkAdd(
@@ -97,7 +80,6 @@ export async function syncTripFromSupabase(tripId: string): Promise<void> {
                     day_index: item.day_index,
                     title: item.title,
                     time: item.time,
-                    place_id: item.place_id,
                     url: item.url,
                     remark: item.remark,
                     map_link: item.map_link,
@@ -234,33 +216,7 @@ export async function importTripsToSupabase(
                 console.log('Trip imported to Supabase:', supaTripId)
 
                 if (includeRelated) {
-                    const placeIdMap = new Map<string, string>()
                     const travelerIdMap = new Map<string, string>()
-
-                    if (Array.isArray(tripData.places)) {
-                        for (const place of tripData.places) {
-                            const { data: placeRow, error: placeError } = await supabase
-                                .from('places')
-                                .insert([
-                                    {
-                                        trip_id: supaTripId,
-                                        title: place.title,
-                                        lat: place.lat,
-                                        lng: place.lng,
-                                        url: place.url,
-                                    },
-                                ])
-                                .select()
-                                .single()
-
-                            if (placeError) {
-                                console.log('Error importing place to Supabase:', placeError)
-                            }
-                            if (!placeError && placeRow && place.place_id !== undefined) {
-                                placeIdMap.set(String(place.place_id), placeRow.place_id)
-                            }
-                        }
-                    }
 
                     if (Array.isArray(tripData.travelers)) {
                         for (const traveler of tripData.travelers) {
@@ -292,7 +248,6 @@ export async function importTripsToSupabase(
                             day_index: item.day_index,
                             title: item.title,
                             time: item.time,
-                            place_id: item.place_id !== undefined ? placeIdMap.get(String(item.place_id)) : undefined,
                             url: item.url,
                             remark: item.remark,
                             map_link: item.map_link,
@@ -978,7 +933,6 @@ export async function getItineraryItems(tripId: string | null): Promise<Itinerar
                     lat: item.lat,
                     lng: item.lng,
                     place_name: item.place_name,
-                    place_id: item.place_id,
                     order: item.order,
                     issync: true,
                 }))
@@ -1003,7 +957,6 @@ export async function addItineraryItem(
         lat?: number
         lng?: number
         placeName?: string
-        place_id?: number
         order: number
     }
 ): Promise<ItineraryItem | null> {
@@ -1021,7 +974,6 @@ export async function addItineraryItem(
             lat: item.lat,
             lng: item.lng,
             place_name: item.placeName,
-            place_id: item.place_id ? String(item.place_id) : undefined,
             order: item.order,
         })
         return (await db.itinerary.get(id)) ?? null
@@ -1042,7 +994,6 @@ export async function addItineraryItem(
                     lat: item.lat,
                     lng: item.lng,
                     place_name: item.placeName,
-                    place_id: item.place_id ? String(item.place_id) : undefined,
                     order: item.order,
                 },
             ])
@@ -1063,7 +1014,6 @@ export async function addItineraryItem(
                 lat: data.lat,
                 lng: data.lng,
                 place_name: data.place_name,
-                place_id: data.place_id,
                 order: data.order,
                 issync: true,
             }
@@ -1081,7 +1031,6 @@ export async function addItineraryItem(
             lat: item.lat,
             lng: item.lng,
             place_name: item.placeName,
-            place_id: item.place_id ? String(item.place_id) : undefined,
             order: item.order,
         })
         return (await db.itinerary.get(id)) ?? null

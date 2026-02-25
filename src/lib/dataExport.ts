@@ -1,4 +1,4 @@
-import { db, TripItem, PlaceItem, ItineraryItem, PackingItem, TravelerItem, ExpenseItem } from './db'
+import { db, TripItem, ItineraryItem, PackingItem, TravelerItem, ExpenseItem } from './db'
 import { importTripsToSupabase } from './syncService'
 import { getLocalUserIdentity } from './userIdentity'
 
@@ -13,7 +13,6 @@ export async function exportAllData(): Promise<string> {
     exportDate: new Date().toISOString(),
     users: (await db.users.toArray()).map(stripDexieId),
     trips: (await db.trips.toArray()).map(stripDexieId),
-    places: (await db.places.toArray()).map(stripDexieId),
     itinerary: (await db.itinerary.toArray()).map(stripDexieId),
     packing: (await db.packing.toArray()).map(stripDexieId),
     travelers: (await db.travelers.toArray()).map(stripDexieId),
@@ -59,8 +58,7 @@ export async function exportTripsData(tripIds: Array<string | number>): Promise<
         )
       }
 
-      const [places, itinerary, packing, travelers, expenses] = await Promise.all([
-        uniqueKeys.length ? queryByTripId(db.places, uniqueKeys) : [],
+      const [itinerary, packing, travelers, expenses] = await Promise.all([
         uniqueKeys.length ? queryByTripId(db.itinerary, uniqueKeys) : [],
         uniqueKeys.length ? queryByTripId(db.packing, uniqueKeys) : [],
         uniqueKeys.length ? queryByTripId(db.travelers, uniqueKeys) : [],
@@ -68,7 +66,7 @@ export async function exportTripsData(tripIds: Array<string | number>): Promise<
       ])
       return {
         trip: stripDexieId(trip),
-        places: places.map(stripDexieId),
+        places: [],
         itinerary: itinerary.map(stripDexieId),
         packing: packing.map(stripDexieId),
         travelers: travelers.map(stripDexieId),
@@ -91,7 +89,6 @@ export async function importAllData(jsonString: string): Promise<{ success: bool
     // Clear existing data
     await db.users.clear()
     await db.trips.clear()
-    await db.places.clear()
     await db.itinerary.clear()
     await db.packing.clear()
     await db.travelers.clear()
@@ -100,7 +97,6 @@ export async function importAllData(jsonString: string): Promise<{ success: bool
     // Import data
     if (data.users && Array.isArray(data.users)) await db.users.bulkAdd(data.users.map(stripDexieId))
     if (data.trips && Array.isArray(data.trips)) await db.trips.bulkAdd(data.trips.map(stripDexieId))
-    if (data.places && Array.isArray(data.places)) await db.places.bulkAdd(data.places.map(stripDexieId))
     if (data.itinerary && Array.isArray(data.itinerary)) await db.itinerary.bulkAdd(data.itinerary.map(stripDexieId))
     if (data.packing && Array.isArray(data.packing)) await db.packing.bulkAdd(data.packing.map(stripDexieId))
     if (data.travelers && Array.isArray(data.travelers)) await db.travelers.bulkAdd(data.travelers.map(stripDexieId))
@@ -159,27 +155,8 @@ export async function importTripsData(jsonString: string): Promise<{ success: bo
       await db.trips.update(newTripDexieId, { trip_id: newTripId })
       supabasePayloads.push({ ...tripData, local_trip_id: newTripId })
 
-      // Create ID mapping maps
-      const placeIdMap = new Map<string, string>()
+      // Create ID mapping for travelers
       const travelerIdMap = new Map<string, number>()
-
-      // Import places and build ID map
-      if (tripData.places && Array.isArray(tripData.places)) {
-        for (const p of tripData.places) {
-          const oldId = p.place_id
-          const newPlace: PlaceItem = {
-            ...stripDexieId(p),
-            place_id: undefined,
-            trip_id: newTripId,
-            title: p.title ?? "Untitled Place",
-          }
-          const newDexieId = await db.places.add(newPlace)
-          await db.places.update(newDexieId, { place_id: String(newDexieId) })
-          if (oldId !== undefined) {
-            placeIdMap.set(String(oldId), String(newDexieId))
-          }
-        }
-      }
 
       // Import travelers and build ID map
       if (tripData.travelers && Array.isArray(tripData.travelers)) {
@@ -208,10 +185,6 @@ export async function importTripsData(jsonString: string): Promise<{ success: bo
             trip_id: newTripId,
             day_index: i.day_index ?? idx,
             title: i.title ?? "Untitled",
-          }
-          const oldPlaceId = i.place_id
-          if (oldPlaceId !== undefined && placeIdMap.has(String(oldPlaceId))) {
-            newItem.place_id = placeIdMap.get(String(oldPlaceId))
           }
           return newItem
         })
@@ -263,7 +236,6 @@ export async function importTripsData(jsonString: string): Promise<{ success: bo
         trip_id: result.supaTripId,
         issync: true,
       })
-      await db.places.where('trip_id').equals(result.localTripId).modify({ trip_id: result.supaTripId })
       await db.itinerary.where('trip_id').equals(result.localTripId).modify({ trip_id: result.supaTripId })
       await db.packing.where('trip_id').equals(result.localTripId).modify({ trip_id: result.supaTripId })
       await db.travelers.where('trip_id').equals(result.localTripId).modify({ trip_id: result.supaTripId })
