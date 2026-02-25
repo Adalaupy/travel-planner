@@ -111,12 +111,28 @@ export default function MyTrips() {
     fileInputRef.current?.click();
   };
 
+  const handleDownloadTemplate = async () => {
+    try {
+      const response = await fetch("/import-template.json", { cache: "no-store" });
+      if (!response.ok) {
+        throw new Error("Template not found");
+      }
+      const text = await response.text();
+      downloadBackup(text, "import-template.json");
+      setShowBackupMenu(false);
+    } catch (error) {
+      alert(
+        "Failed to download template: " +
+          (error instanceof Error ? error.message : "Unknown error"),
+      );
+    }
+  };
+
   const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files ? Array.from(e.target.files) : [];
+    if (files.length === 0) return;
 
     try {
-      const jsonString = await readBackupFile(file);
       const confirmed = confirm(
         "WARNING: This will replace ALL existing data with the backup. Are you sure you want to continue?",
       );
@@ -125,13 +141,35 @@ export default function MyTrips() {
         return;
       }
 
-      const result = await importTripsData(jsonString);
-      if (result.success) {
-        alert("Trips imported successfully!");
+      let successCount = 0;
+      const errors: string[] = [];
+
+      for (const file of files) {
+        try {
+          const jsonString = await readBackupFile(file);
+          const result = await importTripsData(jsonString);
+          if (result.success) {
+            successCount += 1;
+          } else {
+            errors.push(`${file.name}: ${result.error}`);
+          }
+        } catch (error) {
+          errors.push(
+            `${file.name}: ` +
+              (error instanceof Error ? error.message : "Unknown error"),
+          );
+        }
+      }
+
+      if (successCount > 0) {
         await loadTrips();
         setShowBackupMenu(false);
+      }
+
+      if (errors.length > 0) {
+        alert("Some files failed to import:\n" + errors.join("\n"));
       } else {
-        alert("Failed to import data: " + result.error);
+        alert(`Trips imported successfully! (${successCount} file(s))`);
       }
     } catch (error) {
       alert(
@@ -198,6 +236,9 @@ export default function MyTrips() {
               <button onClick={handleImportClick} className={styles.menuItem}>
                 📤 Import Trip(s)
               </button>
+              <button onClick={handleDownloadTemplate} className={styles.menuItem}>
+                📄 Download Import Template
+              </button>
             </div>
           )}
         </div>
@@ -261,6 +302,7 @@ export default function MyTrips() {
         ref={fileInputRef}
         type="file"
         accept=".json"
+        multiple
         onChange={handleImportFile}
         style={{ display: "none" }}
       />

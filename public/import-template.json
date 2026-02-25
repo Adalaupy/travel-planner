@@ -1,0 +1,396 @@
+[
+  {
+    "trip": {
+      "title": "Tokyo Adventure",
+      "start_date": "2026-03-15",
+      "end_date": "2026-03-17",
+      "is_public": false,
+      "owner_id": null
+    },
+    "itinerary": [
+      {
+        "trip_id": null,
+        "day_index": 0,
+        "title": "Arrive at Narita Airport",
+        "time": "14:00",
+        "remark": "Flight arrives at 2 PM, clear customs and immigration",
+        "map_link": "https://www.google.com/maps/place/Narita+International+Airport/@35.7719867,140.3851745,17z",
+        "lat": 35.7719867,
+        "lng": 140.3851745,
+        "place_name": "Narita International Airport",
+        "order": 0
+      },
+      {
+        "trip_id": null,
+        "day_index": 0,
+        "title": "Hotel Check-in - Shinjuku Prince Hotel",
+        "time": "17:00",
+        "remark": "Check-in after 3 PM, room reservation confirmed",
+        "map_link": "https://www.google.com/maps/place/Shinjuku+Prince+Hotel/@35.6944151,139.7005657,17z",
+        "lat": 35.6944151,
+        "lng": 139.7005657,
+        "place_name": "Shinjuku Prince Hotel",
+        "order": 1
+      },
+      {
+        "trip_id": null,
+        "day_index": 0,
+        "title": "Dinner at Ichiran Ramen Shinjuku",
+        "time": "19:00",
+        "remark": "Famous tonkotsu ramen, expect queue during peak hours",
+        "map_link": "https://www.google.com/maps/place/Ichiran+Ramen/@35.6938176,139.7006177,17z",
+        "lat": 35.6938176,
+        "lng": 139.7006177,
+        "place_name": "Ichiran Ramen Shinjuku",
+        "order": 2
+      },
+      {
+        "trip_id": null,
+        "day_index": 1,
+        "title": "Senso-ji Temple",
+        "time": "09:00",
+        "remark": "Tokyo's oldest temple, explore Nakamise Shopping Street",
+        "map_link": "https://www.google.com/maps/place/Senso-ji+Temple/@35.7147651,139.7966553,17z",
+        "lat": 35.7147651,
+        "lng": 139.7966553,
+        "place_name": "Senso-ji Temple",
+        "order": 0
+      },
+      {
+        "trip_id": null,
+        "day_index": 1,
+        "title": "Tokyo Skytree",
+        "time": "13:00",
+        "remark": "Tallest tower in Japan, panoramic city views from observation decks",
+        "map_link": "https://www.google.com/maps/place/Tokyo+Skytree/@35.7100627,139.8107004,17z",
+        "lat": 35.7100627,
+        "lng": 139.8107004,
+        "place_name": "Tokyo Skytree",
+        "order": 1
+      },
+      {
+        "trip_id": null,
+        "day_index": 1,
+        "title": "TeamLab Borderless Digital Art Museum",
+        "time": "16:00",
+        "remark": "Immersive digital art experience, pre-book tickets online",
+        "map_link": "https://www.google.com/maps/place/teamLab+Borderless/@35.6249464,139.7755572,17z",
+        "lat": 35.6249464,
+        "lng": 139.7755572,
+        "place_name": "teamLab Borderless",
+        "order": 2
+      },
+      {
+        "trip_id": null,
+        "day_index": 1,
+        "title": "Shibuya Crossing & Hachiko Statue",
+        "time": "19:00",
+        "remark": "World's busiest pedestrian crossing, perfect photo spot",
+        "map_link": "https://www.google.com/maps/place/Shibuya+Crossing/@35.6595211,139.7003653,17z",
+        "lat": 35.6595211,
+        "lng": 139.7003653,
+        "place_name": "Shibuya Crossing",
+        "order": 3
+      },
+      {
+        "trip_id": null,
+        "day_index": 2,
+        "title": "Tsukiji Outer Market Breakfast",
+        "time": "08:00",
+        "remark": "Fresh sushi and seafood breakfast, try tuna sashimi",
+        "map_link": "https://www.google.com/maps/place/Tsukiji+Outer+Market/@35.6654861,139.7706006,17z",
+        "lat": 35.6654861,
+        "lng": 139.7706006,
+        "place_name": "Tsukiji Outer Market",
+        "order": 0
+      },
+      {
+        "trip_id": null,
+        "day_index": 2,
+        "title": "Meiji Shrine",
+        "time": "10:30",
+        "remark": "Peaceful Shinto shrine in forested grounds",
+        "map_link": "https://www.google.com/maps/place/Meiji+Shrine/@35.6763976,139.6993259,17z",
+        "lat": 35.6763976,
+        "lng": 139.6993259,
+        "place_name": "Meiji Shrine",
+        "order": 1
+      },
+      {
+        "trip_id": null,
+        "day_index": 2,
+        "title": "Harajuku Takeshita Street Shopping",
+        "time": "12:00",
+        "remark": "Trendy fashion street, crepes, and unique boutiques",
+        "map_link": "https://www.google.com/maps/place/Takeshita+Street/@35.6702042,139.7027531,17z",
+        "lat": 35.6702042,
+        "lng": 139.7027531,
+        "place_name": "Takeshita Street",
+        "order": 2
+      },
+      {
+        "trip_id": null,
+        "day_index": 2,
+        "title": "Depart from Narita Airport",
+        "time": "18:00",
+        "remark": "Check-in 3 hours before international flight",
+        "map_link": "https://www.google.com/maps/place/Narita+International+Airport/@35.7719867,140.3851745,17z",
+        "lat": 35.7719867,
+        "lng": 140.3851745,
+        "place_name": "Narita International Airport",
+        "order": 3
+      }
+    ],
+    "packing": [
+      {
+        "trip_id": null,
+        "title": "Passport & Travel Documents",
+        "completed": false,
+        "color": "#ff4444",
+        "order": 1
+      },
+      {
+        "trip_id": null,
+        "title": "Phone Charger & Power Bank",
+        "completed": false,
+        "color": "#4285f4",
+        "order": 2
+      },
+      {
+        "trip_id": null,
+        "title": "Comfortable Walking Shoes",
+        "completed": false,
+        "color": "#34a853",
+        "order": 3
+      },
+      {
+        "trip_id": null,
+        "title": "Light Jacket (Spring Weather)",
+        "completed": false,
+        "color": "#fbbc04",
+        "order": 4
+      },
+      {
+        "trip_id": null,
+        "title": "Camera & SD Cards",
+        "completed": false,
+        "color": "#9c27b0",
+        "order": 5
+      },
+      {
+        "trip_id": null,
+        "title": "Cash (JPY) & Credit Cards",
+        "completed": false,
+        "color": "#ff6b6b",
+        "order": 6
+      },
+      {
+        "trip_id": null,
+        "title": "Toiletries & Medications",
+        "completed": false,
+        "color": "#20c997",
+        "order": 7
+      },
+      {
+        "trip_id": null,
+        "title": "Reusable Water Bottle",
+        "completed": false,
+        "color": "#17a2b8",
+        "order": 8
+      }
+    ],
+    "travelers": [
+      {
+        "trip_id": null,
+        "traveler_id": 1,
+        "name": "Alex",
+        "email": "alex@example.com",
+        "icon": "FaUserCircle"
+      },
+      {
+        "trip_id": null,
+        "traveler_id": 2,
+        "name": "Sarah",
+        "email": "sarah@example.com",
+        "icon": "FaUserCircle"
+      },
+      {
+        "trip_id": null,
+        "traveler_id": 3,
+        "name": "Mike",
+        "email": "mike@example.com",
+        "icon": "FaUserTie"
+      },
+      {
+        "trip_id": null,
+        "traveler_id": 4,
+        "name": "Emma",
+        "email": "emma@example.com",
+        "icon": "FaUserCircle"
+      },
+      {
+        "trip_id": null,
+        "traveler_id": 5,
+        "name": "David",
+        "email": "david@example.com",
+        "icon": "FaUserTie"
+      },
+      {
+        "trip_id": null,
+        "traveler_id": 6,
+        "name": "Lily",
+        "email": "lily@example.com",
+        "icon": "FaChild"
+      }
+    ],
+    "expenses": [
+      {
+        "trip_id": null,
+        "title": "Flight Tickets",
+        "amount": 45000,
+        "payer_id": 1,
+        "charged_to": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "datetime": "2026-03-15T00:00:00.000Z"
+      },
+      {
+        "trip_id": null,
+        "title": "Hotel Accommodation (3 nights)",
+        "amount": 36000,
+        "payer_id": 2,
+        "charged_to": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "datetime": "2026-03-15T00:00:00.000Z"
+      },
+      {
+        "trip_id": null,
+        "title": "Airport Limousine Bus",
+        "amount": 3600,
+        "payer_id": 3,
+        "charged_to": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "datetime": "2026-03-15T14:30:00.000Z"
+      },
+      {
+        "trip_id": null,
+        "title": "Dinner at Ichiran Ramen",
+        "amount": 6000,
+        "payer_id": 1,
+        "charged_to": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "datetime": "2026-03-15T19:00:00.000Z"
+      },
+      {
+        "trip_id": null,
+        "title": "Tokyo Skytree Tickets",
+        "amount": 12000,
+        "payer_id": 4,
+        "charged_to": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "datetime": "2026-03-16T13:00:00.000Z"
+      },
+      {
+        "trip_id": null,
+        "title": "TeamLab Museum Tickets",
+        "amount": 18000,
+        "payer_id": 5,
+        "charged_to": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "datetime": "2026-03-16T16:00:00.000Z"
+      },
+      {
+        "trip_id": null,
+        "title": "Lunch at Shibuya",
+        "amount": 8400,
+        "payer_id": 2,
+        "charged_to": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "datetime": "2026-03-16T12:30:00.000Z"
+      },
+      {
+        "trip_id": null,
+        "title": "Tsukiji Market Breakfast",
+        "amount": 7200,
+        "payer_id": 6,
+        "charged_to": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "datetime": "2026-03-17T08:00:00.000Z"
+      },
+      {
+        "trip_id": null,
+        "title": "Harajuku Shopping",
+        "amount": 15000,
+        "payer_id": 3,
+        "charged_to": [
+          1,
+          2,
+          3
+        ],
+        "datetime": "2026-03-17T12:30:00.000Z"
+      },
+      {
+        "trip_id": null,
+        "title": "Souvenirs & Gifts",
+        "amount": 12000,
+        "payer_id": 4,
+        "charged_to": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "datetime": "2026-03-17T15:00:00.000Z"
+      }
+    ]
+  }
+]
