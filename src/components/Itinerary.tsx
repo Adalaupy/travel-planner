@@ -455,7 +455,10 @@ function SortableItineraryItem({
   return (
     <li
       ref={setNodeRef}
-      style={style}
+      style={{
+        ...style,
+        cursor: isDragging ? 'grabbing' : 'grab',
+      }}
       className={styles.itineraryItem}
       {...attributes}
       {...listeners}

@@ -1,5 +1,6 @@
 import { supabase } from './supabase'
 import { db, TripItem, PackingItem, TravelerItem, ExpenseItem, ItineraryItem } from './db'
+import { getLocalUserIdentity, isLocalUserId } from './userIdentity'
 
 /**
  * Sync Service: Hybrid mode with Dexie cache + Supabase
@@ -156,13 +157,20 @@ export async function syncTripFromSupabase(tripId: string): Promise<void> {
 
 export async function getUserTrips() {
     const online = await isOnline()
+    const identity = getLocalUserIdentity()
+    const ownerId = identity?.user_id ?? null
 
     if (online) {
         try {
+            if (!ownerId || isLocalUserId(ownerId)) {
+                return []
+            }
+
             const { data, error } = await supabase
                 .from('trips')
                 .select('*')
                 .eq('is_public', false)
+                .eq('owner_id', ownerId)
                 .order('updated_at', { ascending: false })
 
             if (!error && data) {
@@ -179,8 +187,10 @@ export async function getUserTrips() {
         }
     }
 
-    // Fallback: return local trips only
-    return await db.trips.toArray()
+    if (!ownerId) return []
+
+    // Fallback: return local trips for the current user
+    return await db.trips.filter((trip) => trip.owner_id === ownerId || trip.owner_id == null).toArray()
 }
 
 export async function importTripsToSupabase(
@@ -192,6 +202,10 @@ export async function importTripsToSupabase(
         console.log('Offline: skipping Supabase import')
         return []
     }
+
+    const identity = getLocalUserIdentity()
+    const ownerId = identity?.user_id ?? null
+    const remoteOwnerId = ownerId && !isLocalUserId(ownerId) ? ownerId : null
 
     const includeRelated = options?.includeRelated ?? false
     const results: Array<{ localTripId?: string; supaTripId?: string }> = []
@@ -207,7 +221,8 @@ export async function importTripsToSupabase(
                     title: trip.title,
                     start_date: trip.start_date ?? trip.startDate,
                     end_date: trip.end_date ?? trip.endDate,
-                    is_public: false
+                    is_public: false,
+                    owner_id: remoteOwnerId ?? trip.owner_id ?? undefined,
                 }])
                 .select()
                 .single()
@@ -345,6 +360,9 @@ export async function importTripsToSupabase(
 
 export async function createTrip(title: string) {
     const online = await isOnline()
+    const identity = getLocalUserIdentity()
+    const ownerId = identity?.user_id ?? null
+    const remoteOwnerId = ownerId && !isLocalUserId(ownerId) ? ownerId : null
 
     if (!online) {
         // Offline: save to local with tripId = numeric __dexieId
@@ -352,6 +370,7 @@ export async function createTrip(title: string) {
             title,
             is_public: false,
             updated_at: Date.now(),
+            owner_id: ownerId ?? undefined,
         })
         // Set trip_id to the numeric ID string after creation
         await db.trips.update(numericId, { trip_id: String(numericId) })
@@ -362,7 +381,7 @@ export async function createTrip(title: string) {
     try {
         const { data, error } = await supabase
             .from('trips')
-            .insert([{ title, is_public: false }])
+            .insert([{ title, is_public: false, owner_id: remoteOwnerId ?? undefined }])
             .select()
             .single()
 
@@ -374,7 +393,7 @@ export async function createTrip(title: string) {
                 is_public: data.is_public,
                 trip_id: tripId, // Supabase UUID
                 issync: true,
-                owner_id: data.owner_id,
+                owner_id: data.owner_id ?? ownerId ?? undefined,
                 created_at: data.created_at,
                 updated_at: data.updated_at,
             })
@@ -388,6 +407,7 @@ export async function createTrip(title: string) {
             title,
             is_public: false,
             updated_at: Date.now(),
+            owner_id: ownerId ?? undefined,
         })
         await db.trips.update(numericId, { trip_id: String(numericId) })
         const trip = await db.trips.get(numericId)
@@ -1098,3 +1118,147 @@ export async function deleteItineraryItem(tripId: string | null | number | undef
 
     return false
 }
+
+// ============= USERS & AUTHENTICATION =============
+
+const USERNAME_REGEX = /^[A-Za-z0-9]+$/
+const SHORT_CODE_REGEX = /^[A-Z0-9]{4,6}$/
+
+/**
+ * Check if a username is available (not already taken)
+ */
+export async function checkUsernameAvailable(
+    username: string,
+    birthday: string,
+    gender: string,
+    shortCode?: string
+): Promise<boolean> {
+    if (!username || username.length < 3) {
+        return false
+    }
+
+    if (!USERNAME_REGEX.test(username)) {
+        return false
+    }
+
+    const normalizedShortCode = shortCode?.trim().toUpperCase() ?? ''
+    if (normalizedShortCode) {
+        if (!SHORT_CODE_REGEX.test(normalizedShortCode)) {
+            return false
+        }
+    } else if (!birthday || !gender) {
+        return false
+    }
+
+    try {
+        const query = supabase
+            .from('users')
+            .select('username')
+            .eq('username', username)
+
+        const { data, error } = normalizedShortCode
+            ? await query.eq('short_code', normalizedShortCode).maybeSingle()
+            : await query.eq('birthday', birthday).eq('gender', gender).maybeSingle()
+
+        if (error) {
+            console.error('Error checking username availability:', error)
+            return false
+        }
+
+        // If data exists, username is taken
+        return !data
+    } catch (err) {
+        console.error('Error checking username:', err)
+        return false
+    }
+}
+
+/**
+ * Get or create a user by username
+ */
+export async function getOrCreateUser(
+    username: string,
+    birthday: string,
+    gender: string,
+    shortCode?: string
+) {
+    if (!username || username.length < 3) {
+        throw new Error('Username must be at least 3 characters')
+    }
+
+    if (!USERNAME_REGEX.test(username)) {
+        throw new Error('Username must contain only letters and numbers')
+    }
+
+    const normalizedShortCode = shortCode?.trim().toUpperCase() ?? ''
+    if (normalizedShortCode && !SHORT_CODE_REGEX.test(normalizedShortCode)) {
+        throw new Error('Short code must be 4-6 letters or numbers')
+    }
+
+    if (!normalizedShortCode && (!birthday || !gender)) {
+        throw new Error('Birthday and gender are required')
+    }
+
+    try {
+        // Check if user already exists
+        const query = supabase
+            .from('users')
+            .select('*')
+            .eq('username', username)
+
+        const { data: existingUser, error: fetchError } = normalizedShortCode
+            ? await query.eq('short_code', normalizedShortCode).maybeSingle()
+            : await query.eq('birthday', birthday).eq('gender', gender).maybeSingle()
+
+        if (existingUser) {
+            return existingUser
+        }
+
+        if (!birthday || !gender) {
+            throw new Error('Birthday and gender are required to create a new user')
+        }
+
+        // Create new user
+        const { data: newUser, error: insertError } = await supabase
+            .from('users')
+            .insert([{ username, birthday, gender, short_code: normalizedShortCode || null }])
+            .select()
+            .single()
+
+        if (insertError) {
+            throw insertError
+        }
+
+        return newUser
+    } catch (err) {
+        console.error('Error getting or creating user:', err)
+        throw err
+    }
+}
+
+/**
+ * Get current user by username
+ */
+export async function getUserByUsername(username: string, birthday: string, gender: string, shortCode?: string) {
+    try {
+        const normalizedShortCode = shortCode?.trim().toUpperCase() ?? ''
+        const query = supabase
+            .from('users')
+            .select('*')
+            .eq('username', username)
+
+        const { data, error } = normalizedShortCode
+            ? await query.eq('short_code', normalizedShortCode).maybeSingle()
+            : await query.eq('birthday', birthday).eq('gender', gender).maybeSingle()
+
+        if (error) {
+            throw error
+        }
+
+        return data
+    } catch (err) {
+        console.error('Error fetching user:', err)
+        return null
+    }
+}
+

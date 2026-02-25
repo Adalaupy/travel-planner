@@ -12,8 +12,10 @@ export interface UserItem {
   __dexieid?: number;
   user_id?: string | null;
   issync?: boolean;
-  clerk_id?: string | null;
-  name?: string
+  username?: string | null;
+  birthday?: string | null;
+  gender?: string | null;
+  short_code?: string | null;
 }
 
 export interface TripItem {
@@ -125,7 +127,7 @@ class TravelDB extends Dexie {
     })
 
     this.version(3).stores({
-      users: '++id, clerk_id, name',
+      users: '++id, username, birthday, gender, short_code',
       trips: '++id, owner_id, title, is_public, updated_at',
       places: '++id, trip_id, title, lat, lng',
       itinerary: '++id, trip_id, day_index, title',
@@ -148,8 +150,8 @@ class TravelDB extends Dexie {
     // V5: Clean schema with proper title index for queries
     this.version(5)
       .stores({
-        users: '++__dexieid, user_id, issync',
-        trips: '++__dexieid, title, trip_id, issync',
+        users: '++__dexieid, user_id, issync, username, birthday, gender, short_code',
+        trips: '++__dexieid, title, trip_id, issync, owner_id',
         places: '++__dexieid, trip_id, place_id, issync',
         itinerary: '++__dexieid, trip_id, itinerary_id, issync',
         packing: '++__dexieid, trip_id, packing_id, issync',
@@ -268,16 +270,40 @@ class TravelDB extends Dexie {
           await tx.table('users').add({
             user_id: (user as any).user_id || (user as any).userId || (user as any).id || null,
             issync: !!(user as any).user_id || !!(user as any).userId || !!(user as any).id,
-            clerk_id: (user as any).clerk_id,
-            name: (user as any).name,
+            username: (user as any).username || (user as any).clerk_id,
+            birthday: (user as any).birthday,
+            gender: (user as any).gender,
+            short_code: (user as any).short_code,
           })
         }
       })
 
     // V6: Bump to ensure indexes (like trip_id) exist in existing databases
     this.version(6).stores({
-      users: '++__dexieid, user_id, issync',
-      trips: '++__dexieid, title, trip_id, issync',
+      users: '++__dexieid, user_id, issync, username, birthday, gender, short_code',
+      trips: '++__dexieid, title, trip_id, issync, owner_id',
+      places: '++__dexieid, trip_id, place_id, issync',
+      itinerary: '++__dexieid, trip_id, itinerary_id, issync',
+      packing: '++__dexieid, trip_id, packing_id, issync',
+      travelers: '++__dexieid, trip_id, traveler_id, issync',
+      expenses: '++__dexieid, trip_id, expense_id, issync'
+    })
+
+    // V7: Add user identity fields + owner_id index
+    this.version(7).stores({
+      users: '++__dexieid, user_id, issync, username, birthday, gender, short_code',
+      trips: '++__dexieid, title, trip_id, issync, owner_id',
+      places: '++__dexieid, trip_id, place_id, issync',
+      itinerary: '++__dexieid, trip_id, itinerary_id, issync',
+      packing: '++__dexieid, trip_id, packing_id, issync',
+      travelers: '++__dexieid, trip_id, traveler_id, issync',
+      expenses: '++__dexieid, trip_id, expense_id, issync'
+    })
+
+    // V8: Add short_code index for identity recovery
+    this.version(8).stores({
+      users: '++__dexieid, user_id, issync, username, birthday, gender, short_code',
+      trips: '++__dexieid, title, trip_id, issync, owner_id',
       places: '++__dexieid, trip_id, place_id, issync',
       itinerary: '++__dexieid, trip_id, itinerary_id, issync',
       packing: '++__dexieid, trip_id, packing_id, issync',

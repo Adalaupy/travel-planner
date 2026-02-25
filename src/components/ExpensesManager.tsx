@@ -283,7 +283,7 @@ export const ExpensesManager = ({ tripId: _ }: Props = {}) => {
           style={{
             width: "100%",
             display: "flex",
-            justifyContent: "center",
+            justifyContent: "end",
             marginTop: "20px",
           }}
         >

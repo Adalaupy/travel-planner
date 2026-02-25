@@ -103,6 +103,31 @@
   color: var(--muted);
 }
 
+.accessDenied {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 20px;
+  text-align: center;
+  background: linear-gradient(135deg, #fef2f2, #fee2e2);
+  border: 2px solid #fca5a5;
+  border-radius: 12px;
+  margin: 40px 0;
+}
+
+.accessDenied h1 {
+  color: #991b1b;
+  font-size: 2rem;
+  margin: 0 0 16px;
+}
+
+.accessDenied p {
+  color: #7f1d1d;
+  font-size: 1rem;
+  margin: 8px 0;
+}
+
 .spinner {
   width: 48px;
   height: 48px;

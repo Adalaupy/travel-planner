@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { db, TripItem } from '../lib/db'
+import { getLocalUserIdentity } from '../lib/userIdentity'
 
 type TripContextValue = {
   trip?: TripItem | null
@@ -30,7 +31,9 @@ export const TripProvider = ({ slug, children }: { slug: string; children: React
   const ensureTrip = async (s: string) => {
     let t = await db.trips.where('title').equals(s).first()
     if (!t) {
-      const id = await db.trips.add({ title: s, start_date: undefined, end_date: undefined, owner_id: undefined, updated_at: Date.now() })
+      const identity = getLocalUserIdentity()
+      const ownerId = identity?.user_id ?? undefined
+      const id = await db.trips.add({ title: s, start_date: undefined, end_date: undefined, owner_id: ownerId, updated_at: Date.now() })
       // For offline trips, use __dexieId as the trip_id string
       await db.trips.update(id, { trip_id: String(id) })
       t = await db.trips.get(id)

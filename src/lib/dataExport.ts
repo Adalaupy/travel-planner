@@ -1,5 +1,6 @@
 import { db, TripItem, PlaceItem, ItineraryItem, PackingItem, TravelerItem, ExpenseItem } from './db'
 import { importTripsToSupabase } from './syncService'
+import { getLocalUserIdentity } from './userIdentity'
 
 function stripDexieId<T extends Record<string, any>>(item: T): Omit<T, '__dexieid' | '__dexieId'> {
   const { __dexieid, __dexieId, ...rest } = item
@@ -46,12 +47,24 @@ export async function exportTripsData(tripIds: Array<string | number>): Promise<
       const keys = [tripKey, legacyKey].filter((v): v is string => !!v)
       const uniqueKeys = Array.from(new Set(keys))
 
+      // Query for related items - try index first, then manual filtering for items with old trip_id formats
+      const queryByTripId = async (table: any, searchKeys: string[]): Promise<any[]> => {
+        if (!searchKeys.length) return []
+        const indexed = await table.where('trip_id').anyOf(searchKeys).toArray()
+        if (indexed.length > 0) return indexed
+        // Fallback: filter all items to handle cases where trip_id wasn't updated after sync
+        const all = await table.toArray()
+        return all.filter(item =>
+          searchKeys.includes(String(item.trip_id)) || searchKeys.includes(item.trip_id)
+        )
+      }
+
       const [places, itinerary, packing, travelers, expenses] = await Promise.all([
-        uniqueKeys.length ? db.places.where('trip_id').anyOf(uniqueKeys).toArray() : [],
-        uniqueKeys.length ? db.itinerary.where('trip_id').anyOf(uniqueKeys).toArray() : [],
-        uniqueKeys.length ? db.packing.where('trip_id').anyOf(uniqueKeys).toArray() : [],
-        uniqueKeys.length ? db.travelers.where('trip_id').anyOf(uniqueKeys).toArray() : [],
-        uniqueKeys.length ? db.expenses.where('trip_id').anyOf(uniqueKeys).toArray() : [],
+        uniqueKeys.length ? queryByTripId(db.places, uniqueKeys) : [],
+        uniqueKeys.length ? queryByTripId(db.itinerary, uniqueKeys) : [],
+        uniqueKeys.length ? queryByTripId(db.packing, uniqueKeys) : [],
+        uniqueKeys.length ? queryByTripId(db.travelers, uniqueKeys) : [],
+        uniqueKeys.length ? queryByTripId(db.expenses, uniqueKeys) : [],
       ])
       return {
         trip: stripDexieId(trip),
@@ -116,10 +129,13 @@ export async function importTripsData(jsonString: string): Promise<{ success: bo
     }
 
     // Get next available user ID or create a default user
-    let defaultUserId: string | null | undefined = undefined
-    const users = await db.users.toArray()
-    if (users.length > 0) {
-      defaultUserId = users[0].user_id ?? undefined
+    const identity = getLocalUserIdentity()
+    let defaultUserId: string | null | undefined = identity?.user_id ?? undefined
+    if (!defaultUserId) {
+      const users = await db.users.toArray()
+      if (users.length > 0) {
+        defaultUserId = users[0].user_id ?? undefined
+      }
     }
 
     const supabasePayloads: any[] = []

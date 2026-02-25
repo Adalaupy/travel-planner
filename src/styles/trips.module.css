@@ -115,10 +115,12 @@
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 8px;
-  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.2);
   min-width: 180px;
   z-index: 10;
   overflow: hidden;
+  display: grid;
+  gap: 5px;
 }
 
 .menuItem {

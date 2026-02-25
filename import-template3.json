@@ -1,0 +1,449 @@
+[
+  {
+    "trip": {
+      "title": "Thailand Tropical Escape",
+      "start_date": "2026-05-15",
+      "end_date": "2026-05-20",
+      "is_public": false,
+      "owner_id": null
+    },
+    "places": [],
+    "itinerary": [
+      {
+        "trip_id": null,
+        "day_index": 0,
+        "title": "Arrive at Suvarnabhumi Airport Bangkok",
+        "time": "16:00",
+        "remark": "International flight arrival, proceed to hotel via taxi or BTS",
+        "map_link": "https://www.google.com/maps/place/Suvarnabhumi+Airport/@13.6900,100.7501,13z",
+        "lat": 13.6900,
+        "lng": 100.7501,
+        "place_name": "Suvarnabhumi Airport",
+        "order": 0
+      },
+      {
+        "trip_id": null,
+        "day_index": 0,
+        "title": "Hotel Check-in - Mandarin Oriental Bangkok",
+        "time": "18:30",
+        "remark": "Riverside luxury hotel with sunset views",
+        "map_link": "https://www.google.com/maps/place/Mandarin+Oriental+Bangkok/@13.7312,100.5169,15z",
+        "lat": 13.7312,
+        "lng": 100.5169,
+        "place_name": "Mandarin Oriental Bangkok",
+        "order": 1
+      },
+      {
+        "trip_id": null,
+        "day_index": 0,
+        "title": "Dinner at Chao Phraya River",
+        "time": "19:30",
+        "remark": "Dinner cruise with traditional Thai food",
+        "map_link": "https://www.google.com/maps/place/Chao+Phraya+River/@13.7312,100.5169,15z",
+        "lat": 13.7312,
+        "lng": 100.5169,
+        "place_name": "Chao Phraya River",
+        "order": 2
+      },
+      {
+        "trip_id": null,
+        "day_index": 1,
+        "title": "Grand Palace & Emerald Buddha",
+        "time": "09:00",
+        "remark": "Thailand's most sacred temple and palace complex",
+        "map_link": "https://www.google.com/maps/place/Grand+Palace/@13.7508,100.4926,15z",
+        "lat": 13.7508,
+        "lng": 100.4926,
+        "place_name": "Grand Palace",
+        "order": 0
+      },
+      {
+        "trip_id": null,
+        "day_index": 1,
+        "title": "Wat Pho Temple",
+        "time": "11:00",
+        "remark": "Giant reclining Buddha statue and historic monastery",
+        "map_link": "https://www.google.com/maps/place/Wat+Pho/@13.7461,100.4936,15z",
+        "lat": 13.7461,
+        "lng": 100.4936,
+        "place_name": "Wat Pho",
+        "order": 1
+      },
+      {
+        "trip_id": null,
+        "day_index": 1,
+        "title": "Damnoen Saduak Floating Market",
+        "time": "13:30",
+        "remark": "Famous floating market with boats and local goods",
+        "map_link": "https://www.google.com/maps/place/Damnoen+Saduak+Floating+Market/@13.3287,99.9272,15z",
+        "lat": 13.3287,
+        "lng": 99.9272,
+        "place_name": "Damnoen Saduak Floating Market",
+        "order": 2
+      },
+      {
+        "trip_id": null,
+        "day_index": 1,
+        "title": "Street Food Tour in Chinatown",
+        "time": "18:00",
+        "remark": "Night market with authentic Thai street food",
+        "map_link": "https://www.google.com/maps/place/Chinatown,+Bangkok/@13.7411,100.5136,15z",
+        "lat": 13.7411,
+        "lng": 100.5136,
+        "place_name": "Chinatown Bangkok",
+        "order": 3
+      },
+      {
+        "trip_id": null,
+        "day_index": 2,
+        "title": "Fly to Phuket",
+        "time": "10:00",
+        "remark": "1-hour flight to tropical island paradise",
+        "map_link": "https://www.google.com/maps/place/Phuket+International+Airport/@8.1135,98.3088,15z",
+        "lat": 8.1135,
+        "lng": 98.3088,
+        "place_name": "Phuket International Airport",
+        "order": 0
+      },
+      {
+        "trip_id": null,
+        "day_index": 2,
+        "title": "Hotel Check-in - Amanpuri Resort",
+        "time": "12:30",
+        "remark": "Luxury beachfront resort in Phuket",
+        "map_link": "https://www.google.com/maps/place/Amanpuri/@7.8995,98.3188,15z",
+        "lat": 7.8995,
+        "lng": 98.3188,
+        "place_name": "Amanpuri Resort",
+        "order": 1
+      },
+      {
+        "trip_id": null,
+        "day_index": 2,
+        "title": "Beach Relax & Sunset",
+        "time": "15:00",
+        "remark": "First day relaxation on pristine beach",
+        "map_link": "https://www.google.com/maps/place/Bang+Tao+Beach/@7.9028,98.2908,15z",
+        "lat": 7.9028,
+        "lng": 98.2908,
+        "place_name": "Bang Tao Beach",
+        "order": 2
+      },
+      {
+        "trip_id": null,
+        "day_index": 3,
+        "title": "Phang Nga Bay Island Hopping",
+        "time": "08:00",
+        "remark": "Boat tour to James Bond Island and limestone cliffs",
+        "map_link": "https://www.google.com/maps/place/Phang+Nga+Bay/@8.3833,98.5833,12z",
+        "lat": 8.3833,
+        "lng": 98.5833,
+        "place_name": "Phang Nga Bay",
+        "order": 0
+      },
+      {
+        "trip_id": null,
+        "day_index": 3,
+        "title": "Snorkeling at Coral Reefs",
+        "time": "10:30",
+        "remark": "Swimming and snorkeling in crystal clear waters",
+        "map_link": "https://www.google.com/maps/place/Phang+Nga+Bay/@8.3833,98.5833,12z",
+        "lat": 8.3833,
+        "lng": 98.5833,
+        "place_name": "Coral Reefs",
+        "order": 1
+      },
+      {
+        "trip_id": null,
+        "day_index": 3,
+        "title": "Thai Massage & Spa",
+        "time": "16:00",
+        "remark": "Traditional Thai massage and wellness treatments",
+        "map_link": "https://www.google.com/maps/place/Patong+Beach/@7.8935,98.2948,15z",
+        "lat": 7.8935,
+        "lng": 98.2948,
+        "place_name": "Patong Beach Spa",
+        "order": 2
+      },
+      {
+        "trip_id": null,
+        "day_index": 4,
+        "title": "Elephant Sanctuary Visit",
+        "time": "08:30",
+        "remark": "Ethical elephant encounter and nature walk",
+        "map_link": "https://www.google.com/maps/place/Elephant+Nature+Park+Phuket/@8.1234,98.2789,15z",
+        "lat": 8.1234,
+        "lng": 98.2789,
+        "place_name": "Elephant Sanctuary",
+        "order": 0
+      },
+      {
+        "trip_id": null,
+        "day_index": 4,
+        "title": "Old Phuket Town Walking Tour",
+        "time": "14:00",
+        "remark": "Cultural Sino-Portuguese buildings and local shops",
+        "map_link": "https://www.google.com/maps/place/Old+Phuket+Town/@7.8811,98.3951,15z",
+        "lat": 7.8811,
+        "lng": 98.3951,
+        "place_name": "Old Phuket Town",
+        "order": 1
+      },
+      {
+        "trip_id": null,
+        "day_index": 4,
+        "title": "Final Beach Day & Shopping",
+        "time": "16:00",
+        "remark": "Last evening on the beach before departure",
+        "map_link": "https://www.google.com/maps/place/Patong+Beach/@7.8935,98.2948,15z",
+        "lat": 7.8935,
+        "lng": 98.2948,
+        "place_name": "Patong Beach",
+        "order": 2
+      },
+      {
+        "trip_id": null,
+        "day_index": 4,
+        "title": "Depart from Phuket International Airport",
+        "time": "22:00",
+        "remark": "Check-in 3 hours before international flight",
+        "map_link": "https://www.google.com/maps/place/Phuket+International+Airport/@8.1135,98.3088,15z",
+        "lat": 8.1135,
+        "lng": 98.3088,
+        "place_name": "Phuket International Airport",
+        "order": 3
+      }
+    ],
+    "packing": [
+      {
+        "trip_id": null,
+        "title": "Passport & Travel Documents",
+        "completed": false,
+        "color": "#ff4444",
+        "order": 1
+      },
+      {
+        "trip_id": null,
+        "title": "Phone Charger & Power Bank",
+        "completed": false,
+        "color": "#4285f4",
+        "order": 2
+      },
+      {
+        "trip_id": null,
+        "title": "Swimsuit & Beach Towel",
+        "completed": false,
+        "color": "#34a853",
+        "order": 3
+      },
+      {
+        "trip_id": null,
+        "title": "T-shirts & Shorts (Light Clothes)",
+        "completed": false,
+        "color": "#fbbc04",
+        "order": 4
+      },
+      {
+        "trip_id": null,
+        "title": "Waterproof Camera",
+        "completed": false,
+        "color": "#9c27b0",
+        "order": 5
+      },
+      {
+        "trip_id": null,
+        "title": "Thai Baht Cash & Credit Cards",
+        "completed": false,
+        "color": "#ff6b6b",
+        "order": 6
+      },
+      {
+        "trip_id": null,
+        "title": "Sunscreen SPF50 & Sunglasses",
+        "completed": false,
+        "color": "#20c997",
+        "order": 7
+      },
+      {
+        "trip_id": null,
+        "title": "Insect Repellent & First Aid",
+        "completed": false,
+        "color": "#17a2b8",
+        "order": 8
+      },
+      {
+        "trip_id": null,
+        "title": "Lightweight Rain Jacket",
+        "completed": false,
+        "color": "#ce93d8",
+        "order": 9
+      }
+    ],
+    "travelers": [
+      {
+        "trip_id": null,
+        "traveler_id": 1,
+        "name": "James",
+        "email": "james@example.com",
+        "icon": "FaUserTie"
+      },
+      {
+        "trip_id": null,
+        "traveler_id": 2,
+        "name": "Sophie",
+        "email": "sophie@example.com",
+        "icon": "FaUserCircle"
+      },
+      {
+        "trip_id": null,
+        "traveler_id": 3,
+        "name": "Oliver",
+        "email": "oliver@example.com",
+        "icon": "FaUserCircle"
+      },
+      {
+        "trip_id": null,
+        "traveler_id": 4,
+        "name": "Isabella",
+        "email": "isabella@example.com",
+        "icon": "FaUserCircle"
+      },
+      {
+        "trip_id": null,
+        "traveler_id": 5,
+        "name": "Noah",
+        "email": "noah@example.com",
+        "icon": "FaUserTie"
+      },
+      {
+        "trip_id": null,
+        "traveler_id": 6,
+        "name": "Mia",
+        "email": "mia@example.com",
+        "icon": "FaUserCircle"
+      }
+    ],
+    "expenses": [
+      {
+        "trip_id": null,
+        "title": "Flight Tickets Bangkok + Phuket Domestic",
+        "amount": 58000,
+        "payer_id": 1,
+        "charged_to": [1, 2, 3, 4, 5, 6],
+        "datetime": "2026-05-15T00:00:00.000Z"
+      },
+      {
+        "trip_id": null,
+        "title": "Hotel Accommodation Bangkok (2 nights)",
+        "amount": 28000,
+        "payer_id": 2,
+        "charged_to": [1, 2, 3, 4, 5, 6],
+        "datetime": "2026-05-15T00:00:00.000Z"
+      },
+      {
+        "trip_id": null,
+        "title": "Hotel Accommodation Phuket (3 nights)",
+        "amount": 38000,
+        "payer_id": 3,
+        "charged_to": [1, 2, 3, 4, 5, 6],
+        "datetime": "2026-05-17T00:00:00.000Z"
+      },
+      {
+        "trip_id": null,
+        "title": "Airport Transfer Bangkok",
+        "amount": 2000,
+        "payer_id": 4,
+        "charged_to": [1, 2, 3, 4, 5, 6],
+        "datetime": "2026-05-15T16:00:00.000Z"
+      },
+      {
+        "trip_id": null,
+        "title": "Chao Phraya Dinner Cruise",
+        "amount": 12000,
+        "payer_id": 1,
+        "charged_to": [1, 2, 3, 4, 5, 6],
+        "datetime": "2026-05-15T19:30:00.000Z"
+      },
+      {
+        "trip_id": null,
+        "title": "Grand Palace & Temples Tour",
+        "amount": 8000,
+        "payer_id": 5,
+        "charged_to": [1, 2, 3, 4, 5, 6],
+        "datetime": "2026-05-16T09:00:00.000Z"
+      },
+      {
+        "trip_id": null,
+        "title": "Floating Market Boat Tour",
+        "amount": 6000,
+        "payer_id": 2,
+        "charged_to": [1, 2, 3, 4, 5, 6],
+        "datetime": "2026-05-16T13:30:00.000Z"
+      },
+      {
+        "trip_id": null,
+        "title": "Lunch at Floating Market",
+        "amount": 4000,
+        "payer_id": 6,
+        "charged_to": [1, 2, 3, 4, 5, 6],
+        "datetime": "2026-05-16T14:00:00.000Z"
+      },
+      {
+        "trip_id": null,
+        "title": "Phang Nga Bay Island Hopping",
+        "amount": 16000,
+        "payer_id": 3,
+        "charged_to": [1, 2, 3, 4, 5, 6],
+        "datetime": "2026-05-18T08:00:00.000Z"
+      },
+      {
+        "trip_id": null,
+        "title": "Snorkeling Equipment & Guide",
+        "amount": 5000,
+        "payer_id": 4,
+        "charged_to": [1, 2, 3, 4, 5, 6],
+        "datetime": "2026-05-18T10:30:00.000Z"
+      },
+      {
+        "trip_id": null,
+        "title": "Traditional Thai Massage & Spa",
+        "amount": 7000,
+        "payer_id": 1,
+        "charged_to": [1, 2, 3, 4, 5, 6],
+        "datetime": "2026-05-18T16:00:00.000Z"
+      },
+      {
+        "trip_id": null,
+        "title": "Elephant Sanctuary Experience",
+        "amount": 14000,
+        "payer_id": 5,
+        "charged_to": [1, 2, 3, 4, 5, 6],
+        "datetime": "2026-05-19T08:30:00.000Z"
+      },
+      {
+        "trip_id": null,
+        "title": "Lunch at Old Phuket Town",
+        "amount": 5500,
+        "payer_id": 2,
+        "charged_to": [1, 2, 3, 4, 5, 6],
+        "datetime": "2026-05-19T14:00:00.000Z"
+      },
+      {
+        "trip_id": null,
+        "title": "Souvenir Shopping",
+        "amount": 9000,
+        "payer_id": 6,
+        "charged_to": [1, 3, 5],
+        "datetime": "2026-05-19T16:00:00.000Z"
+      },
+      {
+        "trip_id": null,
+        "title": "Farewell Beach Dinner",
+        "amount": 11000,
+        "payer_id": 4,
+        "charged_to": [1, 2, 3, 4, 5, 6],
+        "datetime": "2026-05-19T19:00:00.000Z"
+      }
+    ]
+  }
+]
