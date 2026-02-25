@@ -379,7 +379,7 @@ export async function updateTrip(
     const online = await isOnline()
 
     if (!online) {
-        // Offline: update local only (only if numeric ID)
+        // Offline: update local only
         if (typeof tripId === 'number') {
             await db.trips.update(tripId, {
                 title: updates.title,
@@ -388,6 +388,18 @@ export async function updateTrip(
                 updated_at: Date.now(),
             })
             return await db.trips.get(tripId)
+        } else {
+            // For UUID: find Dexie record by trip_id and update it
+            const dexieTrip = await db.trips.where('trip_id').equals(String(tripId)).first()
+            if (dexieTrip?.__dexieid) {
+                await db.trips.update(dexieTrip.__dexieid, {
+                    title: updates.title,
+                    start_date: updates.startDate,
+                    end_date: updates.endDate,
+                    updated_at: Date.now(),
+                })
+                return await db.trips.get(dexieTrip.__dexieid)
+            }
         }
         return null
     }
@@ -405,7 +417,7 @@ export async function updateTrip(
             .single()
 
         if (!error && data) {
-            // Update cache if numeric ID
+            // Update cache - handle both numeric ID and UUID
             if (typeof tripId === 'number') {
                 await db.trips.update(tripId, {
                     title: data.title,
@@ -414,8 +426,20 @@ export async function updateTrip(
                     updated_at: new Date(data.updated_at).getTime(),
                 })
                 return await db.trips.get(tripId)
+            } else {
+                // For UUID: find Dexie record by trip_id and update it
+                const dexieTrip = await db.trips.where('trip_id').equals(String(tripId)).first()
+                if (dexieTrip?.__dexieid) {
+                    await db.trips.update(dexieTrip.__dexieid, {
+                        title: data.title,
+                        start_date: data.start_date,
+                        end_date: data.end_date,
+                        updated_at: new Date(data.updated_at).getTime(),
+                    })
+                    return await db.trips.get(dexieTrip.__dexieid)
+                }
             }
-            // Return Supabase data directly for UUID
+            // Return Supabase data directly if no Dexie update
             return data
         }
     } catch (err) {
@@ -429,6 +453,18 @@ export async function updateTrip(
                 updated_at: Date.now(),
             })
             return await db.trips.get(tripId)
+        } else {
+            // For UUID: find Dexie record by trip_id and update it
+            const dexieTrip = await db.trips.where('trip_id').equals(String(tripId)).first()
+            if (dexieTrip?.__dexieid) {
+                await db.trips.update(dexieTrip.__dexieid, {
+                    title: updates.title,
+                    start_date: updates.startDate,
+                    end_date: updates.endDate,
+                    updated_at: Date.now(),
+                })
+                return await db.trips.get(dexieTrip.__dexieid)
+            }
         }
     }
 
@@ -1034,6 +1070,83 @@ export async function addItineraryItem(
             order: item.order,
         })
         return (await db.itinerary.get(id)) ?? null
+    }
+
+    return null
+}
+
+export async function updateItineraryItem(
+    tripId: string | null | number | undefined,
+    itemId: number | string | undefined,
+    updates: { order?: number }
+): Promise<ItineraryItem | null> {
+    if (!itemId) return null
+
+    const online = await isOnline()
+
+    if (typeof itemId === 'number') {
+        if (!online) {
+            await db.itinerary.update(itemId, updates)
+            return (await db.itinerary.get(itemId)) ?? null
+        }
+
+        try {
+            const item = await db.itinerary.get(itemId)
+            if (!item || !item.itinerary_id) {
+                await db.itinerary.update(itemId, updates)
+                return (await db.itinerary.get(itemId)) ?? null
+            }
+
+            const { data, error } = await supabase
+                .from('itinerary')
+                .update({ order: updates.order })
+                .eq('itinerary_id', item.itinerary_id)
+                .select()
+                .single()
+
+            if (!error && data) {
+                await db.itinerary.update(itemId, { order: data.order })
+                return (await db.itinerary.get(itemId)) ?? null
+            }
+        } catch (err) {
+            console.log('Error updating itinerary item:', err)
+            await db.itinerary.update(itemId, updates)
+            return (await db.itinerary.get(itemId)) ?? null
+        }
+    } else {
+        try {
+            const { data, error } = await supabase
+                .from('itinerary')
+                .update({ order: updates.order })
+                .eq('itinerary_id', String(itemId))
+                .select()
+                .single()
+
+            if (!error && data) {
+                await db.itinerary.where('itinerary_id').equals(String(itemId)).modify({ order: data.order })
+                return {
+                    __dexieid: undefined,
+                    itinerary_id: data.itinerary_id,
+                    trip_id: data.trip_id ?? (tripId ? String(tripId) : undefined),
+                    day_index: data.day_index,
+                    title: data.title,
+                    time: data.time,
+                    url: data.url,
+                    remark: data.remark,
+                    map_link: data.map_link,
+                    lat: data.lat,
+                    lng: data.lng,
+                    place_name: data.place_name,
+                    order: data.order,
+                    issync: true,
+                }
+            }
+        } catch (err) {
+            console.log('Error updating itinerary item:', err)
+            await db.itinerary.where('itinerary_id').equals(String(itemId)).modify({ order: updates.order })
+            const local = await db.itinerary.where('itinerary_id').equals(String(itemId)).first()
+            return local ?? null
+        }
     }
 
     return null

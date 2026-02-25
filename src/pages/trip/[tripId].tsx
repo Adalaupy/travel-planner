@@ -17,6 +17,7 @@ export default function TripDetailPage() {
   const [editingTitle, setEditingTitle] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [accessDenied, setAccessDenied] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0); // Trigger TripProvider to reload
   // TripContext sync will be handled inside TripProvider
 
   useEffect(() => {
@@ -132,21 +133,28 @@ export default function TripDetailPage() {
               <form
                 onSubmit={async (e) => {
                   e.preventDefault();
-                  if (!newTitle.trim() || !numericId || !tripIdParam) return;
+                  if (!newTitle.trim() || !tripIdParam) return;
+                  
+                  // Update immediately in UI for instant feedback
+                  setTripTitle(newTitle.trim());
+                  setEditingTitle(false);
                   
                   // Update via syncService (handles both Dexie and Supabase)
-                  // Pass tripIdParam which can be UUID or numeric
-                  const updated = await updateTrip(tripIdParam, {
+                  await updateTrip(tripIdParam, {
                     title: newTitle.trim(),
-                  })
+                  });
                   
-                  // Update local state with actual returned data
-                  if (updated?.title) {
-                    setTripTitle(updated.title);
-                  } else {
-                    setTripTitle(newTitle.trim());
+                  // Refetch from Dexie to confirm update
+                  if (numericId) {
+                    const refreshedTrip = await db.trips.get(numericId);
+                    if (refreshedTrip?.title) {
+                      setTripTitle(refreshedTrip.title);
+                    }
                   }
-                  setEditingTitle(false);
+                  
+                  // Sync with Supabase and trigger TripProvider to reload
+                  await syncTripFromSupabase(tripIdParam);
+                  setRefreshKey((prev) => prev + 1); // Force TripProvider to reload
                 }}
                 style={{ display: "flex", alignItems: "center", gap: 12 }}
               >
@@ -192,7 +200,7 @@ export default function TripDetailPage() {
             )}
           </div>
           {numericId ? (
-            <TripProvider slug={String(tripIdParam)}>
+            <TripProvider key={refreshKey} slug={String(tripIdParam)}>
               <TripDetailTabs
                 numericId={numericId}
                 tripTitle={tripTitle}

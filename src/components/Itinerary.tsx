@@ -14,7 +14,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { db, ItineraryItem as ItineraryItemType } from "../lib/db";
-import { getItineraryItems, addItineraryItem, deleteItineraryItem, updateTrip } from "../lib/syncService";
+import { getItineraryItems, addItineraryItem, deleteItineraryItem, updateTrip, updateItineraryItem } from "../lib/syncService";
 import { parseMapLink } from "../lib/mapParser";
 import styles from "../styles/components.module.css";
 
@@ -73,6 +73,9 @@ export const Itinerary = ({ tripId: _ }: Props = {}) => {
     return future.toISOString().split("T")[0];
   });
   const sensors = useSensors(useSensor(PointerSensor));
+
+  const getItemId = (item: ItineraryItemType, idx: number): string | number =>
+    item.__dexieid ?? item.itinerary_id ?? `temp-${idx}`;
 
   // Helper for array move
   function arrayMoveLocal(arr: ItineraryItemType[], from: number, to: number) {
@@ -178,14 +181,35 @@ export const Itinerary = ({ tripId: _ }: Props = {}) => {
 
   // Helper to update order in DB and state
   const updateOrder = async (newDayItems: ItineraryItemType[]) => {
+    // Track old orders for comparison
+    const oldOrdersMap = new Map(
+      dayItems.map((item) => [item.__dexieid ?? item.itinerary_id, item.order ?? 0])
+    );
+
+    // Assign new sequential orders
+    const reordered = newDayItems.map((item, idx) => ({
+      ...item,
+      order: idx,
+    }));
+
+    // Only update items whose order actually changed
+    const itemsToUpdate = reordered.filter((item, newIdx) => {
+      const itemId = item.__dexieid ?? item.itinerary_id;
+      const oldOrder = oldOrdersMap.get(itemId) ?? 0;
+      return oldOrder !== newIdx; // Only update if order changed
+    });
+
     await Promise.all(
-      newDayItems.map((item, idx) => {
-        return db.itinerary.update(item.__dexieid!, { order: idx });
+      itemsToUpdate.map((item) => {
+        const itemId = item.__dexieid ?? item.itinerary_id;
+        if (!itemId) return Promise.resolve();
+        return updateItineraryItem(tripId, itemId, { order: item.order });
       }),
     );
+
     setItems((prev) => {
       const other = prev.filter((i) => i.day_index !== selectedDay);
-      return [...other, ...newDayItems].sort(
+      return [...other, ...reordered].sort(
         (a, b) => a.day_index - b.day_index || (a.order ?? 0) - (b.order ?? 0),
       );
     });
@@ -277,8 +301,11 @@ export const Itinerary = ({ tripId: _ }: Props = {}) => {
   const onDragEnd = async (event: any) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
-    const oldIndex = dayItems.findIndex((i) => i.__dexieid === active.id);
-    const newIndex = dayItems.findIndex((i) => i.__dexieid === over.id);
+    const activeId = String(active.id);
+    const overId = String(over.id);
+    const oldIndex = dayItems.findIndex((i, idx) => String(getItemId(i, idx)) === activeId);
+    const newIndex = dayItems.findIndex((i, idx) => String(getItemId(i, idx)) === overId);
+    if (oldIndex === -1 || newIndex === -1) return;
     const newOrder = arrayMoveLocal(dayItems, oldIndex, newIndex);
     await updateOrder(newOrder);
   };
@@ -336,6 +363,7 @@ export const Itinerary = ({ tripId: _ }: Props = {}) => {
           value={time}
           onChange={(e) => setTime(e.target.value)}
           placeholder="Time (optional)"
+          title="Time is for display only and does not affect the order of items. Drag and drop to reorder."
         />
         <input
           placeholder="Google Maps Link"
@@ -360,6 +388,9 @@ export const Itinerary = ({ tripId: _ }: Props = {}) => {
           {parsing ? "Parsing..." : "Add"}
         </button>
       </div>
+      <p style={{ fontSize: "12px", color: "#666", marginTop: "8px" }}>
+        💡 <strong>Note:</strong> Time input is optional and for display only—it does not affect ordering. Use drag and drop to reorder items.
+      </p>
       {parsedData && (
         <div className={styles.parsedDataDisplay}>
           <strong>Parsed Map Data:</strong>
@@ -390,17 +421,18 @@ export const Itinerary = ({ tripId: _ }: Props = {}) => {
         onDragEnd={onDragEnd}
       >
         <SortableContext
-          items={dayItems.map((i) => i.__dexieid!)}
+          items={dayItems.map((i, idx) => getItemId(i, idx))}
           strategy={verticalListSortingStrategy}
         >
           <ul className={styles.itineraryList}>
             {dayItems.map((item, idx) => (
               <SortableItineraryItem
-                key={item.__dexieid}
+                key={getItemId(item, idx)}
                 item={item}
                 idx={idx}
                 dayItems={dayItems}
                 removeItem={removeItem}
+                itemId={getItemId(item, idx)}
               />
             ))}
           </ul>
@@ -416,11 +448,13 @@ function SortableItineraryItem({
   idx,
   dayItems,
   removeItem,
+  itemId,
 }: {
   item: ItineraryItemType;
   idx: number;
   dayItems: ItineraryItemType[];
   removeItem: (id: number) => void;
+  itemId: string | number;
 }) {
   const {
     attributes,
@@ -429,7 +463,7 @@ function SortableItineraryItem({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: item.__dexieid! });
+  } = useSortable({ id: itemId });
   const style = {
     transform: transform ? CSS.Transform.toString(transform) : undefined,
     transition,

@@ -147,7 +147,6 @@ class TravelDB extends Dexie {
         const oldTravelers = await tx.table('travelers').toArray()
         const oldExpenses = await tx.table('expenses').toArray()
         const oldItinerary = await tx.table('itinerary').toArray()
-        const oldPlaces = await tx.table('places').toArray()
         const oldUsers = await tx.table('users').toArray()
 
         // Clear old data
@@ -156,7 +155,6 @@ class TravelDB extends Dexie {
         await tx.table('travelers').clear()
         await tx.table('expenses').clear()
         await tx.table('itinerary').clear()
-        await tx.table('places').clear()
         await tx.table('users').clear()
 
         // Migrate trips
@@ -223,7 +221,6 @@ class TravelDB extends Dexie {
             day_index: (item as any).day_index,
             title: item.title,
             time: (item as any).time,
-            place_id: (item as any).place_id,
             url: (item as any).url,
             remark: (item as any).remark,
             map_link: (item as any).map_link,
@@ -231,19 +228,6 @@ class TravelDB extends Dexie {
             lng: (item as any).lng,
             place_name: (item as any).place_name,
             order: (item as any).order,
-          })
-        }
-
-        // Migrate places
-        for (const place of oldPlaces) {
-          await tx.table('places').add({
-            place_id: (place as any).place_id || (place as any).placeId || (place as any).id || null,
-            issync: !!(place as any).place_id || !!(place as any).placeId || !!(place as any).id,
-            trip_id: (place as any).trip_id || (place as any).tripId || (place as any).trip_id,
-            title: place.title,
-            lat: (place as any).lat,
-            lng: (place as any).lng,
-            url: (place as any).url,
           })
         }
 
@@ -264,7 +248,6 @@ class TravelDB extends Dexie {
     this.version(6).stores({
       users: '++__dexieid, user_id, issync, username, birthday, gender, short_code',
       trips: '++__dexieid, title, trip_id, issync, owner_id',
-      places: '++__dexieid, trip_id, place_id, issync',
       itinerary: '++__dexieid, trip_id, itinerary_id, issync',
       packing: '++__dexieid, trip_id, packing_id, issync',
       travelers: '++__dexieid, trip_id, traveler_id, issync',
@@ -275,7 +258,6 @@ class TravelDB extends Dexie {
     this.version(7).stores({
       users: '++__dexieid, user_id, issync, username, birthday, gender, short_code',
       trips: '++__dexieid, title, trip_id, issync, owner_id',
-      places: '++__dexieid, trip_id, place_id, issync',
       itinerary: '++__dexieid, trip_id, itinerary_id, issync',
       packing: '++__dexieid, trip_id, packing_id, issync',
       travelers: '++__dexieid, trip_id, traveler_id, issync',
@@ -286,7 +268,6 @@ class TravelDB extends Dexie {
     this.version(8).stores({
       users: '++__dexieid, user_id, issync, username, birthday, gender, short_code',
       trips: '++__dexieid, title, trip_id, issync, owner_id',
-      places: '++__dexieid, trip_id, place_id, issync',
       itinerary: '++__dexieid, trip_id, itinerary_id, issync',
       packing: '++__dexieid, trip_id, packing_id, issync',
       travelers: '++__dexieid, trip_id, traveler_id, issync',
