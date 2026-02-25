@@ -1,0 +1,235 @@
+[
+  {
+    "trip": {
+      "title": "Paris & Europe Grand Tour",
+      "start_date": "2026-05-10",
+      "end_date": "2026-05-17",
+      "is_public": false,
+      "owner_id": null,
+      "share_with": []
+    },
+    "itinerary": [
+      {
+        "trip_id": null,
+        "day_index": 0,
+        "title": "Arrive at Charles de Gaulle Airport",
+        "time": "10:00",
+        "remark": "Take RER B train to city center",
+        "map_link": "https://www.google.com/maps/place/Paris-Charles+de+Gaulle+Airport/@49.0096906,2.5479245,17z",
+        "lat": 49.0096906,
+        "lng": 2.5479245,
+        "place_name": "CDG Airport",
+        "order": 0
+      },
+      {
+        "trip_id": null,
+        "day_index": 0,
+        "title": "Check-in Hotel de Rivoli",
+        "time": "12:00",
+        "remark": "Located near the Louvre Museum",
+        "map_link": "https://www.google.com/maps/place/Le+Marais/@48.8620722,2.3639316,17z",
+        "lat": 48.8620722,
+        "lng": 2.3639316,
+        "place_name": "Le Marais, Paris",
+        "order": 1
+      },
+      {
+        "trip_id": null,
+        "day_index": 0,
+        "title": "Lunch at Cafe de Flore",
+        "time": "13:00",
+        "remark": "Historic cafe in Saint-Germain-des-Prés",
+        "map_link": "https://www.google.com/maps/place/Caf%C3%A9+de+Flore/@48.8535,2.3338,17z",
+        "lat": 48.8535,
+        "lng": 2.3338,
+        "place_name": "Cafe de Flore",
+        "order": 2
+      },
+      {
+        "trip_id": null,
+        "day_index": 1,
+        "title": "Eiffel Tower & Seine Cruise",
+        "time": "10:00",
+        "remark": "Book tickets in advance for top floor access",
+        "map_link": "https://www.google.com/maps/place/Eiffel+Tower/@48.8584,2.2945,17z",
+        "lat": 48.8584,
+        "lng": 2.2945,
+        "place_name": "Eiffel Tower",
+        "order": 0
+      },
+      {
+        "trip_id": null,
+        "day_index": 1,
+        "title": "Louvre Museum",
+        "time": "14:00",
+        "remark": "Home of Mona Lisa, allow 3-4 hours minimum",
+        "map_link": "https://www.google.com/maps/place/Louvre+Museum/@48.8606,2.3376,17z",
+        "lat": 48.8606,
+        "lng": 2.3376,
+        "place_name": "Louvre",
+        "order": 1
+      },
+      {
+        "trip_id": null,
+        "day_index": 1,
+        "title": "Dinner at L'Astrance",
+        "time": "19:00",
+        "remark": "Michelin-starred restaurant, reservations required",
+        "map_link": "https://www.google.com/maps/place/L%27Astrance/@48.8483,2.2973,17z",
+        "lat": 48.8483,
+        "lng": 2.2973,
+        "place_name": "L'Astrance",
+        "order": 2
+      },
+      {
+        "trip_id": null,
+        "day_index": 2,
+        "title": "Versailles Palace Day Trip",
+        "time": "09:00",
+        "remark": "Take train from Paris to Versailles, full day required",
+        "map_link": "https://www.google.com/maps/place/Palace+of+Versailles/@48.8047,2.1204,17z",
+        "lat": 48.8047,
+        "lng": 2.1204,
+        "place_name": "Palace of Versailles",
+        "order": 0
+      },
+      {
+        "trip_id": null,
+        "day_index": 2,
+        "title": "Gardens at Versailles",
+        "time": "11:30",
+        "remark": "Stunning gardens with fountains and walking paths",
+        "map_link": "https://www.google.com/maps/place/Gardens+of+Versailles/@48.8047,2.1204,17z",
+        "lat": 48.8047,
+        "lng": 2.1204,
+        "place_name": "Versailles Gardens",
+        "order": 1
+      },
+      {
+        "trip_id": null,
+        "day_index": 3,
+        "title": "Arc de Triomphe",
+        "time": "10:00",
+        "remark": "Best views of Paris from the top, 284 steps",
+        "map_link": "https://www.google.com/maps/place/Arc+de+Triomphe/@48.8738,2.2950,17z",
+        "lat": 48.8738,
+        "lng": 2.2950,
+        "place_name": "Arc de Triomphe",
+        "order": 0
+      },
+      {
+        "trip_id": null,
+        "day_index": 3,
+        "title": "Shopping on Champs Elysees",
+        "time": "12:00",
+        "remark": "Luxury shopping avenue with iconic brands",
+        "map_link": "https://www.google.com/maps/place/Champs+%C3%89lys%C3%A9es/@48.8699,2.3073,17z",
+        "lat": 48.8699,
+        "lng": 2.3073,
+        "place_name": "Champs Elysees",
+        "order": 1
+      }
+    ],
+    "packing": [
+      {
+        "trip_id": null,
+        "title": "Passport",
+        "completed": false,
+        "color": "#ff4444",
+        "order": 1
+      },
+      {
+        "trip_id": null,
+        "title": "Comfortable Walking Shoes",
+        "completed": false,
+        "color": "#34a853",
+        "order": 2
+      },
+      {
+        "trip_id": null,
+        "title": "Light Layers for Spring",
+        "completed": false,
+        "color": "#fbbc04",
+        "order": 3
+      },
+      {
+        "trip_id": null,
+        "title": "Sunscreen & Hat",
+        "completed": false,
+        "color": "#4285f4",
+        "order": 4
+      },
+      {
+        "trip_id": null,
+        "title": "Camera",
+        "completed": false,
+        "color": "#9c27b0",
+        "order": 5
+      },
+      {
+        "trip_id": null,
+        "title": "EUR Currency & Credit Cards",
+        "completed": false,
+        "color": "#ff6b6b",
+        "order": 6
+      }
+    ],
+    "travelers": [
+      {
+        "trip_id": null,
+        "traveler_id": 1,
+        "name": "John",
+        "email": "john@example.com",
+        "icon": "FaUserTie"
+      },
+      {
+        "trip_id": null,
+        "traveler_id": 2,
+        "name": "Sophia",
+        "email": "sophia@example.com",
+        "icon": "FaUserCircle"
+      },
+      {
+        "trip_id": null,
+        "traveler_id": 3,
+        "name": "Lucas",
+        "email": "lucas@example.com",
+        "icon": "FaChild"
+      }
+    ],
+    "expenses": [
+      {
+        "trip_id": null,
+        "title": "Flights to Paris",
+        "amount": 2400,
+        "payer_id": 1,
+        "charged_to": [1, 2, 3],
+        "datetime": "2026-05-10T00:00:00.000Z"
+      },
+      {
+        "trip_id": null,
+        "title": "Hotel (7 nights)",
+        "amount": 1750,
+        "payer_id": 2,
+        "charged_to": [1, 2, 3],
+        "datetime": "2026-05-10T00:00:00.000Z"
+      },
+      {
+        "trip_id": null,
+        "title": "Louvre Tickets",
+        "amount": 150,
+        "payer_id": 3,
+        "charged_to": [1, 2, 3],
+        "datetime": "2026-05-11T14:00:00.000Z"
+      },
+      {
+        "trip_id": null,
+        "title": "Versailles Train & Entry",
+        "amount": 180,
+        "payer_id": 1,
+        "charged_to": [1, 2, 3],
+        "datetime": "2026-05-12T09:00:00.000Z"
+      }
+    ]
+  }
+]

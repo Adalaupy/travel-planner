@@ -148,22 +148,40 @@ export async function getUserTrips() {
                 return []
             }
 
-            const { data, error } = await supabase
+            // Get owned trips
+            const { data: ownedData, error: ownedError } = await supabase
                 .from('trips')
                 .select('*')
                 .eq('is_public', false)
                 .eq('owner_id', ownerId)
                 .order('updated_at', { ascending: false })
 
-            if (!error && data) {
-                // Normalize ID fields for routing compatibility
-                return data.map((item: any) => ({
-                    ...item,
-                    trip_id: item.trip_id ?? item.id
-                }))
-            } else {
-                console.log('Supabase error:', error)
+            // Get shared trips (where share_with contains current user)
+            const { data: sharedData, error: sharedError } = await supabase
+                .from('trips')
+                .select('*')
+                .eq('is_public', false)
+                .filter('share_with', 'cs', `["${ownerId}"]`)
+                .order('updated_at', { ascending: false })
+
+            if ((ownedError && sharedError) || (!ownedData && !sharedData)) {
+                console.log('Supabase error:', ownedError || sharedError)
             }
+
+            // Combine and deduplicate
+            const allTrips = [
+                ...(ownedData || []),
+                ...(sharedData || [])
+            ].filter(
+                (trip, index, self) =>
+                    self.findIndex((t) => t.trip_id === trip.trip_id) === index
+            )
+
+            // Normalize ID fields for routing compatibility
+            return allTrips.map((item: any) => ({
+                ...item,
+                trip_id: item.trip_id ?? item.id
+            }))
         } catch (err) {
             console.log('Error fetching trips from Supabase, using cache:', err)
         }
@@ -171,8 +189,14 @@ export async function getUserTrips() {
 
     if (!ownerId) return []
 
-    // Fallback: return local trips for the current user
-    return await db.trips.filter((trip) => trip.owner_id === ownerId || trip.owner_id == null).toArray()
+    // Fallback: return local trips (owned or shared with current user)
+    const allTrips = await db.trips.toArray()
+    return allTrips.filter(
+        (trip) =>
+            trip.owner_id === ownerId ||
+            trip.owner_id == null ||
+            trip.share_with?.includes(ownerId)
+    )
 }
 
 export async function importTripsToSupabase(
@@ -469,6 +493,156 @@ export async function updateTrip(
     }
 
     return null
+}
+
+export async function shareTrip(
+    tripId: string | number | null,
+    username: string
+): Promise<{ success: boolean; error?: string; userId?: string }> {
+    if (!username.trim()) {
+        return { success: false, error: 'Username cannot be empty' }
+    }
+
+    try {
+        // Find user by username in local cache first
+        let user = await db.users.where('username').equals(username).first()
+
+        // If not found locally and online, query Supabase
+        if (!user) {
+            const online = await isOnline()
+            if (online) {
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('user_id, username')
+                    .ilike('username', username) // Case-insensitive search
+                    .single()
+
+                if (data) {
+                    user = data as any
+                    // Cache the user locally for future use
+                    await db.users.put({
+                        user_id: data.user_id,
+                        username: data.username
+                    })
+                }
+            }
+        }
+
+        if (!user || !user.user_id) {
+            return { success: false, error: 'User not found' }
+        }
+
+        const userId = user.user_id
+
+        // Get trip
+        let trip: TripItem | undefined
+        if (typeof tripId === 'number') {
+            trip = await db.trips.get(tripId)
+        } else {
+            trip = await db.trips.where('trip_id').equals(String(tripId)).first()
+        }
+
+        if (!trip?.__dexieid) {
+            return { success: false, error: 'Trip not found' }
+        }
+
+        // Check if already shared
+        if (trip.share_with?.includes(userId)) {
+            return { success: false, error: 'Already shared with this user' }
+        }
+
+        // Update share_with array
+        const updatedShareWith = [...(trip.share_with || []), userId]
+        await db.trips.update(trip.__dexieid, { share_with: updatedShareWith })
+
+        // Sync to Supabase if online
+        const online = await isOnline()
+        if (online && trip.trip_id) {
+            const { error } = await supabase
+                .from('trips')
+                .update({ share_with: updatedShareWith })
+                .eq('trip_id', String(trip.trip_id))
+                .select()
+
+            if (error) {
+                console.error('Error sharing trip to Supabase:', error)
+            }
+        }
+
+        return { success: true, userId }
+    } catch (err) {
+        console.error('Error sharing trip:', err)
+        return { success: false, error: err instanceof Error ? err.message : 'Unknown error' }
+    }
+}
+
+export async function unshareTrip(
+    tripId: string | number | null,
+    userId: string
+): Promise<{ success: boolean; error?: string }> {
+    try {
+        // Get trip
+        let trip: TripItem | undefined
+        if (typeof tripId === 'number') {
+            trip = await db.trips.get(tripId)
+        } else {
+            trip = await db.trips.where('trip_id').equals(String(tripId)).first()
+        }
+
+        if (!trip?.__dexieid) {
+            return { success: false, error: 'Trip not found' }
+        }
+
+        // Remove user from share_with array
+        const updatedShareWith = (trip.share_with || []).filter((id) => id !== userId)
+        await db.trips.update(trip.__dexieid, { share_with: updatedShareWith })
+
+        // Sync to Supabase if online
+        const online = await isOnline()
+        if (online && trip.trip_id) {
+            const { error } = await supabase
+                .from('trips')
+                .update({ share_with: updatedShareWith })
+                .eq('trip_id', String(trip.trip_id))
+                .select()
+
+            if (error) {
+                console.error('Error unsharing trip on Supabase:', error)
+            }
+        }
+
+        return { success: true }
+    } catch (err) {
+        console.error('Error unsharing trip:', err)
+        return { success: false, error: err instanceof Error ? err.message : 'Unknown error' }
+    }
+}
+
+export async function getSharedUsers(tripId: string | number | null): Promise<Array<{ user_id: string; username?: string }>> {
+    try {
+        // Get trip
+        let trip: TripItem | undefined
+        if (typeof tripId === 'number') {
+            trip = await db.trips.get(tripId)
+        } else {
+            trip = await db.trips.where('trip_id').equals(String(tripId)).first()
+        }
+
+        if (!trip?.share_with) return []
+
+        // Get user details for each shared user
+        const sharedUsers = await Promise.all(
+            trip.share_with.map(async (userId) => {
+                const user = await db.users.where('user_id').equals(userId).first()
+                return { user_id: userId, username: user?.username ?? undefined }
+            })
+        )
+
+        return sharedUsers
+    } catch (err) {
+        console.error('Error getting shared users:', err)
+        return []
+    }
 }
 
 export async function deleteTrip(tripId: string | number): Promise<boolean> {

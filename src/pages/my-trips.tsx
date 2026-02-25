@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/router";
 import { TripItem } from "../lib/db";
 import { getUserTrips, createTrip, deleteTrip as deleteFromSync } from "../lib/syncService";
+import { getLocalUserIdentity } from "../lib/userIdentity";
 import {
   exportTripsData,
   importTripsData,
@@ -13,6 +14,7 @@ import styles from "../styles/trips.module.css";
 
 export default function MyTrips() {
   const [trips, setTrips] = useState<TripItem[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [newTripTitle, setNewTripTitle] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreating, setIsCreating] = useState(false);
@@ -24,6 +26,8 @@ export default function MyTrips() {
   const router = useRouter();
 
   useEffect(() => {
+    const identity = getLocalUserIdentity();
+    setCurrentUserId(identity?.user_id ?? null);
     loadTrips();
   }, []);
 
@@ -317,14 +321,19 @@ export default function MyTrips() {
               console.warn('Trip missing id fields:', trip)
               return null
             }
+            
+            const isOwner = trip.owner_id === currentUserId
+            const isShared = currentUserId && !isOwner && (trip.share_with as string[])?.includes(currentUserId)
+            const cardStyle = isShared ? { backgroundColor: '#fef3c7', borderColor: '#fbbf24' } : {}
 
             return (
-              <div key={String(linkId)} className={styles.tripCard}>
+              <div key={String(linkId)} className={styles.tripCard} style={cardStyle}>
                 <Link
                   href={`/trip/${linkId}`}
                   className={styles.tripLink}
                 >
                   <h3>{trip.title}</h3>
+                  {isShared && <span style={{ fontSize: '12px', color: '#d97706', fontWeight: '600' }}>📤 Shared with you</span>}
                   {trip.start_date && trip.end_date && (
                     <div className={styles.tripMeta}>
                       {trip.start_date} to {trip.end_date}
@@ -335,13 +344,15 @@ export default function MyTrips() {
                     {new Date(trip.updated_at || 0).toLocaleDateString()}
                   </p>
                 </Link>
-                <button
-                  onClick={() => deleteTrip(trip)}
-                  className={styles.deleteBtn}
-                  title="Delete trip"
-                >
-                  🗑️
-                </button>
+                {isOwner && (
+                  <button
+                    onClick={() => deleteTrip(trip)}
+                    className={styles.deleteBtn}
+                    title="Delete trip"
+                  >
+                    🗑️
+                  </button>
+                )}
               </div>
             );
           })}

@@ -1,0 +1,260 @@
+[
+  {
+    "trip": {
+      "title": "New York City Weekend",
+      "start_date": "2026-04-02",
+      "end_date": "2026-04-05",
+      "is_public": false,
+      "owner_id": null,
+      "share_with": []
+    },
+    "itinerary": [
+      {
+        "trip_id": null,
+        "day_index": 0,
+        "title": "Arrive at JFK Airport",
+        "time": "15:00",
+        "remark": "Take AirTrain to Jamaica Station or Uber to hotel",
+        "map_link": "https://www.google.com/maps/place/John+F.+Kennedy+International+Airport/@40.6413,-73.7781,17z",
+        "lat": 40.6413,
+        "lng": -73.7781,
+        "place_name": "JFK Airport",
+        "order": 0
+      },
+      {
+        "trip_id": null,
+        "day_index": 0,
+        "title": "Check-in at Times Square Hotel",
+        "time": "17:00",
+        "remark": "Heart of Manhattan, near Broadway",
+        "map_link": "https://www.google.com/maps/place/Times+Square/@40.7580,-73.9855,17z",
+        "lat": 40.7580,
+        "lng": -73.9855,
+        "place_name": "Times Square",
+        "order": 1
+      },
+      {
+        "trip_id": null,
+        "day_index": 0,
+        "title": "Dinner in Times Square",
+        "time": "19:00",
+        "remark": "Try a Broadway-area restaurant",
+        "map_link": "https://www.google.com/maps/place/Times+Square/@40.7580,-73.9855,17z",
+        "lat": 40.7580,
+        "lng": -73.9855,
+        "place_name": "Times Square Area",
+        "order": 2
+      },
+      {
+        "trip_id": null,
+        "day_index": 1,
+        "title": "Statue of Liberty & Ellis Island",
+        "time": "09:00",
+        "remark": "Book ferry tickets, arrive early to avoid crowds",
+        "map_link": "https://www.google.com/maps/place/Statue+of+Liberty/@40.6892,-74.0445,17z",
+        "lat": 40.6892,
+        "lng": -74.0445,
+        "place_name": "Statue of Liberty",
+        "order": 0
+      },
+      {
+        "trip_id": null,
+        "day_index": 1,
+        "title": "9/11 Memorial & Museum",
+        "time": "14:00",
+        "remark": "Powerful and moving tribute in Lower Manhattan",
+        "map_link": "https://www.google.com/maps/place/9%2F11+Memorial+%26+Museum/@40.7126,-74.0129,17z",
+        "lat": 40.7126,
+        "lng": -74.0129,
+        "place_name": "9/11 Memorial",
+        "order": 1
+      },
+      {
+        "trip_id": null,
+        "day_index": 1,
+        "title": "Broadway Show - Hamilton or Others",
+        "time": "19:00",
+        "remark": "Book tickets in advance for popular shows",
+        "map_link": "https://www.google.com/maps/place/Broadway/@40.7505,-73.9910,17z",
+        "lat": 40.7505,
+        "lng": -73.9910,
+        "place_name": "Broadway Theater District",
+        "order": 2
+      },
+      {
+        "trip_id": null,
+        "day_index": 2,
+        "title": "Central Park Morning Walk",
+        "time": "08:00",
+        "remark": "Beautiful 843-acre park in heart of NYC",
+        "map_link": "https://www.google.com/maps/place/Central+Park/@40.7825,-73.9740,17z",
+        "lat": 40.7825,
+        "lng": -73.9740,
+        "place_name": "Central Park",
+        "order": 0
+      },
+      {
+        "trip_id": null,
+        "day_index": 2,
+        "title": "Metropolitan Museum of Art",
+        "time": "10:00",
+        "remark": "One of the world's largest art museums",
+        "map_link": "https://www.google.com/maps/place/Metropolitan+Museum+of+Art/@40.7813,-73.9740,17z",
+        "lat": 40.7813,
+        "lng": -73.9740,
+        "place_name": "The Met",
+        "order": 1
+      },
+      {
+        "trip_id": null,
+        "day_index": 2,
+        "title": "Lunch at Katz's Delicatessen",
+        "time": "13:00",
+        "remark": "Famous deli since 1888, iconic pastrami sandwich",
+        "map_link": "https://www.google.com/maps/place/Katz%27s+Delicatessen/@40.7183,-73.9876,17z",
+        "lat": 40.7183,
+        "lng": -73.9876,
+        "place_name": "Katz's Delicatessen",
+        "order": 2
+      },
+      {
+        "trip_id": null,
+        "day_index": 2,
+        "title": "Empire State Building Sunset",
+        "time": "16:00",
+        "remark": "Best views at sunset from 86th floor observation deck",
+        "map_link": "https://www.google.com/maps/place/Empire+State+Building/@40.7484,-73.9857,17z",
+        "lat": 40.7484,
+        "lng": -73.9857,
+        "place_name": "Empire State Building",
+        "order": 3
+      },
+      {
+        "trip_id": null,
+        "day_index": 3,
+        "title": "Shopping on 5th Avenue",
+        "time": "10:00",
+        "remark": "Luxury brands and flagship stores",
+        "map_link": "https://www.google.com/maps/place/5th+Avenue/@40.7614,-73.9776,17z",
+        "lat": 40.7614,
+        "lng": -73.9776,
+        "place_name": "5th Avenue",
+        "order": 0
+      },
+      {
+        "trip_id": null,
+        "day_index": 3,
+        "title": "Depart for Airport",
+        "time": "15:00",
+        "remark": "Check-in 3 hours before flight",
+        "map_link": "https://www.google.com/maps/place/John+F.+Kennedy+International+Airport/@40.6413,-73.7781,17z",
+        "lat": 40.6413,
+        "lng": -73.7781,
+        "place_name": "JFK Airport",
+        "order": 1
+      }
+    ],
+    "packing": [
+      {
+        "trip_id": null,
+        "title": "Passport",
+        "completed": false,
+        "color": "#ff4444",
+        "order": 1
+      },
+      {
+        "trip_id": null,
+        "title": "Comfortable Walking Shoes",
+        "completed": false,
+        "color": "#34a853",
+        "order": 2
+      },
+      {
+        "trip_id": null,
+        "title": "Spring Jacket",
+        "completed": false,
+        "color": "#fbbc04",
+        "order": 3
+      },
+      {
+        "trip_id": null,
+        "title": "Smart Casual Outfit for Broadway",
+        "completed": false,
+        "color": "#4285f4",
+        "order": 4
+      },
+      {
+        "trip_id": null,
+        "title": "Phone & Charger",
+        "completed": false,
+        "color": "#9c27b0",
+        "order": 5
+      },
+      {
+        "trip_id": null,
+        "title": "USD Currency & Credit Cards",
+        "completed": false,
+        "color": "#ff6b6b",
+        "order": 6
+      }
+    ],
+    "travelers": [
+      {
+        "trip_id": null,
+        "traveler_id": 1,
+        "name": "Rachel",
+        "email": "rachel@example.com",
+        "icon": "FaUserCircle"
+      },
+      {
+        "trip_id": null,
+        "traveler_id": 2,
+        "name": "Mark",
+        "email": "mark@example.com",
+        "icon": "FaUserTie"
+      }
+    ],
+    "expenses": [
+      {
+        "trip_id": null,
+        "title": "Flights to NYC",
+        "amount": 800,
+        "payer_id": 1,
+        "charged_to": [1, 2],
+        "datetime": "2026-04-02T00:00:00.000Z"
+      },
+      {
+        "trip_id": null,
+        "title": "Hotel (3 nights)",
+        "amount": 900,
+        "payer_id": 2,
+        "charged_to": [1, 2],
+        "datetime": "2026-04-02T00:00:00.000Z"
+      },
+      {
+        "trip_id": null,
+        "title": "Statue of Liberty & Ellis Island Ferry",
+        "amount": 100,
+        "payer_id": 1,
+        "charged_to": [1, 2],
+        "datetime": "2026-04-03T09:00:00.000Z"
+      },
+      {
+        "trip_id": null,
+        "title": "Broadway Show Tickets",
+        "amount": 500,
+        "payer_id": 2,
+        "charged_to": [1, 2],
+        "datetime": "2026-04-03T19:00:00.000Z"
+      },
+      {
+        "trip_id": null,
+        "title": "Meals & Attractions",
+        "amount": 400,
+        "payer_id": 1,
+        "charged_to": [1, 2],
+        "datetime": "2026-04-03T00:00:00.000Z"
+      }
+    ]
+  }
+]

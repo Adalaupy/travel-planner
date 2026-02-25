@@ -5,7 +5,8 @@
       "start_date": "2026-03-15",
       "end_date": "2026-03-17",
       "is_public": false,
-      "owner_id": null
+      "owner_id": null,
+      "share_with": []
     },
     "itinerary": [
       {

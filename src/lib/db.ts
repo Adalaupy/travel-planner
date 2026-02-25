@@ -29,6 +29,7 @@ export interface TripItem {
   created_at?: string;
   updated_at?: number;
   owner_id?: string | null;
+  share_with?: string[];
 }
 
 export interface ItineraryItem {
@@ -266,6 +267,16 @@ class TravelDB extends Dexie {
 
     // V8: Add short_code index for identity recovery
     this.version(8).stores({
+      users: '++__dexieid, user_id, issync, username, birthday, gender, short_code',
+      trips: '++__dexieid, title, trip_id, issync, owner_id',
+      itinerary: '++__dexieid, trip_id, itinerary_id, issync',
+      packing: '++__dexieid, trip_id, packing_id, issync',
+      travelers: '++__dexieid, trip_id, traveler_id, issync',
+      expenses: '++__dexieid, trip_id, expense_id, issync'
+    })
+
+    // V9: Add share_with field for trip sharing
+    this.version(9).stores({
       users: '++__dexieid, user_id, issync, username, birthday, gender, short_code',
       trips: '++__dexieid, title, trip_id, issync, owner_id',
       itinerary: '++__dexieid, trip_id, itinerary_id, issync',

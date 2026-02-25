@@ -2,6 +2,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import TripDetailTabs from "../../components/TripDetailTabs";
+import ShareModal from "../../components/ShareModal";
 import { TripProvider } from "../../context/TripContext";
 import { getTrip, syncTripFromSupabase, updateTrip } from "../../lib/syncService";
 import { db } from "../../lib/db";
@@ -18,6 +19,9 @@ export default function TripDetailPage() {
   const [newTitle, setNewTitle] = useState("");
   const [accessDenied, setAccessDenied] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0); // Trigger TripProvider to reload
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   // TripContext sync will be handled inside TripProvider
 
   useEffect(() => {
@@ -25,7 +29,8 @@ export default function TripDetailPage() {
 
     const ensure = async () => {
       const identity = getLocalUserIdentity();
-      const currentUserId = identity?.user_id ?? null;
+      const userId = identity?.user_id ?? null;
+      setCurrentUserId(userId);
       
       let trip = null;
       
@@ -45,8 +50,10 @@ export default function TripDetailPage() {
         if (remote) {
           const remoteTripId = remote.trip_id ?? remote.id ?? String(tripIdParam)
           
-          // Check if the user owns this trip
-          if (currentUserId && remote.owner_id !== currentUserId) {
+          // Check if the user owns this trip or is in share_with list
+          const isOwner = userId && remote.owner_id === userId
+          const isShared = userId && (remote.share_with as string[])?.includes(userId)
+          if (userId && !isOwner && !isShared) {
             setAccessDenied(true);
             setTimeout(() => router.push('/my-trips'), 2000);
             return;
@@ -84,11 +91,15 @@ export default function TripDetailPage() {
         }
       }
       
-      // Check if the user owns this trip
-      if (trip && currentUserId && trip.owner_id && trip.owner_id !== currentUserId) {
-        setAccessDenied(true);
-        setTimeout(() => router.push('/my-trips'), 2000);
-        return;
+      // Check if the user owns this trip or is in share_with list
+      if (trip && userId && trip.owner_id) {
+        const isOwner = trip.owner_id === userId
+        const isShared = (trip.share_with as string[])?.includes(userId)
+        if (!isOwner && !isShared) {
+          setAccessDenied(true);
+          setTimeout(() => router.push('/my-trips'), 2000);
+          return;
+        }
       }
 
       if (trip?.trip_id) {
@@ -99,6 +110,7 @@ export default function TripDetailPage() {
         setNumericId(trip.__dexieid || null);
         setTripTitle(trip.title || "Untitled");
         setNewTitle(trip.title || "Untitled");
+        setIsOwner(trip.owner_id === userId);
       }
     }
     ensure();
@@ -196,6 +208,15 @@ export default function TripDetailPage() {
                 >
                   Rename
                 </button>
+                {isOwner && (
+                  <button
+                    type="button"
+                    style={{ padding: "8px 16px" }}
+                    onClick={() => setShowShareModal(true)}
+                  >
+                    Share
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -221,6 +242,11 @@ export default function TripDetailPage() {
               <p>Loading trip...</p>
             </div>
           )}
+          <ShareModal
+            tripId={tripIdParam || null}
+            isOpen={showShareModal}
+            onClose={() => setShowShareModal(false)}
+          />
         </>
       )}
     </main>

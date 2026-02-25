@@ -149,6 +149,7 @@ export async function importTripsData(jsonString: string): Promise<{ success: bo
         trip_id: undefined,
         owner_id: (trip as any).owner_id ?? (trip as any).user_id ?? defaultUserId ?? null,
         title: trip.title ?? "Untitled Trip",
+        share_with: trip.share_with ?? [],
       }
       const newTripDexieId = await db.trips.add(newTrip)
       const newTripId = String(newTripDexieId)
