@@ -23,7 +23,7 @@
 
 .createTrip {
   display: flex;
-  gap: 12px;
+  gap: 15px;
 }
 
 .input {
@@ -124,7 +124,7 @@
 }
 
 .menuItem {
-  width: 100%;
+  /* width: 100%; */
   padding: 12px 16px;
   background: transparent;
   border: none;

@@ -15,7 +15,6 @@ export default function MyTrips() {
   const [trips, setTrips] = useState<TripItem[]>([]);
   const [newTripTitle, setNewTripTitle] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [showBackupMenu, setShowBackupMenu] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [selectedTripsForExport, setSelectedTripsForExport] = useState<
@@ -98,7 +97,7 @@ export default function MyTrips() {
       alert("Trips exported successfully!");
       setShowExportDialog(false);
       setSelectedTripsForExport([]);
-      setShowBackupMenu(false);
+
     } catch (error) {
       alert(
         "Failed to export data: " +
@@ -119,7 +118,7 @@ export default function MyTrips() {
       }
       const text = await response.text();
       downloadBackup(text, "import-template.json");
-      setShowBackupMenu(false);
+
     } catch (error) {
       alert(
         "Failed to download template: " +
@@ -163,7 +162,7 @@ export default function MyTrips() {
 
       if (successCount > 0) {
         await loadTrips();
-        setShowBackupMenu(false);
+
       }
 
       if (errors.length > 0) {
@@ -189,27 +188,39 @@ export default function MyTrips() {
       <div className={styles.header}>
         <h1>My Trips</h1>
         <div className={styles.createTrip}>
-          <input
-            type="text"
-            placeholder="New trip name..."
-            value={newTripTitle}
-            onChange={(e) => setNewTripTitle(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                createTripHandler();
-              }
-            }}
-            className={styles.input}
-          />
-          <button
-            type="button"
-            onClick={createTripHandler}
-            className={styles.createBtn}
-            disabled={isCreating}
-          >
-            {isCreating ? "Creating..." : "+ Create Trip"}
+          
+          <div style={{display:"flex", gap:'10px', padding: '5px' , borderRadius: "10px", border: "2px solid rgba(0, 102, 204, 0.12)"}}>
+            <input
+              type="text"
+              placeholder="New trip name..."
+              value={newTripTitle}
+              onChange={(e) => setNewTripTitle(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  createTripHandler();
+                }
+              }}
+              className={styles.input}
+            />
+            <button
+              type="button"
+              onClick={createTripHandler}
+              className={styles.createBtn}
+              disabled={isCreating}
+            >
+              {isCreating ? "Creating..." : "+ Create Trip"}
+            </button>
+          </div>
+          
+          
+          <button onClick={handleImportClick} className={styles.menuItem}>
+            📤 Import Trip(s)
           </button>
+          <button onClick={handleDownloadTemplate} className={styles.menuItem}>
+            📄 Download Import Template          
+          </button>
+
         </div>
       </div>
 
@@ -221,26 +232,11 @@ export default function MyTrips() {
           onChange={(e) => setSearchQuery(e.target.value)}
           className={styles.searchInput}
         />
+
         <div className={styles.backupSection}>
-          <button
-            onClick={() => setShowBackupMenu(!showBackupMenu)}
-            className={styles.backupBtn}
-          >
-            💾 Backup
+          <button onClick={handleExportClick} className={styles.menuItem}>
+            📥 Export Trip(s)
           </button>
-          {showBackupMenu && (
-            <div className={styles.backupMenu}>
-              <button onClick={handleExportClick} className={styles.menuItem}>
-                📥 Export Trip(s)
-              </button>
-              <button onClick={handleImportClick} className={styles.menuItem}>
-                📤 Import Trip(s)
-              </button>
-              <button onClick={handleDownloadTemplate} className={styles.menuItem}>
-                📄 Download Import Template
-              </button>
-            </div>
-          )}
         </div>
       </div>
 

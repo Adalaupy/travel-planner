@@ -254,7 +254,7 @@ export const ExpensesManager = ({ tripId: _ }: Props = {}) => {
             <label>Charged to (defaults to payer):</label>
           </div>
           <div className={styles.chargedToList}>
-            <div style={{display:"flex", gap:'15px', flexWrap:'wrap', padding: '0 20px'}}>
+            <div style={{display:"flex", gap:'15px', flexWrap:'wrap', padding: '0 20px', justifyContent:'center', }}>
               {travelers.map((t) => (
                 <label key={String(t.__dexieid ?? t.traveler_id)} className={styles.checkboxLabel}>
                   <input
