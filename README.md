@@ -8,6 +8,7 @@ Plan trips with a local-first workflow and optional Supabase sync.
 - [Tools](#tools)
 - [Getting Started](#getting-started)
 - [Import/Export](#importexport)
+- [Try Me](#try-me)
 
 
 ## Features
@@ -42,3 +43,6 @@ npm run dev
 - Import: select one or more JSON files to import.
 - Template: use "Download Import Template" to get a ready-to-fill sample.
 
+
+## Try Me
+https://adalaupy.github.io/travel-planner/
