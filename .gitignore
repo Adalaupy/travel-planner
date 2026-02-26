@@ -4,7 +4,6 @@ out/
 .env*
 dist/
 coverage/
-DEPLOYMENT.md
-QUICKSTART_GITHUB_PAGES.md
-DATABASE_MIGRATION.sql
-USERNAME_SETUP.md
+*.md
+!README.md
+*.sql

@@ -4,7 +4,7 @@ import Link from "next/link";
 import TripDetailTabs from "../../components/TripDetailTabs";
 import ShareModal from "../../components/ShareModal";
 import { TripProvider } from "../../context/TripContext";
-import { getTrip, syncTripFromSupabase, updateTrip } from "../../lib/syncService";
+import { getTrip, syncTripFromSupabase, updateTrip, validateAndRecoverTripSync, syncTripMetadataFromSupabase } from "../../lib/syncService";
 import { db } from "../../lib/db";
 import { getLocalUserIdentity } from "../../lib/userIdentity";
 import styles from "../../styles/tripDetail.module.css";
@@ -28,89 +28,133 @@ export default function TripDetailPage() {
     if (!tripIdParam) return;
 
     const ensure = async () => {
-      const identity = getLocalUserIdentity();
-      const userId = identity?.user_id ?? null;
-      setCurrentUserId(userId);
-      
-      let trip = null;
-      
-      // Try to find by trip_id first (could be UUID or numeric string)
-      trip = await db.trips.where('trip_id').equals(tripIdParam).first();
-      
-      // If not found and looks like a number, try as __dexieid
-      if (!trip) {
-        const numId = parseInt(tripIdParam as string, 10);
-        if (!isNaN(numId)) {
-          trip = await db.trips.get(numId);
+      try {
+        const identity = getLocalUserIdentity();
+        const userId = identity?.user_id ?? null;
+        setCurrentUserId(userId);
+        
+        let trip = null;
+        
+        // Try to find by trip_id first (could be UUID or numeric string)
+        trip = await db.trips.where('trip_id').equals(tripIdParam).first();
+        
+        // If not found and looks like a number, try as __dexieid
+        if (!trip) {
+          const numId = parseInt(tripIdParam as string, 10);
+          if (!isNaN(numId)) {
+            trip = await db.trips.get(numId);
+          }
         }
-      }
-      
-      if (!trip) {
-        const remote = await getTrip(tripIdParam as string)
-        if (remote) {
-          const remoteTripId = remote.trip_id ?? remote.id ?? String(tripIdParam)
-          
-          // Check if the user owns this trip or is in share_with list
-          const isOwner = userId && remote.owner_id === userId
-          const isShared = userId && (remote.share_with as string[])?.includes(userId)
-          if (userId && !isOwner && !isShared) {
+        
+        // If trip not found locally, fetch from Supabase
+        if (!trip) {
+          const remote = await getTrip(tripIdParam as string)
+          if (remote) {
+            const remoteTripId = remote.trip_id ?? remote.id ?? String(tripIdParam)
+            
+            // Check initial permission from remote data
+            const isOwner = userId && remote.owner_id === userId
+            const isShared = userId && (remote.share_with as string[])?.includes(userId)
+            if (userId && !isOwner && !isShared) {
+              setAccessDenied(true);
+              setTimeout(() => router.push('/my-trips'), 2000);
+              return;
+            }
+            
+            const existing = await db.trips.where('trip_id').equals(remoteTripId).first()
+            if (existing?.__dexieid) {
+              await db.trips.update(existing.__dexieid, {
+                title: remote.title || "Untitled",
+                trip_id: remoteTripId,
+                is_public: remote.is_public,
+                start_date: remote.start_date,
+                end_date: remote.end_date,
+                owner_id: remote.owner_id,
+                share_with: remote.share_with,
+                created_at: remote.created_at,
+                updated_at: remote.updated_at,
+                issync: true,
+              })
+              trip = await db.trips.get(existing.__dexieid)
+            } else {
+              const numericId = await db.trips.add({
+                title: remote.title || "Untitled",
+                trip_id: remoteTripId,
+                is_public: remote.is_public,
+                start_date: remote.start_date,
+                end_date: remote.end_date,
+                owner_id: remote.owner_id,
+                share_with: remote.share_with,
+                created_at: remote.created_at,
+                updated_at: remote.updated_at,
+                issync: true,
+              })
+              trip = await db.trips.get(numericId)
+            }
+            // Sync trip data from Supabase with error handling
+            try {
+              await syncTripFromSupabase(remoteTripId)
+            } catch (syncError) {
+              console.error('Failed to sync trip data from Supabase (non-blocking):', syncError)
+              // Don't fail the page load even if sync fails
+            }
+          }
+        }
+        
+        // ========== CRITICAL FIX: Sync trip metadata BEFORE access check ==========
+        // This ensures share_with data is current when checking permissions
+        // Prevents stale Dexie data from denying access to newly shared trips
+        if (trip?.trip_id) {
+          try {
+            const freshTrip = await syncTripMetadataFromSupabase(trip.trip_id)
+            if (freshTrip) {
+              trip = freshTrip
+              console.log('✓ Trip metadata synchronized before access check')
+            }
+          } catch (metadataSyncError) {
+            console.warn('Failed to sync trip metadata (will use cached):', metadataSyncError)
+            // Continue with stale data if sync fails - better than denying access unnecessarily
+          }
+        }
+        
+        // Check if the user owns this trip or is in share_with list
+        // Using fresh metadata from Supabase (after metadata sync above)
+        if (trip && userId && trip.owner_id) {
+          const isOwner = trip.owner_id === userId
+          const isShared = (trip.share_with as string[])?.includes(userId)
+          if (!isOwner && !isShared) {
+            console.warn('Access denied: userId not in share_with list', { userId, owner_id: trip.owner_id, share_with: trip.share_with })
             setAccessDenied(true);
             setTimeout(() => router.push('/my-trips'), 2000);
             return;
           }
-          
-          const existing = await db.trips.where('trip_id').equals(remoteTripId).first()
-          if (existing?.__dexieid) {
-            await db.trips.update(existing.__dexieid, {
-              title: remote.title || "Untitled",
-              trip_id: remoteTripId,
-              is_public: remote.is_public,
-              start_date: remote.start_date,
-              end_date: remote.end_date,
-              owner_id: remote.owner_id,
-              created_at: remote.created_at,
-              updated_at: remote.updated_at,
-              issync: true,
-            })
-            trip = await db.trips.get(existing.__dexieid)
-          } else {
-            const numericId = await db.trips.add({
-              title: remote.title || "Untitled",
-              trip_id: remoteTripId,
-              is_public: remote.is_public,
-              start_date: remote.start_date,
-              end_date: remote.end_date,
-              owner_id: remote.owner_id,
-              created_at: remote.created_at,
-              updated_at: remote.updated_at,
-              issync: true,
-            })
-            trip = await db.trips.get(numericId)
+        }
+
+        // Sync all related data (itinerary, packing, travelers, expenses)
+        if (trip?.trip_id) {
+          try {
+            await syncTripFromSupabase(trip.trip_id)
+            // Validate sync consistency
+            const validation = await validateAndRecoverTripSync(trip.trip_id)
+            if (!validation.valid) {
+              console.warn('Sync validation failed:', validation.details)
+            }
+          } catch (syncError) {
+            console.error('Failed to sync trip data from Supabase (non-blocking):', syncError)
+            // Don't fail the page load even if sync fails
           }
-          await syncTripFromSupabase(remoteTripId)
         }
-      }
-      
-      // Check if the user owns this trip or is in share_with list
-      if (trip && userId && trip.owner_id) {
-        const isOwner = trip.owner_id === userId
-        const isShared = (trip.share_with as string[])?.includes(userId)
-        if (!isOwner && !isShared) {
-          setAccessDenied(true);
-          setTimeout(() => router.push('/my-trips'), 2000);
-          return;
+
+        if (trip) {
+          setNumericId(trip.__dexieid || null);
+          setTripTitle(trip.title || "Untitled");
+          setNewTitle(trip.title || "Untitled");
+          setIsOwner(trip.owner_id === userId);
         }
-      }
-
-      if (trip?.trip_id) {
-        await syncTripFromSupabase(trip.trip_id)
-      }
-
-      if (trip) {
-        setNumericId(trip.__dexieid || null);
-        setTripTitle(trip.title || "Untitled");
-        setNewTitle(trip.title || "Untitled");
-        setIsOwner(trip.owner_id === userId);
+      } catch (err) {
+        console.error('Error loading trip:', err)
+        setAccessDenied(true);
+        setTimeout(() => router.push('/my-trips'), 2000);
       }
     }
     ensure();
@@ -147,26 +191,38 @@ export default function TripDetailPage() {
                   e.preventDefault();
                   if (!newTitle.trim() || !tripIdParam) return;
                   
-                  // Update immediately in UI for instant feedback
-                  setTripTitle(newTitle.trim());
-                  setEditingTitle(false);
-                  
-                  // Update via syncService (handles both Dexie and Supabase)
-                  await updateTrip(tripIdParam, {
-                    title: newTitle.trim(),
-                  });
-                  
-                  // Refetch from Dexie to confirm update
-                  if (numericId) {
-                    const refreshedTrip = await db.trips.get(numericId);
-                    if (refreshedTrip?.title) {
-                      setTripTitle(refreshedTrip.title);
+                  try {
+                    // Update immediately in UI for instant feedback
+                    setTripTitle(newTitle.trim());
+                    setEditingTitle(false);
+                    
+                    // Update via syncService (handles both Dexie and Supabase)
+                    await updateTrip(tripIdParam, {
+                      title: newTitle.trim(),
+                    });
+                    
+                    // Refetch from Dexie to confirm update
+                    if (numericId) {
+                      const refreshedTrip = await db.trips.get(numericId);
+                      if (refreshedTrip?.title) {
+                        setTripTitle(refreshedTrip.title);
+                      }
                     }
+                    
+                    // Sync with Supabase and trigger TripProvider to reload
+                    try {
+                      await syncTripFromSupabase(tripIdParam);
+                    } catch (syncError) {
+                      console.error('Failed to sync trip data after update (non-blocking):', syncError)
+                      // Don't fail the update if sync fails
+                    }
+                    setRefreshKey((prev) => prev + 1); // Force TripProvider to reload
+                  } catch (err) {
+                    console.error('Error updating trip title:', err)
+                    // Revert UI changes
+                    setTripTitle(tripTitle)
+                    setNewTitle(tripTitle)
                   }
-                  
-                  // Sync with Supabase and trigger TripProvider to reload
-                  await syncTripFromSupabase(tripIdParam);
-                  setRefreshKey((prev) => prev + 1); // Force TripProvider to reload
                 }}
                 style={{ display: "flex", alignItems: "center", gap: 12 }}
               >

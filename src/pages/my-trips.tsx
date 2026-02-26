@@ -193,7 +193,7 @@ export default function MyTrips() {
         <h1>My Trips</h1>
         <div className={styles.createTrip}>
           
-          <div style={{display:"flex", gap:'10px', padding: '5px' , borderRadius: "10px", border: "2px solid rgba(0, 102, 204, 0.12)"}}>
+          <div className={styles.createNewTrip}>
             <input
               type="text"
               placeholder="New trip name..."
@@ -215,15 +215,15 @@ export default function MyTrips() {
             >
               {isCreating ? "Creating..." : "+ Create Trip"}
             </button>
+          </div>          
+          <div className={styles.MenuBtns}>
+            <button onClick={handleImportClick} className={styles.menuItem}>
+              📤 Import Trip(s)
+            </button>
+            <button onClick={handleDownloadTemplate} className={styles.menuItem}>
+              📄 Download Import Template          
+            </button>
           </div>
-          
-          
-          <button onClick={handleImportClick} className={styles.menuItem}>
-            📤 Import Trip(s)
-          </button>
-          <button onClick={handleDownloadTemplate} className={styles.menuItem}>
-            📄 Download Import Template          
-          </button>
 
         </div>
       </div>
@@ -238,7 +238,7 @@ export default function MyTrips() {
         />
 
         <div className={styles.backupSection}>
-          <button onClick={handleExportClick} className={styles.menuItem}>
+          <button onClick={handleExportClick}>
             📥 Export Trip(s)
           </button>
         </div>

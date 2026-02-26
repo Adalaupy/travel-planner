@@ -15,6 +15,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { db, PackingItem } from "../lib/db";
 import { getPackingItems, addPackingItem, updatePackingItem, deletePackingItem } from "../lib/syncService";
+import { useTripData } from "../hooks/useTripData";
 import styles from "../styles/components.module.css";
 
 type Props = { tripId?: number };
@@ -22,10 +23,16 @@ type Props = { tripId?: number };
 export const PackingChecklist = ({ tripId: _ }: Props = {}) => {
   const { trip } = useTrip();
   const tripId = trip?.trip_id;
+  const { data: packingData, loading, isOnline } = useTripData<PackingItem>('packing', tripId);
   const [items, setItems] = useState<PackingItem[]>([]);
   const [text, setText] = useState("");
   const [lastColor, setLastColor] = useState("#ffffff");
   const sensors = useSensors(useSensor(PointerSensor));
+
+  // Update items when data from hook changes
+  useEffect(() => {
+    setItems(packingData);
+  }, [packingData]);
 
   // Helper to get unique ID: use packing_id if available (Supabase), fallback to __dexieid (offline)
   const getItemId = (item: PackingItem): string | number => item.packing_id || item.__dexieid || 0;
@@ -123,12 +130,6 @@ export const PackingChecklist = ({ tripId: _ }: Props = {}) => {
   }
 
   useEffect(() => {
-    let mounted = true;
-    const load = async () => {
-      const data = await getPackingItems(tripId || null);
-      if (mounted) setItems(data);
-    };
-    load();
     // load last picked color from localStorage
     try {
       const saved =
@@ -139,10 +140,7 @@ export const PackingChecklist = ({ tripId: _ }: Props = {}) => {
     } catch (e) {
       // ignore
     }
-    return () => {
-      mounted = false;
-    };
-  }, [tripId]);
+  }, []);
 
   const addItem = async () => {
     if (!text.trim()) return;

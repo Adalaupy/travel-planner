@@ -53,88 +53,303 @@ export async function syncTripFromSupabase(tripId: string): Promise<void> {
     const online = await isOnline()
     if (!online || !tripId) return
 
-    const [itineraryRes, packingRes, travelersRes, expensesRes] = await Promise.all([
-        supabase.from('itinerary').select('*').eq('trip_id', String(tripId)),
-        supabase.from('packing').select('*').eq('trip_id', String(tripId)),
-        supabase.from('travelers').select('*').eq('trip_id', String(tripId)),
-        supabase.from('expenses').select('*').eq('trip_id', String(tripId)),
-    ])
+    try {
+        const [itineraryRes, packingRes, travelersRes, expensesRes] = await Promise.all([
+            supabase.from('itinerary').select('*').eq('trip_id', String(tripId)),
+            supabase.from('packing').select('*').eq('trip_id', String(tripId)),
+            supabase.from('travelers').select('*').eq('trip_id', String(tripId)),
+            supabase.from('expenses').select('*').eq('trip_id', String(tripId)),
+        ])
 
-    if (itineraryRes.error) console.log('Error syncing itinerary:', itineraryRes.error)
-    if (packingRes.error) console.log('Error syncing packing:', packingRes.error)
-    if (travelersRes.error) console.log('Error syncing travelers:', travelersRes.error)
-    if (expensesRes.error) console.log('Error syncing expenses:', expensesRes.error)
-
-    await db.transaction('rw', db.itinerary, db.packing, db.travelers, db.expenses, async () => {
-        await db.itinerary.where('trip_id').equals(tripId).delete()
-        await db.packing.where('trip_id').equals(tripId).delete()
-        await db.travelers.where('trip_id').equals(tripId).delete()
-        await db.expenses.where('trip_id').equals(tripId).delete()
-
-        if (itineraryRes.data?.length) {
-            await db.itinerary.bulkAdd(
-                itineraryRes.data.map((item: any) => ({
-                    itinerary_id: item.itinerary_id,
-                    trip_id: item.trip_id,
-                    issync: true,
-                    day_index: item.day_index,
-                    title: item.title,
-                    time: item.time,
-                    url: item.url,
-                    remark: item.remark,
-                    map_link: item.map_link,
-                    lat: item.lat,
-                    lng: item.lng,
-                    place_name: item.place_name,
-                    order: item.order,
-                }))
-            )
+        // Check for Supabase query errors and return early
+        if (itineraryRes.error || packingRes.error || travelersRes.error || expensesRes.error) {
+            console.error('Supabase sync errors:', {
+                itinerary: itineraryRes.error,
+                packing: packingRes.error,
+                travelers: travelersRes.error,
+                expenses: expensesRes.error,
+            })
+            throw new Error('Failed to fetch data from Supabase')
         }
 
-        if (packingRes.data?.length) {
-            await db.packing.bulkAdd(
-                packingRes.data.map((item: any) => ({
-                    packing_id: item.packing_id,
-                    trip_id: item.trip_id,
+        // Validate data before transaction
+        const itineraryData = (itineraryRes.data || []).map((item: any) => ({
+            itinerary_id: item.itinerary_id,
+            trip_id: item.trip_id,
+            issync: true,
+            day_index: item.day_index ?? 0,
+            title: item.title ?? '',
+            time: item.time,
+            url: item.url,
+            remark: item.remark,
+            map_link: item.map_link,
+            lat: item.lat,
+            lng: item.lng,
+            place_name: item.place_name,
+            order: item.order ?? 0,
+        }))
+
+        const packingData = (packingRes.data || []).map((item: any) => ({
+            packing_id: item.packing_id,
+            trip_id: item.trip_id,
+            issync: true,
+            title: item.title ?? '',
+            completed: item.completed ?? false,
+            color: item.color,
+            order: item.order ?? 0,
+        }))
+
+        const travelersData = (travelersRes.data || []).map((item: any) => ({
+            traveler_id: item.traveler_id,
+            trip_id: item.trip_id,
+            issync: true,
+            name: item.name ?? '',
+            email: item.email,
+            icon: item.icon,
+        }))
+
+        const expensesData = (expensesRes.data || []).map((item: any) => {
+            let chargedTo: any = undefined
+            try {
+                chargedTo = typeof item.charged_to === 'string'
+                    ? JSON.parse(item.charged_to)
+                    : item.charged_to
+            } catch (parseError) {
+                console.warn('Failed to parse charged_to for expense:', item.expense_id, parseError)
+                chargedTo = undefined
+            }
+            return {
+                expense_id: item.expense_id,
+                trip_id: item.trip_id,
+                issync: true,
+                title: item.title ?? '',
+                amount: item.amount ?? 0,
+                payer_id: item.payer_id ?? undefined,
+                charged_to: chargedTo,
+                datetime: item.datetime,
+            }
+        })
+
+        // Execute transaction with error handling
+        await db.transaction('rw', db.itinerary, db.packing, db.travelers, db.expenses, async () => {
+            // Clear old data for this trip
+            await db.itinerary.where('trip_id').equals(tripId).delete()
+            await db.packing.where('trip_id').equals(tripId).delete()
+            await db.travelers.where('trip_id').equals(tripId).delete()
+            await db.expenses.where('trip_id').equals(tripId).delete()
+
+            // Add new data
+            if (itineraryData.length > 0) {
+                await db.itinerary.bulkAdd(itineraryData)
+            }
+            if (packingData.length > 0) {
+                await db.packing.bulkAdd(packingData)
+            }
+            if (travelersData.length > 0) {
+                await db.travelers.bulkAdd(travelersData)
+            }
+            if (expensesData.length > 0) {
+                await db.expenses.bulkAdd(expensesData)
+            }
+        })
+
+        // Sync trip metadata (share_with, owner_id, is_public, timestamps)
+        // This ensures Dexie stays current with shared trip changes
+        const { data: tripData, error: tripError } = await supabase
+            .from('trips')
+            .select('*')
+            .eq('trip_id', String(tripId))
+            .single()
+
+        if (!tripError && tripData) {
+            // Update the corresponding trip record in Dexie with fresh metadata
+            const dexieTrip = await db.trips.where('trip_id').equals(tripId).first()
+            if (dexieTrip?.__dexieid) {
+                await db.trips.update(dexieTrip.__dexieid, {
+                    title: tripData.title ?? dexieTrip.title,
+                    trip_id: tripData.trip_id,
+                    is_public: tripData.is_public,
+                    start_date: tripData.start_date,
+                    end_date: tripData.end_date,
+                    owner_id: tripData.owner_id,
+                    share_with: tripData.share_with ?? [],
+                    created_at: tripData.created_at,
+                    updated_at: tripData.updated_at,
                     issync: true,
-                    title: item.title,
-                    completed: item.completed,
-                    color: item.color,
-                    order: item.order,
-                }))
-            )
+                })
+                console.log('✓ Updated trip metadata in Dexie:', tripId)
+            }
+        } else if (tripError) {
+            console.warn('Could not fetch trip metadata from Supabase:', tripError)
         }
 
-        if (travelersRes.data?.length) {
-            await db.travelers.bulkAdd(
-                travelersRes.data.map((item: any) => ({
-                    traveler_id: item.traveler_id,
-                    trip_id: item.trip_id,
-                    issync: true,
-                    name: item.name,
-                    email: item.email,
-                    icon: item.icon,
-                }))
-            )
+        console.log('✓ Successfully synced trip and related data from Supabase:', tripId)
+    } catch (err) {
+        console.error('Error in syncTripFromSupabase:', err)
+        throw err
+    }
+}
+
+/**
+ * Sync only trip metadata (share_with, owner_id, is_public, timestamps) from Supabase
+ * Lightweight function for quick permission/access checks without syncing all child data
+ * Useful for validating shared trip access before full data sync
+ */
+export async function syncTripMetadataFromSupabase(tripId: string): Promise<TripItem | null> {
+    const online = await isOnline()
+    if (!online || !tripId) return null
+
+    try {
+        // Fetch trip metadata from Supabase
+        const { data: tripData, error } = await supabase
+            .from('trips')
+            .select('*')
+            .eq('trip_id', String(tripId))
+            .single()
+
+        if (error || !tripData) {
+            console.warn('Could not fetch trip metadata from Supabase:', error)
+            return null
         }
 
-        if (expensesRes.data?.length) {
-            await db.expenses.bulkAdd(
-                expensesRes.data.map((item: any) => ({
-                    expense_id: item.expense_id,
-                    trip_id: item.trip_id,
-                    issync: true,
-                    title: item.title,
-                    amount: item.amount,
-                    payer_id: item.payer_id ?? undefined,
-                    charged_to: typeof item.charged_to === 'string'
-                        ? JSON.parse(item.charged_to)
-                        : item.charged_to,
-                    datetime: item.datetime,
-                }))
-            )
+        // Find corresponding Dexie record
+        let dexieTrip = await db.trips.where('trip_id').equals(tripId).first()
+
+        if (dexieTrip?.__dexieid) {
+            // Update existing record with fresh metadata
+            await db.trips.update(dexieTrip.__dexieid, {
+                title: tripData.title ?? dexieTrip.title,
+                is_public: tripData.is_public,
+                start_date: tripData.start_date,
+                end_date: tripData.end_date,
+                owner_id: tripData.owner_id,
+                share_with: tripData.share_with ?? [],
+                created_at: tripData.created_at,
+                updated_at: tripData.updated_at,
+                issync: true,
+            })
+            dexieTrip = await db.trips.get(dexieTrip.__dexieid)
+            console.log('✓ Updated trip metadata:', tripId, { owner_id: tripData.owner_id, share_count: tripData.share_with?.length ?? 0 })
+        } else {
+            // Create new record if doesn't exist
+            const numericId = await db.trips.add({
+                title: tripData.title || "Untitled",
+                trip_id: tripId,
+                is_public: tripData.is_public,
+                start_date: tripData.start_date,
+                end_date: tripData.end_date,
+                owner_id: tripData.owner_id,
+                share_with: tripData.share_with ?? [],
+                created_at: tripData.created_at,
+                updated_at: tripData.updated_at,
+                issync: true,
+            })
+            dexieTrip = await db.trips.get(numericId)
+            console.log('✓ Created new trip metadata record:', tripId)
         }
-    })
+
+        return dexieTrip || null
+    } catch (err) {
+        console.error('Error in syncTripMetadataFromSupabase:', err)
+        return null
+    }
+}
+
+/**
+ * Validate and recover sync data consistency for a trip
+ * This function checks if data has been properly synced and recovers from partial syncs
+ */
+export async function validateAndRecoverTripSync(tripId: string): Promise<{ valid: boolean; recovered: boolean; details: string }> {
+    try {
+        const online = await isOnline()
+        if (!online) {
+            return { valid: true, recovered: false, details: 'Offline mode - validation skipped' }
+        }
+
+        // Check local Dexie data
+        const localTrip = await db.trips.where('trip_id').equals(tripId).first()
+        if (!localTrip) {
+            // Try to fetch from Supabase and restore locally
+            const { data: remoteTrip, error } = await supabase
+                .from('trips')
+                .select('*')
+                .eq('trip_id', String(tripId))
+                .single()
+
+            if (error || !remoteTrip) {
+                throw new Error('Trip not found in local or remote storage')
+            }
+
+            // Restore trip locally
+            await db.trips.add({
+                title: remoteTrip.title || "Untitled",
+                trip_id: tripId,
+                is_public: remoteTrip.is_public,
+                start_date: remoteTrip.start_date,
+                end_date: remoteTrip.end_date,
+                owner_id: remoteTrip.owner_id,
+                created_at: remoteTrip.created_at,
+                updated_at: remoteTrip.updated_at,
+                issync: true,
+            })
+
+            return { valid: true, recovered: true, details: 'Trip restored from Supabase' }
+        }
+
+        // Check related data consistency
+        const [localItinerary, localPacking, localTravelers, localExpenses] = await Promise.all([
+            db.itinerary.where('trip_id').equals(tripId).toArray(),
+            db.packing.where('trip_id').equals(tripId).toArray(),
+            db.travelers.where('trip_id').equals(tripId).toArray(),
+            db.expenses.where('trip_id').equals(tripId).toArray(),
+        ])
+
+        const localDataCount = localItinerary.length + localPacking.length + localTravelers.length + localExpenses.length
+
+        // If local trip is synced but no related data exists, try to sync
+        if (localTrip.issync && localDataCount === 0) {
+            console.log('Local trip has no related data - attempting to sync from Supabase')
+            try {
+                await syncTripFromSupabase(tripId)
+                return { valid: true, recovered: true, details: 'Related data recovered from Supabase' }
+            } catch (syncErr) {
+                console.warn('Could not recover related data:', syncErr)
+                return { valid: false, recovered: false, details: 'Trip exists but related data could not be recovered' }
+            }
+        }
+
+        // Check if all synced items have valid IDs
+        const itemsWithoutIds = [
+            ...localItinerary.filter(i => i.issync && !i.itinerary_id),
+            ...localPacking.filter(i => i.issync && !i.packing_id),
+            ...localTravelers.filter(i => i.issync && !i.traveler_id),
+            ...localExpenses.filter(i => i.issync && !i.expense_id),
+        ]
+
+        if (itemsWithoutIds.length > 0) {
+            console.warn('Found synced items without IDs:', itemsWithoutIds)
+            // Mark them as not synced for recovery
+            await db.transaction('rw', db.itinerary, db.packing, db.travelers, db.expenses, async () => {
+                for (const item of itemsWithoutIds) {
+                    if ('itinerary_id' in item && item.__dexieid) {
+                        await db.itinerary.update(item.__dexieid, { issync: false })
+                    } else if ('packing_id' in item && item.__dexieid) {
+                        await db.packing.update(item.__dexieid, { issync: false })
+                    } else if ('traveler_id' in item && item.__dexieid) {
+                        await db.travelers.update(item.__dexieid, { issync: false })
+                    } else if ('expense_id' in item && item.__dexieid) {
+                        await db.expenses.update(item.__dexieid, { issync: false })
+                    }
+                }
+            })
+            return { valid: false, recovered: true, details: `Fixed ${itemsWithoutIds.length} items with missing IDs` }
+        }
+
+        return { valid: true, recovered: false, details: 'All data consistent and valid' }
+    } catch (err) {
+        console.error('Error validating trip sync:', err)
+        return { valid: false, recovered: false, details: `Validation error: ${err instanceof Error ? err.message : 'Unknown error'}` }
+    }
 }
 
 export async function getUserTrips() {
@@ -566,6 +781,9 @@ export async function shareTrip(
 
             if (error) {
                 console.error('Error sharing trip to Supabase:', error)
+                return { success: false, error: 'Failed to sync share to Supabase' }
+            } else {
+                console.log('✓ Trip shared and synced to Supabase:', { trip_id: trip.trip_id, shared_with: userId })
             }
         }
 
@@ -608,6 +826,9 @@ export async function unshareTrip(
 
             if (error) {
                 console.error('Error unsharing trip on Supabase:', error)
+                return { success: false, error: 'Failed to sync unshare to Supabase' }
+            } else {
+                console.log('✓ Trip unshared and synced to Supabase:', { trip_id: trip.trip_id, removed_from: userId })
             }
         }
 
@@ -1497,4 +1718,202 @@ export async function getUserByUsername(username: string, birthday: string, gend
         return null
     }
 }
+
+// ============= ONLINE-FIRST DATA QUERIES (Supabase > Dexie) =============
+
+/**
+ * Get travelers for a trip - queries Supabase when online
+ * When online: Always returns fresh data from Supabase
+ * When offline: Falls back to Dexie cache
+ * Caches data to Dexie after fetching for offline access
+ */
+export async function getTripTravelersOnline(tripId: string | null): Promise<TravelerItem[]> {
+    if (!tripId) return []
+
+    const online = await isOnline()
+
+    if (online) {
+        try {
+            const { data, error } = await supabase
+                .from('travelers')
+                .select('*')
+                .eq('trip_id', String(tripId))
+
+            if (!error && data && data.length > 0) {
+                // Cache to Dexie for offline access
+                await db.travelers.where('trip_id').equals(tripId).delete()
+                const transformedData = data.map((item: any) => ({
+                    traveler_id: item.traveler_id,
+                    trip_id: item.trip_id,
+                    issync: true,
+                    name: item.name ?? '',
+                    email: item.email,
+                    icon: item.icon,
+                }))
+                await db.travelers.bulkAdd(transformedData)
+                console.log('✓ Cached travelers from Supabase:', tripId, data.length)
+                return transformedData
+            } else if (error) {
+                console.warn('Error fetching travelers from Supabase:', error)
+            }
+        } catch (err) {
+            console.warn('Exception fetching travelers from Supabase:', err)
+        }
+    }
+
+    // Fall back to Dexie cache
+    return await db.travelers.where('trip_id').equals(tripId).toArray()
+}
+
+/**
+ * Get itinerary for a trip - queries Supabase when online
+ * When online: Always returns fresh data from Supabase
+ * When offline: Falls back to Dexie cache
+ */
+export async function getTripItineraryOnline(tripId: string | null): Promise<ItineraryItem[]> {
+    if (!tripId) return []
+
+    const online = await isOnline()
+
+    if (online) {
+        try {
+            const { data, error } = await supabase
+                .from('itinerary')
+                .select('*')
+                .eq('trip_id', String(tripId))
+                .order('day_index', { ascending: true })
+
+            if (!error && data && data.length > 0) {
+                // Cache to Dexie for offline access
+                await db.itinerary.where('trip_id').equals(tripId).delete()
+                const transformedData = data.map((item: any) => ({
+                    itinerary_id: item.itinerary_id,
+                    trip_id: item.trip_id,
+                    issync: true,
+                    day_index: item.day_index ?? 0,
+                    title: item.title ?? '',
+                    time: item.time,
+                    url: item.url,
+                    remark: item.remark,
+                    map_link: item.map_link,
+                    lat: item.lat,
+                    lng: item.lng,
+                    place_name: item.place_name,
+                    order: item.order ?? 0,
+                }))
+                await db.itinerary.bulkAdd(transformedData)
+                console.log('✓ Cached itinerary from Supabase:', tripId, data.length)
+                return transformedData
+            } else if (error) {
+                console.warn('Error fetching itinerary from Supabase:', error)
+            }
+        } catch (err) {
+            console.warn('Exception fetching itinerary from Supabase:', err)
+        }
+    }
+
+    // Fall back to Dexie cache
+    return await db.itinerary.where('trip_id').equals(tripId).sortBy('order')
+}
+
+/**
+ * Get packing items for a trip - queries Supabase when online
+ * When online: Always returns fresh data from Supabase
+ * When offline: Falls back to Dexie cache
+ */
+export async function getTripPackingOnline(tripId: string | null): Promise<PackingItem[]> {
+    if (!tripId) return []
+
+    const online = await isOnline()
+
+    if (online) {
+        try {
+            const { data, error } = await supabase
+                .from('packing')
+                .select('*')
+                .eq('trip_id', String(tripId))
+                .order('order', { ascending: true })
+
+            if (!error && data && data.length > 0) {
+                // Cache to Dexie for offline access
+                await db.packing.where('trip_id').equals(tripId).delete()
+                const transformedData = data.map((item: any) => ({
+                    packing_id: item.packing_id,
+                    trip_id: item.trip_id,
+                    issync: true,
+                    title: item.title ?? '',
+                    completed: item.completed ?? false,
+                    color: item.color,
+                    order: item.order ?? 0,
+                }))
+                await db.packing.bulkAdd(transformedData)
+                console.log('✓ Cached packing items from Supabase:', tripId, data.length)
+                return transformedData
+            } else if (error) {
+                console.warn('Error fetching packing from Supabase:', error)
+            }
+        } catch (err) {
+            console.warn('Exception fetching packing from Supabase:', err)
+        }
+    }
+
+    // Fall back to Dexie cache
+    return await db.packing.where('trip_id').equals(tripId).sortBy('order')
+}
+
+/**
+ * Get expenses for a trip - queries Supabase when online
+ * When online: Always returns fresh data from Supabase
+ * When offline: Falls back to Dexie cache
+ */
+export async function getTripExpensesOnline(tripId: string | null): Promise<ExpenseItem[]> {
+    if (!tripId) return []
+
+    const online = await isOnline()
+
+    if (online) {
+        try {
+            const { data, error } = await supabase
+                .from('expenses')
+                .select('*')
+                .eq('trip_id', String(tripId))
+
+            if (!error && data && data.length > 0) {
+                // Cache to Dexie for offline access
+                await db.expenses.where('trip_id').equals(tripId).delete()
+                const transformedData = data.map((item: any) => {
+                    let chargedTo: any = undefined
+                    try {
+                        chargedTo = typeof item.charged_to === 'string'
+                            ? JSON.parse(item.charged_to)
+                            : item.charged_to
+                    } catch (parseError) {
+                        console.warn('Failed to parse charged_to:', item.expense_id)
+                    }
+                    return {
+                        expense_id: item.expense_id,
+                        trip_id: item.trip_id,
+                        issync: true,
+                        title: item.title ?? '',
+                        amount: item.amount ?? 0,
+                        payer_id: item.payer_id ?? undefined,
+                        charged_to: chargedTo,
+                        datetime: item.datetime,
+                    }
+                })
+                await db.expenses.bulkAdd(transformedData)
+                console.log('✓ Cached expenses from Supabase:', tripId, data.length)
+                return transformedData
+            } else if (error) {
+                console.warn('Error fetching expenses from Supabase:', error)
+            }
+        } catch (err) {
+            console.warn('Exception fetching expenses from Supabase:', err)
+        }
+    }
+
+    // Fall back to Dexie cache
+    return await db.expenses.where('trip_id').equals(tripId).toArray()
+}
+
 

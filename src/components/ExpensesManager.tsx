@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useTrip } from "../context/TripContext";
 import { ExpenseItem, TravelerItem } from "../lib/db";
 import { getExpenses, getTravelers, getTrip, addExpense, deleteExpense } from "../lib/syncService";
+import { useTripData } from "../hooks/useTripData";
 import styles from "../styles/components.module.css";
 
 type Props = { tripId?: number };
@@ -9,6 +10,9 @@ type Props = { tripId?: number };
 export const ExpensesManager = ({ tripId: _ }: Props = {}) => {
   const { trip } = useTrip();
   const tripId = trip?.trip_id || null;
+  // Load expenses and travelers with online-first strategy
+  const { data: expensesData, loading: expensesLoading, isOnline } = useTripData<ExpenseItem>('expenses', tripId);
+  const { data: travelersData, loading: travelersLoading } = useTripData<TravelerItem>('travelers', tripId, { refetchInterval: 3000 });
   const [expenses, setExpenses] = useState<ExpenseItem[]>([]);
   const [travelers, setTravelers] = useState<TravelerItem[]>([]);
   const [title, setTitle] = useState("");
@@ -20,49 +24,34 @@ export const ExpensesManager = ({ tripId: _ }: Props = {}) => {
     () => new Date().toISOString().split("T")[0],
   );
 
+  // Update expenses when data from hook changes
   useEffect(() => {
-    let mounted = true;
-    const load = async () => {
-      const [expData, travData, tripData] = await Promise.all([
-        getExpenses(tripId),
-        getTravelers(tripId),
-        getTrip(tripId || null as any),
-      ]);
-      if (mounted) {
-        setExpenses(expData);
-        setTravelers(travData);
-        // Set trip start date and use it as default for expenses
-        const startDate =
-          (tripData as any)?.start_date || new Date().toISOString().split("T")[0];
-        setTripStartDate(startDate);
-        setDate(startDate);
-        if (travData.length && !payerId) {
-          const firstId = String(travData[0].__dexieid ?? travData[0].traveler_id);
-          setPayerId(firstId);
-          setChargedTo([firstId]);
-        }
-      }
-    };
-    load();
+    setExpenses(expensesData);
+  }, [expensesData]);
 
-    // Poll for new travelers every 2 seconds
-    const interval = setInterval(async () => {
-      const travData = await getTravelers(tripId);
-      if (mounted && travData.length !== travelers.length) {
-        setTravelers(travData);
-        if (travData.length && !payerId) {
-          const firstId = String(travData[0].__dexieid ?? travData[0].traveler_id);
-          setPayerId(firstId);
-          setChargedTo([firstId]);
-        }
-      }
-    }, 2000);
+  // Update travelers when data from hook changes
+  useEffect(() => {
+    setTravelers(travelersData);
+    // Initialize payer when travelers first load
+    if (travelersData.length && !payerId) {
+      const firstId = String(travelersData[0].__dexieid ?? travelersData[0].traveler_id);
+      setPayerId(firstId);
+      setChargedTo([firstId]);
+    }
+  }, [travelersData, payerId]);
 
-    return () => {
-      mounted = false;
-      clearInterval(interval);
+  // Load trip metadata
+  useEffect(() => {
+    const loadTripData = async () => {
+      if (!tripId) return;
+      const tripData = await getTrip(tripId || null as any);
+      const startDate =
+        (tripData as any)?.start_date || new Date().toISOString().split("T")[0];
+      setTripStartDate(startDate);
+      setDate(startDate);
     };
-  }, [tripId, travelers.length, payerId]);
+    loadTripData();
+  }, [tripId]);
 
   // Auto-select payer when payer changes
   useEffect(() => {

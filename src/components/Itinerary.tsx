@@ -15,6 +15,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { db, ItineraryItem as ItineraryItemType } from "../lib/db";
 import { getItineraryItems, addItineraryItem, deleteItineraryItem, updateTrip, updateItineraryItem } from "../lib/syncService";
+import { useTripData } from "../hooks/useTripData";
 import { parseMapLink } from "../lib/mapParser";
 import styles from "../styles/components.module.css";
 
@@ -109,22 +110,17 @@ export const Itinerary = ({ tripId: _ }: Props = {}) => {
     }
   }
 
+  // Load itinerary items with online-first strategy
+  const { data: itineraryData, loading, isOnline } = useTripData<ItineraryItemType>('itinerary', tripId);
+
   useEffect(() => {
-    let mounted = true;
-    const load = async () => {
-      let data = await getItineraryItems(tripId || null);
-      // Ensure order property exists and sort by it
-      data = data.map((item, idx) => ({ ...item, order: item.order ?? idx }));
-      data.sort(
-        (a, b) => a.day_index - b.day_index || (a.order ?? 0) - (b.order ?? 0),
-      );
-      if (mounted) setItems(data);
-    };
-    load();
-    return () => {
-      mounted = false;
-    };
-  }, [tripId]);
+    // Ensure order property exists and sort by it
+    let data = itineraryData.map((item, idx) => ({ ...item, order: item.order ?? idx }));
+    data.sort(
+      (a, b) => a.day_index - b.day_index || (a.order ?? 0) - (b.order ?? 0),
+    );
+    setItems(data);
+  }, [itineraryData]);
 
   // Load trip dates from database
   useEffect(() => {

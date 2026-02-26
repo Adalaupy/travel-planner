@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useTrip } from "../context/TripContext";
 import { TravelerItem } from "../lib/db";
 import { getTravelers, addTraveler, deleteTraveler } from "../lib/syncService";
+import { useTripData } from "../hooks/useTripData";
 import styles from "../styles/components.module.css";
 import {
   FaUser,
@@ -59,11 +60,18 @@ const ICONS = [
 export const TravelersList = ({ tripId }: Props = {}) => {
   const { trip } = useTrip();
   const actualTripId = trip?.trip_id;
+  const { data: travelers, loading, error, isOnline } = useTripData<TravelerItem>('travelers', actualTripId);
   const [items, setItems] = useState<TravelerItem[]>([]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [icon, setIcon] = useState(REUSABLE_ICON_ID);
   const [showIconPicker, setShowIconPicker] = useState(false);
+
+  // Update items when travelers data changes from hook
+  useEffect(() => {
+    setItems(travelers);
+  }, [travelers]);
+
   useEffect(() => {
     try {
       const saved =
@@ -73,18 +81,6 @@ export const TravelersList = ({ tripId }: Props = {}) => {
       if (saved) setIcon(saved);
     } catch (e) {}
   }, []);
-
-  useEffect(() => {
-    let mounted = true;
-    const load = async () => {
-      const data = await getTravelers(actualTripId || null);
-      if (mounted) setItems(data);
-    };
-    load();
-    return () => {
-      mounted = false;
-    };
-  }, [actualTripId]);
 
   // Auto-select first available icon when travelers change
   useEffect(() => {
@@ -133,7 +129,9 @@ export const TravelersList = ({ tripId }: Props = {}) => {
 
   return (
     <div className={styles.travelersContainer}>
-      <h2>Travelers</h2>
+      <h2>
+        Travelers {!isOnline && <span title="Using cached data">📡 (Offline)</span>} {loading && <span>⏳</span>}
+      </h2>
       <div className={styles.addTravelerRow}>
         <input
           placeholder="Name"
