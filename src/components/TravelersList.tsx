@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTrip } from "../context/TripContext";
 import { TravelerItem } from "../lib/db";
-import { getTravelers, addTraveler, deleteTraveler } from "../lib/syncService";
+import { addTraveler, deleteTraveler } from "../lib/syncService";
 import { useTripData } from "../hooks/useTripData";
 import styles from "../styles/components.module.css";
 import {

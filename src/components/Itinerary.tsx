@@ -14,7 +14,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { db, ItineraryItem as ItineraryItemType } from "../lib/db";
-import { getItineraryItems, addItineraryItem, deleteItineraryItem, updateTrip, updateItineraryItem } from "../lib/syncService";
+import { addItineraryItem, deleteItineraryItem, updateTrip, updateItineraryItem } from "../lib/syncService";
 import { useTripData } from "../hooks/useTripData";
 import { parseMapLink } from "../lib/mapParser";
 import styles from "../styles/components.module.css";
@@ -124,9 +124,9 @@ export const Itinerary = ({ tripId: _ }: Props = {}) => {
 
   // Load trip dates from database
   useEffect(() => {
-    const loadTripDates = async () => {
+    const loadTripDates = () => {
       if (!trip) return;
-      const itineraryItems = await getItineraryItems(tripId || null);
+      const itineraryItems = itineraryData;
 
       // Get max dayIndex from itinerary if items exist
       let maxDayIndex = -1;
@@ -173,7 +173,7 @@ export const Itinerary = ({ tripId: _ }: Props = {}) => {
       }
     };
     loadTripDates();
-  }, [tripId]);
+  }, [tripId, trip, itineraryData]);
 
   // Helper to update order in DB and state
   const updateOrder = async (newDayItems: ItineraryItemType[]) => {

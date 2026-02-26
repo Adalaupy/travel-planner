@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useTrip } from "../context/TripContext";
 import { ExpenseItem, TravelerItem } from "../lib/db";
-import { getExpenses, getTravelers, getTrip, addExpense, deleteExpense } from "../lib/syncService";
+import { getTrip, addExpense, deleteExpense } from "../lib/syncService";
 import { useTripData } from "../hooks/useTripData";
 import styles from "../styles/components.module.css";
 
@@ -11,8 +11,8 @@ export const ExpensesManager = ({ tripId: _ }: Props = {}) => {
   const { trip } = useTrip();
   const tripId = trip?.trip_id || null;
   // Load expenses and travelers with online-first strategy
-  const { data: expensesData, loading: expensesLoading, isOnline } = useTripData<ExpenseItem>('expenses', tripId);
-  const { data: travelersData, loading: travelersLoading } = useTripData<TravelerItem>('travelers', tripId, { refetchInterval: 3000 });
+  const { data: expensesData, isOnline } = useTripData<ExpenseItem>('expenses', tripId);
+  const { data: travelersData } = useTripData<TravelerItem>('travelers', tripId, { refetchInterval: 3000 });
   const [expenses, setExpenses] = useState<ExpenseItem[]>([]);
   const [travelers, setTravelers] = useState<TravelerItem[]>([]);
   const [title, setTitle] = useState("");
@@ -281,7 +281,13 @@ export const ExpensesManager = ({ tripId: _ }: Props = {}) => {
       </div>
 
       <ul className={styles.expensesList}>
-        {expenses.map((exp) => {
+        {expenses
+          .sort((a, b) => {
+            const dateA = a.datetime ? new Date(a.datetime).getTime() : 0;
+            const dateB = b.datetime ? new Date(b.datetime).getTime() : 0;
+            return dateA - dateB; // Most recent first
+          })
+          .map((exp) => {
           const payer = travelers.find(
             (t) => String(t.__dexieid ?? t.traveler_id) === String(exp.payer_id),
           );
@@ -293,15 +299,17 @@ export const ExpensesManager = ({ tripId: _ }: Props = {}) => {
               .filter(Boolean)
               .join(", ") || "All";
           const expDate = exp.datetime
-            ? new Date(exp.datetime).toLocaleDateString()
+            ? new Date(exp.datetime).toLocaleDateString('en-CA',)
             : "";
           return (
             <li key={exp.__dexieid} className={styles.expenseItem}>
               <div className={styles.expenseInfo}>
                 <div className={styles.expenseTitle}>{exp.title}</div>
                 <div className={styles.expenseMeta}>
-                  ${exp.amount.toFixed(2)} • {expDate} • Paid by{" "}
-                  {payer?.name || "Unknown"} • Charged to: {charged}
+                <label style={{fontWeight:"700", color:"#091a9c"}}>{expDate} : </label>
+                {"  "} ${exp.amount.toFixed(2)}
+                {" • "} Paid by{" "} {payer?.name || "Unknown"}
+                {" • "} Charged to: {charged}
                 </div>
               </div>
               <button

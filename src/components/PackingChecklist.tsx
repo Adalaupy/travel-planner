@@ -14,7 +14,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { db, PackingItem } from "../lib/db";
-import { getPackingItems, addPackingItem, updatePackingItem, deletePackingItem } from "../lib/syncService";
+import { addPackingItem, updatePackingItem, deletePackingItem } from "../lib/syncService";
 import { useTripData } from "../hooks/useTripData";
 import styles from "../styles/components.module.css";
 
