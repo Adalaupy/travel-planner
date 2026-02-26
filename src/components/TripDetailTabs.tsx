@@ -9,8 +9,6 @@ interface TripDetailTabsProps {
     numericId: number;
     tripTitle: string;
     setTripTitle: (title: string) => void;
-    editingTitle: boolean;
-    setEditingTitle: (editing: boolean) => void;
     newTitle: string;
     setNewTitle: (title: string) => void;
     activeTab: "itinerary" | "packing" | "travelers" | "expenses";
@@ -28,8 +26,6 @@ const TripDetailTabs = ({
     numericId,
     tripTitle,
     setTripTitle,
-    editingTitle,
-    setEditingTitle,
     newTitle,
     setNewTitle,
     activeTab,

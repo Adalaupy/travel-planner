@@ -23,7 +23,7 @@ type Props = { tripId?: number };
 export const PackingChecklist = ({ tripId: _ }: Props = {}) => {
     const { trip } = useTrip();
     const tripId = trip?.trip_id;
-    const { data: packingData, loading, isOnline } = useTripData<PackingItem>('packing', tripId);
+    const { data: packingData } = useTripData<PackingItem>('packing', tripId);
     const [items, setItems] = useState<PackingItem[]>([]);
     const [text, setText] = useState("");
     const [lastColor, setLastColor] = useState("#ffffff");

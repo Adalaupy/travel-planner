@@ -282,8 +282,6 @@ export default function TripDetailPage() {
                 numericId={numericId}
                 tripTitle={tripTitle}
                 setTripTitle={setTripTitle}
-                editingTitle={editingTitle}
-                setEditingTitle={setEditingTitle}
                 newTitle={newTitle}
                 setNewTitle={setNewTitle}
                 activeTab={activeTab}

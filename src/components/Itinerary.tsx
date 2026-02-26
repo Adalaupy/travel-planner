@@ -111,7 +111,7 @@ export const Itinerary = ({ tripId: _ }: Props = {}) => {
     }
 
     // Load itinerary items with online-first strategy
-    const { data: itineraryData, loading, isOnline } = useTripData<ItineraryItemType>('itinerary', tripId);
+    const { data: itineraryData } = useTripData<ItineraryItemType>('itinerary', tripId);
 
     useEffect(() => {
         // Ensure order property exists and sort by it
