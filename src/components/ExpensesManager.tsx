@@ -239,13 +239,15 @@ export const ExpensesManager = ({ tripId: _ }: Props = {}) => {
                         
                         {travelers.map((t) => (
                             <label key={String(t.__dexieid ?? t.traveler_id)} className={styles.checkboxLabel}>
-                                <input
-                                    type="checkbox"
-                                    className={styles.checkboxCharge}
-                                    checked={chargedTo.includes(String(t.__dexieid ?? t.traveler_id))}
-                                    onChange={() => toggleCharged(String(t.__dexieid ?? t.traveler_id))}
-                                />
-                                <>{t.name}</>
+                                <div  className={styles.checkboxCharge}>
+                                    <input
+                                    
+                                        type="checkbox"                                       
+                                        checked={chargedTo.includes(String(t.__dexieid ?? t.traveler_id))}
+                                        onChange={() => toggleCharged(String(t.__dexieid ?? t.traveler_id))}
+                                    />
+                                </div>
+                                <label>{t.name}</label>
                                 
                             </label>
                         ))}
