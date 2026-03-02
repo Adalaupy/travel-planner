@@ -116,7 +116,7 @@ export default function MyTrips() {
 
     const handleDownloadTemplate = async () => {
         try {
-            const response = await fetch("/import-template.json", { cache: "no-store" });
+            const response = await fetch(`${router.basePath}/import-template.json`, { cache: "no-store" });
             if (!response.ok) {
                 throw new Error("Template not found");
             }
