@@ -34,9 +34,9 @@ export const ExpensesManager = ({ tripId: _ }: Props = {}) => {
         setTravelers(travelersData);
         // Initialize payer when travelers first load
         if (travelersData.length && !payerId) {
-                const firstId = String(travelersData[0].__dexieid ?? travelersData[0].traveler_id);
-                setPayerId(firstId);
-                setChargedTo([firstId]);
+            const firstId = String(travelersData[0].__dexieid ?? travelersData[0].traveler_id);
+            setPayerId(firstId);
+            setChargedTo([firstId]);
         }
     }, [travelersData, payerId]);
 
@@ -59,6 +59,8 @@ export const ExpensesManager = ({ tripId: _ }: Props = {}) => {
             setChargedTo([payerId]);
         }
     }, [payerId]);
+
+
 
     const addExpenseHandler = async () => {
         if (!tripId) {
@@ -161,13 +163,16 @@ export const ExpensesManager = ({ tripId: _ }: Props = {}) => {
         const debtors: { id: string; name: string; amount: number }[] = [];
 
         travelers.forEach((t) => {
-                const key = String(t.__dexieid ?? t.traveler_id);
-                const bal = balances[key];
-                if (bal.net > 0.01) {
-                        creditors.push({ id: String(t.__dexieid ?? t.traveler_id), name: t.name, amount: bal.net });
-                } else if (bal.net < -0.01) {
-                        debtors.push({ id: String(t.__dexieid ?? t.traveler_id), name: t.name, amount: -bal.net });
-                }
+            const key = String(t.__dexieid ?? t.traveler_id);
+            const bal = balances[key];
+            if (bal.net > 0.01) {
+                
+                creditors.push({ id: String(t.__dexieid ?? t.traveler_id), name: t.name, amount: bal.net });
+            
+            } else if (bal.net < -0.01) {
+                
+                debtors.push({ id: String(t.__dexieid ?? t.traveler_id), name: t.name, amount: -bal.net });
+            }
         });
 
         // Sort by amount (largest first)
@@ -177,21 +182,21 @@ export const ExpensesManager = ({ tripId: _ }: Props = {}) => {
         let i = 0,
                 j = 0;
         while (i < creditors.length && j < debtors.length) {
-                const creditor = creditors[i];
-                const debtor = debtors[j];
-                const transferAmount = Math.min(creditor.amount, debtor.amount);
+            const creditor = creditors[i];
+            const debtor = debtors[j];
+            const transferAmount = Math.min(creditor.amount, debtor.amount);
 
-                settlements.push({
-                        from: debtor.name,
-                        to: creditor.name,
-                        amount: transferAmount,
-                });
+            settlements.push({
+                from: debtor.name,
+                to: creditor.name,
+                amount: transferAmount,
+            });
 
-                creditor.amount -= transferAmount;
-                debtor.amount -= transferAmount;
+            creditor.amount -= transferAmount;
+            debtor.amount -= transferAmount;
 
-                if (creditor.amount < 0.01) i++;
-                if (debtor.amount < 0.01) j++;
+            if (creditor.amount < 0.01) i++;
+            if (debtor.amount < 0.01) j++;
         }
 
         return settlements;
