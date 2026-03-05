@@ -7,7 +7,7 @@ const USERNAME_REGEX = /^[A-Za-z0-9]+$/;
 type ModalMode = 'username' | 'login' | 'signup';
 
 export const UsernameModal = () => {
-    const { username, login, signup, checkUsernameExists, isLoading, error } = useUsername();
+    const { username, login, signup, checkUsernameExists, getCorrectUsernameCase, isLoading, error } = useUsername();
     const [mode, setMode] = useState<ModalMode>('username');
     const [inputValue, setInputValue] = useState('');
     const [shortCode, setShortCode] = useState('');
@@ -39,10 +39,18 @@ export const UsernameModal = () => {
         }
 
         try {
-            const exists = await checkUsernameExists(inputValue.trim());
-            if (exists) {
+            const correctCase = await getCorrectUsernameCase(inputValue.trim());
+            
+            if (correctCase) {
+                // Username exists - check if case matches
+                if (correctCase !== inputValue.trim()) {
+                    setLocalError(`Username case doesn't match. Please check`);
+                    return;
+                }
+                // Case matches - proceed to login
                 setMode('login');
             } else {
+                // Username doesn't exist - proceed to signup
                 setMode('signup');
             }
         } catch (err) {

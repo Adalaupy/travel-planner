@@ -154,6 +154,7 @@
 @media (max-width: 768px) {
   .main {
     padding: 16px;
+    margin: 10px;
   }
 
   .header h1 {
@@ -161,9 +162,17 @@
   }
 
   .tabsRow {
-    display: grid;
     gap: 15px;
-    background-color: var(--bg-2);
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .tabsRow button {
+    font-size: small;
+    padding: 10px 5px;
+    min-width: 130px;
+
   }
 
 

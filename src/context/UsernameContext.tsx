@@ -25,6 +25,7 @@ interface UsernameContextType {
     error: string | null;
     checkIdentityAvailable: (username: string, birthday: string, gender: string, shortCode: string) => Promise<boolean>;
     checkUsernameExists: (username: string) => Promise<boolean>;
+    getCorrectUsernameCase: (username: string) => Promise<string | null>;
     login: (username: string, birthday: string, gender: string, shortCode: string) => Promise<void>;
     signup: (username: string, birthday: string, gender: string, shortCode: string) => Promise<void>;
     setIdentity: (username: string, birthday: string, gender: string, shortCode: string) => Promise<void>;
@@ -44,7 +45,7 @@ async function upsertUserIdentity(identity: UserIdentity): Promise<UserIdentity>
         const { data: existingByCode, error: fetchByCodeError } = await supabase
             .from('users')
             .select('*')
-            .eq('username', username)
+            .ilike('username', username)
             .eq('short_code', normalizedShortCode)
             .maybeSingle();
 
@@ -68,7 +69,7 @@ async function upsertUserIdentity(identity: UserIdentity): Promise<UserIdentity>
         const { data: existing, error: fetchError } = await supabase
             .from('users')
             .select('*')
-            .eq('username', username)
+            .ilike('username', username)
             .eq('birthday', birthday)
             .eq('gender', gender)
             .maybeSingle();
@@ -167,10 +168,11 @@ export const UsernameProvider = ({ children }: { children: ReactNode }) => {
         }
 
         try {
+            // Case-insensitive search using ilike
             const { data, error: queryError } = await supabase
                 .from('users')
                 .select('username')
-                .eq('username', inputUsername.trim())
+                .ilike('username', inputUsername.trim())
                 .limit(1);
 
             if (queryError) {
@@ -181,6 +183,35 @@ export const UsernameProvider = ({ children }: { children: ReactNode }) => {
         } catch (err) {
             console.error('Error checking if username exists:', err);
             return false;
+        }
+    };
+
+    const getCorrectUsernameCase = async (inputUsername: string): Promise<string | null> => {
+        if (!inputUsername || inputUsername.trim().length < 3) {
+            return null;
+        }
+        if (!USERNAME_REGEX.test(inputUsername.trim())) {
+            return null;
+        }
+
+        try {
+            // Case-insensitive search to get the correct casing
+            const { data, error: queryError } = await supabase
+                .from('users')
+                .select('username')
+                .ilike('username', inputUsername.trim())
+                .limit(1)
+                .maybeSingle();
+
+            if (queryError) {
+                throw queryError;
+            }
+
+            // Return the correctly-cased username from DB, or null if not found
+            return data?.username ?? null;
+        } catch (err) {
+            console.error('Error getting correct username case:', err);
+            return null;
         }
     };
 
@@ -290,11 +321,11 @@ export const UsernameProvider = ({ children }: { children: ReactNode }) => {
                 throw new Error('Cannot login while offline. Please check your internet connection.');
             }
 
-            // Try to find existing user with these credentials
+            // Try to find existing user with these credentials (case-insensitive username)
             const query = supabase
                 .from('users')
                 .select('*')
-                .eq('username', normalizedUsername);
+                .ilike('username', normalizedUsername);
 
             const { data: existing, error: fetchError } = normalizedShortCode
                 ? await query.eq('short_code', normalizedShortCode).maybeSingle()
@@ -306,6 +337,11 @@ export const UsernameProvider = ({ children }: { children: ReactNode }) => {
 
             if (!existing) {
                 throw new Error('Invalid credentials. Please check your short code or birthday/gender and try again.');
+            }
+
+            // Check if username case matches exactly
+            if (existing.username !== normalizedUsername) {
+                throw new Error(`Username case doesn't match. Please check`);
             }
 
             const resolved: UserIdentity = {
@@ -384,6 +420,11 @@ export const UsernameProvider = ({ children }: { children: ReactNode }) => {
                 short_code: normalizedShortCode,
                 issync: true,
             });
+
+            // Check if username case matches exactly (prevents signup with wrong case)
+            if (resolved.username !== normalizedUsername) {
+                throw new Error(`This username already exists with different casing. Please use: ${resolved.username}`);
+            }
 
             await db.users.add({
                 user_id: resolved.user_id ?? null,
@@ -499,6 +540,7 @@ export const UsernameProvider = ({ children }: { children: ReactNode }) => {
                 error,
                 checkIdentityAvailable,
                 checkUsernameExists,
+                getCorrectUsernameCase,
                 login,
                 signup,
                 setIdentity,

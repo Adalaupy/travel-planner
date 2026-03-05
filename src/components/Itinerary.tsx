@@ -309,6 +309,13 @@ export const Itinerary = ({ tripId: _ }: Props = {}) => {
     return (
         <div className={styles.itineraryContainer}>
             <h2>Itinerary</h2>
+
+            <div className={styles.jumpLinkRow}>
+                <a href="#itinerary-list" className={styles.jumpLink}>
+                    Jump to data
+                </a>
+            </div>
+
             <div className={styles.dateRangeRow}>
                 <label>
                     Start Date:
@@ -347,20 +354,25 @@ export const Itinerary = ({ tripId: _ }: Props = {}) => {
                     </button>
                 ))}
             </div>
+
             <div className={styles.addItineraryRow}>
                 <input
                     placeholder="Title"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                 />
-                <input
-                    type="time"
-                    step="900"
-                    value={time}
-                    onChange={(e) => setTime(e.target.value)}
-                    placeholder="Time (optional)"
-                    title="Time is for display only and does not affect the order of items. Drag and drop to reorder."
-                />
+                <div style={{display:'flex', gap: '15px', width:'100%'}}>
+
+                        <input
+                            type="time"
+                            step="900"
+                            value={time}
+                            onChange={(e) => setTime(e.target.value)}
+                            placeholder="Time (optional)"
+                            title="Time is for display only and does not affect the order of items. Drag and drop to reorder."
+                        />
+
+                </div>
                 <input
                     placeholder="Google Maps Link"
                     value={mapLink}
@@ -384,6 +396,11 @@ export const Itinerary = ({ tripId: _ }: Props = {}) => {
                     {parsing ? "Parsing..." : "Add"}
                 </button>
             </div>
+
+
+
+            <div id="itinerary-list" />
+
             <p style={{ fontSize: "12px", color: "#666", marginTop: "8px" }}>
                 💡 <strong>Note:</strong> Time input is optional and for display only—it does not affect ordering. Use drag and drop to reorder items.
             </p>
@@ -495,6 +512,7 @@ function SortableItineraryItem({
         >
             <div className={styles.itineraryInfo}>
                 <div className={styles.itineraryTitle}>
+                    
                     {item.time && (
                         <span className={styles.itineraryTime}>{item.time}</span>
                     )}
@@ -503,12 +521,13 @@ function SortableItineraryItem({
                 {(item.place_name || item.lat || item.lng) && (
                     <div className={styles.itineraryParsedInfo}>
                         {item.place_name && <span>📍 {item.place_name}</span>}
-                        {item.lat && item.lng && (
+                        {/* <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            {item.lat && item.lng && (
                             <span className={styles.coords}>
                                 {" "}
                                 ({item.lat.toFixed(4)}, {item.lng.toFixed(4)})
                             </span>
-                        )}
+                        )} */}
                     </div>
                 )}
                 {item.remark && (
@@ -522,7 +541,7 @@ function SortableItineraryItem({
                             rel="noopener noreferrer"
                             className={styles.mapLink}
                         >
-                            📍 Map
+                            🗺️ Map
                         </a>
                     )}
                     {item.url && (
