@@ -525,9 +525,14 @@ function SortableItineraryItem({
                     <div style={{}}>
                         {item.title}
 
-                        <div className={styles.itineraryParsedInfo}>
-                            {item.place_name && <span>📍 {item.place_name}</span>}
-                        </div>
+                        
+                            {item.place_name &&
+                                <div className={styles.itineraryParsedInfo}> 
+                                    <span>📍</span>
+                                    <label> {item.place_name}</label> 
+                                </div>
+                            }
+                       
                     </div>
                 </div>
 

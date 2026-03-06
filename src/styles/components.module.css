@@ -916,7 +916,9 @@
     font-size: 0.85rem;
     color: #0d9488;
     font-weight: 500;
-
+    display: flex;
+    gap: 5px;
+    align-items: start;
 }
 
 .itineraryParsedInfo .coords {

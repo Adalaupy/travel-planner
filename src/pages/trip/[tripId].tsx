@@ -257,22 +257,26 @@ export default function TripDetailPage() {
             ) : (
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <h1 style={{ margin: 0 }}>{tripTitle}</h1>
-                <button
-                  type="button"
-                  style={{ padding: "8px 16px" }}
-                  onClick={() => setEditingTitle(true)}
-                >
-                  Rename
-                </button>
-                {isOwner && (
-                  <button
+                <div style={{display:'flex', flexWrap:'wrap', gap:'5px', alignItems:'center', justifyContent:
+                'center'}}>
+                    <button
                     type="button"
-                    style={{ padding: "8px 16px" }}
-                    onClick={() => setShowShareModal(true)}
-                  >
-                    Share
-                  </button>
-                )}
+                    style={{ padding: "8px 16px", width:'80px', textAlign:'center' }}
+                    onClick={() => setEditingTitle(true)}
+                    >
+                    Rename
+                    </button>
+                    {isOwner && (
+                    <button
+                        type="button"
+                        style={{ padding: "8px 16px", width:'80px', textAlign:'center'  }}
+                        onClick={() => setShowShareModal(true)}
+                    >
+                        Share
+                    </button>
+                    )}
+                </div>
+                
               </div>
             )}
           </div>
