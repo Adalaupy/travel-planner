@@ -423,8 +423,13 @@ export const Itinerary = ({ tripId: _ }: Props = {}) => {
                         target="_blank"
                         rel="noopener noreferrer"
                         className={styles.daySummaryLink}
-                    >
-                        🗺️ View All Destinations on Map
+                    >   
+                        <div style={{display:'flex',gap:'13px', alignItems:'center'}}>
+                            🗺️ 
+                            <label>
+                                View All Destinations on Map
+                            </label>
+                        </div>
                     </a>
                 </div>
             )}
@@ -516,20 +521,34 @@ function SortableItineraryItem({
                     {item.time && (
                         <span className={styles.itineraryTime}>{item.time}</span>
                     )}
-                    {item.title}
+
+
+                    <div style={{}}>
+                        {item.title}
+
+                        <div className={styles.itineraryParsedInfo}>
+                            {item.place_name && <span>📍 {item.place_name}</span>}
+                        </div>
+                    </div>
                 </div>
-                {(item.place_name || item.lat || item.lng) && (
+
+
+
+
+                {/* {(item.place_name || item.lat || item.lng) && (
                     <div className={styles.itineraryParsedInfo}>
                         {item.place_name && <span>📍 {item.place_name}</span>}
-                        {/* <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                             {item.lat && item.lng && (
                             <span className={styles.coords}>
                                 {" "}
                                 ({item.lat.toFixed(4)}, {item.lng.toFixed(4)})
                             </span>
-                        )} */}
+                        )}
                     </div>
-                )}
+                )} */}
+
+
                 {item.remark && (
                     <div className={styles.itineraryRemark}>{item.remark}</div>
                 )}
@@ -544,6 +563,8 @@ function SortableItineraryItem({
                             🗺️ Map
                         </a>
                     )}
+
+                    
                     {item.url && (
                         <a
                             href={item.url}
@@ -554,24 +575,27 @@ function SortableItineraryItem({
                             🔗 Link
                         </a>
                     )}
-                    <a
-                        href={dirFromCurrent}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={styles.dirLink}
-                    >
-                        🧭 From Here
-                    </a>
-                    {dirFromPrev && (
+
+                    <div style={{display:'flex', justifyContent:'space-between', gap:'15px'}}>
                         <a
-                            href={dirFromPrev}
+                            href={dirFromCurrent}
                             target="_blank"
                             rel="noopener noreferrer"
                             className={styles.dirLink}
                         >
-                            ➡️ From Previous
+                            🧭 From Here
                         </a>
-                    )}
+                        {dirFromPrev && (
+                            <a
+                                href={dirFromPrev}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={styles.dirLink}
+                            >
+                                ➡️ From Previous
+                            </a>
+                        )}
+                    </div>
                 </div>
             </div>
             <button

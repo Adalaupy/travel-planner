@@ -25,7 +25,12 @@ export const Header = () => {
         <header className={styles.header}>
             <div className={styles.container}>
                 <Link href="/" className={styles.logo}>
-                    ✈️ Travel Planner
+                    
+                    ✈️ 
+                    
+                    <div>
+                        Travel Planner
+                    </div>
                 </Link>
                 <nav className={styles.nav}>
                     <Link href="/" className={isHome ? styles.navLinkActive : styles.navLink}>

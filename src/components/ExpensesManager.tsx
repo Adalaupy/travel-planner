@@ -307,10 +307,13 @@ export const ExpensesManager = ({ tripId: _ }: Props = {}) => {
                             <div className={styles.expenseInfo}>
                                 <div className={styles.expenseTitle}>{exp.title}</div>
                                 <div className={styles.expenseMeta}>
-                                <label style={{fontWeight:"700", color:"#091a9c"}}>{expDate} : </label>
-                                    {"  "} ${exp.amount.toFixed(1)}
-                                    {" "} Paid by{" "} {payer?.name || "Unknown"}
-                                    {" "} Charged to: {charged}
+                                    <label style={{fontWeight:"700", color:"#091a9c"}}>{expDate}</label>
+                                    
+                                    <div>
+                                        {"  "} ${exp.amount.toFixed(1)}
+                                        {" "} Paid by{" "} {payer?.name || "Unknown"}
+                                        {" "} Charged to: {charged}
+                                    </div>
                                 </div>
                             </div>
                             <button
