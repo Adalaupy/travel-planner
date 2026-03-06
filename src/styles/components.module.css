@@ -582,6 +582,12 @@
     font-size: 0.95rem;
     color: var(--muted);
     display: flex;
+    gap: 10px;
+    width: 60%;
+}
+
+.balanceDetails label {
+    flex: 1;
 }
 
 .settlementsSection {
@@ -1006,6 +1012,18 @@
     .expenseMeta {
         display: grid;
     }
+
+
+    .balanceDetails {
+        justify-content: end;
+        display: grid;
+    }
+
+    .balanceItem {
+
+        justify-content: space-evenly;
+    }
+
 }
 
 
@@ -1023,8 +1041,10 @@
     }
 
     .addRow {
-        gap: 5px;
+        gap: 20px;
+        margin-top: 10px;
     }
+
 
     .defaultColorInput {
         width: 50px;
@@ -1057,11 +1077,12 @@
 
     .dayTabs {
         justify-content: center;
+        flex: 1 1;
     }
 
     .dayTab {
         flex-grow: 1;
-        flex-shrink: 1;
+        max-width: 50%;
     }
 
     .dateRangeRow {

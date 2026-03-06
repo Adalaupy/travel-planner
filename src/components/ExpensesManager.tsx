@@ -343,7 +343,9 @@ export const ExpensesManager = ({ tripId: _ }: Props = {}) => {
                             <li key={t.__dexieid} className={styles.balanceItem}>
                                 <span className={styles.balanceName}>{t.name}</span>
                                 <span className={styles.balanceDetails}>
-                                        Paid: ${bal?.paid.toFixed(2) || "0.00"}  |  Owe: ${bal?.owe.toFixed(2) || "0.00"}  |  Net:  <strong style={{color: netColor}}>{netStr}</strong>
+                                    <label>Paid: ${bal?.paid.toFixed(2) || "0.00"}</label>
+                                    <label>Owe: ${bal?.owe.toFixed(2) || "0.00"}</label>
+                                    <label>Net:  <strong style={{color: netColor}}>{netStr}</strong></label>               
                                 </span>
                             </li>
                         );

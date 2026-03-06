@@ -165,16 +165,13 @@
         gap: 15px;
         flex-wrap: wrap;
         justify-content: center;
-        width: 100%;
-        flex: 1 1 auto;
-
     }
 
     .tabsRow button {
         padding: 10px 5px;
         font-size: small;
-        width: 40%;
-        min-width: none;
+        flex: 1;
+
     }
 
 
