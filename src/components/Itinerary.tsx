@@ -413,9 +413,13 @@ export const Itinerary = ({ tripId: _ }: Props = {}) => {
             )}
             {dayItems.length > 0 && (
                 <div className={styles.daySummary}>
-                    <strong>
-                        📅 Day {selectedDay + 1} Summary ({dayItems.length} destination
-                        {dayItems.length > 1 ? "s" : ""})
+                    <strong style={{display:'flex', alignItems:'start', gap:'5px'}}>
+                        📅 
+                        <span>
+                            Day
+                            {selectedDay + 1} Summary ({dayItems.length} destination
+                            {dayItems.length > 1 ? "s" : ""})
+                        </span>
                     </strong>
                     <a
                         href={generateDaySummaryLink()}
