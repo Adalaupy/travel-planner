@@ -16,8 +16,7 @@ export default function App({ Component, pageProps }: AppProps) {
     
     return (
         <UsernameProvider>
-            <Head>
-                
+            <Head>                
                 <link rel="icon" href={`${router.basePath}/favicon.ico`} />
             </Head>
             <UsernameModal />

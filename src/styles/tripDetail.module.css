@@ -1,6 +1,7 @@
 .main {
     max-width: 1200px;
     margin: 20px auto;
+
     padding: 32px 20px;
     min-height: calc(100vh - 80px);
     background: linear-gradient(to bottom, #ffffff, #f8fafc);
@@ -151,10 +152,17 @@
     font-size: 1rem;
 }
 
+@media (max-width: 1200px) {
+
+    .main {
+        margin: 15px;
+    }
+
+}
+
 @media (max-width: 768px) {
     .main {
         padding: 16px;
-        margin: 10px;
     }
 
     .header h1 {

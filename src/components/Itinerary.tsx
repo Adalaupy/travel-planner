@@ -362,7 +362,6 @@ export const Itinerary = ({ tripId: _ }: Props = {}) => {
                     onChange={(e) => setTitle(e.target.value)}
                 />
                 <div style={{display:'flex', gap: '15px', width:'100%'}}>
-
                         <input
                             type="time"
                             step="900"
@@ -583,7 +582,10 @@ function SortableItineraryItem({
                             rel="noopener noreferrer"
                             className={styles.dirLink}
                         >
-                            🧭 From Here
+                            🧭 
+                            <label>
+                                From Here
+                            </label>
                         </a>
                         {dirFromPrev && (
                             <a
@@ -592,7 +594,10 @@ function SortableItineraryItem({
                                 rel="noopener noreferrer"
                                 className={styles.dirLink}
                             >
-                                ➡️ From Previous
+                                ➡️ 
+                                <label>
+                                    From Previous
+                                </label>
                             </a>
                         )}
                     </div>

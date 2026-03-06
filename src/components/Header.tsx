@@ -25,6 +25,7 @@ export const Header = () => {
             <div className={styles.container}>
                 <Link href="/" className={styles.logo}>
                     
+
                     ✈️ 
                     
                     <div>
@@ -33,15 +34,20 @@ export const Header = () => {
                 </Link>
                 <nav className={styles.nav}>
                     <Link href="/" className={isHome ? styles.navLinkActive : styles.navLink}>
-                        Home
+                        
+                        <div className={styles.navIcon}>🏠</div> 
+                        <label>Home</label>
+                        
                     </Link>
                     <Link href="/my-trips" className={isMyTrips ? styles.navLinkActive : styles.navLink}>
-                        My Trips
+                        <div className={styles.navIcon}>🧳</div> 
+                        <label>My Trips</label>
+                        
                     </Link>
                 </nav>
                 {username && (
                     <div className={styles.userGreeting}>
-                        👋 Hello, <span className={styles.username}>{username}</span>!
+                        <span className={styles.greetingText}>👋 Hello, <span className={styles.username}>{username}</span>!</span>
                         <button onClick={handleOpenLogoutConfirm} className={styles.logoutBtn}>
                             Logout
                         </button>
