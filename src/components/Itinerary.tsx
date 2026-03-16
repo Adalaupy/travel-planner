@@ -361,7 +361,7 @@ export const Itinerary = ({ tripId: _ }: Props = {}) => {
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                 />
-                <div style={{display:'flex', gap: '15px', width:'100%'}}>
+                <div className={styles.timeInputWrap}>
                         <input
                             type="time"
                             step="900"
