@@ -224,28 +224,20 @@ export default function TripDetailPage() {
                     setNewTitle(tripTitle)
                   }
                 }}
-                style={{ display: "flex", alignItems: "center", gap: 12 }}
+                className={styles.titleForm}
               >
                 <input
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                   className={styles.titleInput}
-                  style={{
-                    fontSize: "2rem",
-                    fontWeight: 700,
-                    padding: "8px 16px",
-                    borderRadius: 8,
-                    border: "1px solid #d1d5db",
-                    width: "100%",
-                  }}
                   autoFocus
                 />
-                <button type="submit" style={{ padding: "8px 16px" }}>
+                <button type="submit" className={styles.titleBtn}>
                   Save
                 </button>
                 <button
                   type="button"
-                  style={{ padding: "8px 16px", background: "#eee", color: "#333" }}
+                  className={styles.titleBtnGhost}
                   onClick={() => {
                     setEditingTitle(false);
                     setNewTitle(tripTitle);
@@ -255,13 +247,12 @@ export default function TripDetailPage() {
                 </button>
               </form>
             ) : (
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <h1 style={{ margin: 0 }}>{tripTitle}</h1>
-                <div style={{display:'flex', flexWrap:'wrap', gap:'5px', alignItems:'center', justifyContent:
-                'center'}}>
+              <div className={styles.titleRow}>
+                <h1>{tripTitle}</h1>
+                <div className={styles.titleActions}>
                     <button
                     type="button"
-                    style={{ padding: "8px 16px", width:'80px', textAlign:'center' }}
+                    className={styles.titleBtn}
                     onClick={() => setEditingTitle(true)}
                     >
                     Rename
@@ -269,7 +260,7 @@ export default function TripDetailPage() {
                     {isOwner && (
                     <button
                         type="button"
-                        style={{ padding: "8px 16px", width:'80px', textAlign:'center'  }}
+                        className={styles.titleBtn}
                         onClick={() => setShowShareModal(true)}
                     >
                         Share

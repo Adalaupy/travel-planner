@@ -67,19 +67,18 @@ export const ShareModal = ({ tripId, isOpen, onClose, onSuccess }: Props) => {
     return (
         <div className={styles.modalOverlay} onClick={onClose}>
             <div
-                className={styles.modalContent}
+                className={`${styles.modalContent} ${styles.shareModal}`}
                 onClick={(e) => e.stopPropagation()}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="share-modal-title"
-                style={{ minWidth: '450px' }}
             >
-                <h3 id="share-modal-title" style={{ margin: '0 0 16px', fontSize: '1.25rem', fontWeight: 700 }}>
+                <h3 id="share-modal-title" className={styles.shareTitle}>
                     Share Trip
                 </h3>
 
-                <form onSubmit={handleShare} style={{ marginBottom: '20px' }}>
-                    <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                <form onSubmit={handleShare} className={styles.shareForm}>
+                    <div className={styles.shareRow}>
                         <input
                             type="text"
                             placeholder="Enter username"
@@ -87,33 +86,11 @@ export const ShareModal = ({ tripId, isOpen, onClose, onSuccess }: Props) => {
                             onChange={(e) => setUsername(e.target.value)}
                             className={styles.input}
                             disabled={loading}
-                            style={{ flex: 1 }}
                         />
                         <button
                             type="submit"
                             disabled={loading || !username.trim()}
-                            style={{
-                                padding: '10px 16px',
-                                backgroundColor: loading || !username.trim() ? '#d1d5db' : '#10b981',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '6px',
-                                cursor: loading || !username.trim() ? 'not-allowed' : 'pointer',
-                                fontWeight: '600',
-                                fontSize: '14px',
-                                minWidth: '90px',
-                                transition: 'all 0.2s',
-                            }}
-                            onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
-                                if (!loading && username.trim()) {
-                                    e.currentTarget.style.backgroundColor = '#059669'
-                                }
-                            }}
-                            onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
-                                if (!loading && username.trim()) {
-                                    e.currentTarget.style.backgroundColor = '#10b981'
-                                }
-                            }}
+                            className={styles.shareBtn}
                         >
                             {loading ? 'Adding...' : 'Share'}
                         </button>
@@ -121,63 +98,37 @@ export const ShareModal = ({ tripId, isOpen, onClose, onSuccess }: Props) => {
                 </form>
 
                 {error && (
-                    <div style={{ color: '#dc2626', fontSize: '14px', marginBottom: '12px' }}>
+                    <div className={styles.statusError}>
                         {error}
                     </div>
                 )}
 
                 {success && (
-                    <div style={{ color: '#16a34a', fontSize: '14px', marginBottom: '12px' }}>
+                    <div className={styles.statusSuccess}>
                         {success}
                     </div>
                 )}
 
-                <div style={{ marginBottom: '16px' }}>
-                    <h4 style={{ fontSize: '14px', fontWeight: '600', margin: '0 0 8px' }}>
+                <div className={styles.sharedUsers}>
+                    <h4 className={styles.sharedTitle}>
                         Shared with ({sharedUsers.length})
                     </h4>
                     {sharedUsers.length === 0 ? (
-                        <p style={{ fontSize: '13px', color: '#6b7280', margin: '0' }}>
+                        <p className={styles.sharedEmpty}>
                             Not shared with anyone yet
                         </p>
                     ) : (
-                        <ul style={{ listStyle: 'none', padding: '0', margin: '0' }}>
+                        <ul className={styles.sharedList}>
                             {sharedUsers.map(({ user_id, username }) => (
                                 <li
                                     key={user_id}
-                                    style={{
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
-                                        alignItems: 'center',
-                                        padding: '8px',
-                                        borderBottom: '1px solid #e5e7eb',
-                                    }}
+                                    className={styles.sharedItem}
                                 >
-                                    <span style={{ fontSize: '14px' }}>{username || user_id}</span>
+                                    <span className={styles.sharedName}>{username || user_id}</span>
                                     <button
                                         onClick={() => handleUnshare(user_id)}
                                         disabled={loading}
-                                        style={{
-                                            padding: '6px 12px',
-                                            fontSize: '13px',
-                                            backgroundColor: loading ? '#fca5a5' : '#ef4444',
-                                            color: 'white',
-                                            border: 'none',
-                                            borderRadius: '4px',
-                                            cursor: loading ? 'not-allowed' : 'pointer',
-                                            fontWeight: '600',
-                                            transition: 'all 0.2s',
-                                        }}
-                                        onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
-                                            if (!loading) {
-                                                e.currentTarget.style.backgroundColor = '#dc2626'
-                                            }
-                                        }}
-                                        onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
-                                            if (!loading) {
-                                                e.currentTarget.style.backgroundColor = '#ef4444'
-                                            }
-                                        }}
+                                        className={styles.removeBtn}
                                     >
                                         Remove
                                     </button>
@@ -187,31 +138,11 @@ export const ShareModal = ({ tripId, isOpen, onClose, onSuccess }: Props) => {
                     )}
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '20px' }}>
+                <div className={styles.shareActions}>
                     <button
                         onClick={onClose}
                         disabled={loading}
-                        style={{
-                            padding: '10px 16px',
-                            backgroundColor: loading ? '#e5e7eb' : '#6b7280',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '6px',
-                            cursor: loading ? 'not-allowed' : 'pointer',
-                            fontWeight: '600',
-                            fontSize: '14px',
-                            transition: 'all 0.2s',
-                        }}
-                        onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
-                            if (!loading) {
-                                e.currentTarget.style.backgroundColor = '#4b5563'
-                            }
-                        }}
-                        onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
-                            if (!loading) {
-                                e.currentTarget.style.backgroundColor = '#6b7280'
-                            }
-                        }}
+                        className={styles.closeShareBtn}
                     >
                         Close
                     </button>

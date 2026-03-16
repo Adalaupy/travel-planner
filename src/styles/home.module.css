@@ -5,18 +5,44 @@
 }
 
 .hero {
+    position: relative;
     text-align: center;
     padding: 60px 20px;
-    background: linear-gradient(135deg, #d9ecf9 0%, #8cbdfe 50%, #ffffff 100%);
-    border-radius: 16px;
+    background: linear-gradient(135deg, #fff7d1 0%, #ffe7f3 50%, #efe6ff 100%);
+    border-radius: 24px;
     color: var(--text);
     margin-bottom: 60px;
-    border: 1px solid #cbd5e1;
-    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    border: 2px solid #1e293b;
+    box-shadow: 8px 8px 0 0 #1e293b;
+    overflow: hidden;
+}
+
+.hero::before {
+    content: "";
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    border-radius: 9999px;
+    background: #fbbf24;
+    top: -56px;
+    left: -54px;
+    border: 2px solid #1e293b;
+}
+
+.hero::after {
+    content: "";
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    width: 98px;
+    height: 98px;
+    background: repeating-linear-gradient(45deg, #34d399 0 8px, #ffffff 8px 16px);
+    border: 2px solid #1e293b;
+    border-radius: 20px;
 }
 
 .title {
-    font-size: 3rem;
+    font-size: clamp(2.2rem, 5vw, 3.6rem);
     font-weight: 800;
     margin: 0 0 16px;
     line-height: 1.2;
@@ -27,7 +53,7 @@
 .subtitle {
     font-size: 1.25rem;
     margin: 0 0 32px;
-    opacity: 0.8;
+    opacity: 0.95;
     max-width: 600px;
     margin-left: auto;
     margin-right: auto;
@@ -37,67 +63,84 @@
 .cta {
     display: inline-block;
     padding: 16px 40px;
-    background: linear-gradient(135deg, #475569, #334155);
+    background: var(--accent);
     color: #ffffff;
     text-decoration: none;
-    border-radius: 12px;
+    border-radius: 9999px;
     font-weight: 700;
     font-size: 1.15rem;
-    transition: all 0.3s ease;
-    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.2);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
+    border: 2px solid #1e293b;
+    box-shadow: 4px 4px 0 0 #1e293b;
 }
 
 .cta:hover {
-    background: linear-gradient(135deg, #334155, #1e293b);
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.3);
+    background: var(--accent-hover);
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 0 #1e293b;
 }
 
 .features {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 32px;
     margin-top: 40px;
 }
 
 .feature {
+    transform-origin: center;
     text-align: center;
     padding: 32px 24px;
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-    border-radius: 16px;
-    border: 2px solid transparent;
-    background-clip: padding-box;
-    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
-    transition: all 0.3s ease;
+    background: #ffffff;
+    border-radius: 24px;
+    border: 2px solid #1e293b;
+    box-shadow: 8px 8px 0 0 #e2e8f0;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
     position: relative;
 }
 
 .feature::before {
     content: '';
+    width: 44px;
+    height: 44px;
+    border-radius: 9999px;
+    border: 2px solid #1e293b;
     position: absolute;
-    inset: 0;
-    border-radius: 16px;
-    padding: 2px;
-    background: linear-gradient(135deg, #64748b, #475569);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 0;
-    transition: opacity 0.3s;
+    top: -18px;
+    right: 18px;
+    background: #f472b6;
 }
 
 .feature:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
-}
-
-.feature:hover::before {
-    opacity: 1;
+    transform: translateY(-6px) rotate(-1deg) scale(1.02);
+    box-shadow: 10px 10px 0 0 #f472b6;
 }
 
 .featureIcon {
-    font-size: 3rem;
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 16px;
+    border: 2px solid #1e293b;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #8b5cf6;
+    color: #ffffff;
+    font-size: 2.3rem;
     margin-bottom: 16px;
+}
+
+.feature:nth-child(2) .featureIcon {
+    background: #f472b6;
+}
+
+.feature:nth-child(3) .featureIcon {
+    background: #fbbf24;
+}
+
+.feature:nth-child(4) .featureIcon {
+    background: #34d399;
 }
 
 .feature h3 {

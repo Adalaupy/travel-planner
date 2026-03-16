@@ -1620,7 +1620,7 @@ export async function getTripTravelersOnline(tripId: string | null): Promise<Tra
                     icon: item.icon,
                 }))
                 await db.travelers.bulkAdd(transformedData)
-                console.log('✓ Cached travelers from Supabase:', tripId, data.length)
+                // console.log('✓ Cached travelers from Supabase:', tripId, data.length)
                 return transformedData
             } else if (error) {
                 console.warn('Error fetching travelers from Supabase:', error)

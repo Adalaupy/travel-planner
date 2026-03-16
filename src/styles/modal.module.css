@@ -12,19 +12,19 @@
 }
 
 .modal {
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-    border-radius: 16px;
+    background: linear-gradient(135deg, #fffdf5 0%, #fff5de 100%);
+    border-radius: 24px;
     padding: 40px;
     max-width: 400px;
     width: 90%;
-    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.15);
-    border: 1px solid #e2e8f0;
+    box-shadow: 8px 8px 0 0 #1e293b;
+    border: 2px solid #1e293b;
 }
 
 .title {
     margin: 0 0 12px;
     font-size: 1.75rem;
-    color: var(--text);
+    color: #1e293b;
     font-weight: 800;
     letter-spacing: -0.02em;
     text-align: center;
@@ -52,8 +52,8 @@
 
 .input {
     padding: 12px 16px;
-    border: 2px solid #e2e8f0;
-    border-radius: 8px;
+    border: 2px solid #1e293b;
+    border-radius: 16px;
     font-size: 0.95rem;
     background: #ffffff;
     color: var(--text);
@@ -63,8 +63,8 @@
 
 .input:focus {
     outline: none;
-    border-color: #475569;
-    box-shadow: 0 0 0 3px rgba(71, 85, 105, 0.1);
+    border-color: var(--accent);
+    box-shadow: 4px 4px 0 0 var(--accent);
     background: #ffffff;
 }
 
@@ -81,8 +81,8 @@
 .errorMessage {
     padding: 12px;
     background: #fee2e2;
-    border: 1px solid #fecaca;
-    border-radius: 6px;
+    border: 2px solid #1e293b;
+    border-radius: 14px;
     color: #991b1b;
     font-size: 0.9rem;
     font-weight: 500;
@@ -95,8 +95,8 @@
     padding: 6px 12px;
     background: #ffffff;
     color: #991b1b;
-    border: 1px solid #fecaca;
-    border-radius: 4px;
+    border: 2px solid #1e293b;
+    border-radius: 9999px;
     font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
@@ -105,8 +105,8 @@
 }
 
 .retryBtn:hover {
-    background: #fef2f2;
-    border-color: #fca5a5;
+    background: #fbbf24;
+    border-color: #1e293b;
 }
 
 .buttonGroup {
@@ -117,20 +117,21 @@
 .backBtn {
     flex: 1;
     padding: 12px 24px;
-    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
-    color: #475569;
-    border: 2px solid #cbd5e1;
-    border-radius: 8px;
+    background: #ffffff;
+    color: #1e293b;
+    border: 2px solid #1e293b;
+    border-radius: 9999px;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 3px 3px 0 0 #1e293b;
 }
 
 .backBtn:hover:not(:disabled) {
-    background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
-    border-color: #94a3b8;
-    transform: translateY(-1px);
+    background: #fbbf24;
+    border-color: #1e293b;
+    transform: translate(-1px, -1px);
 }
 
 .backBtn:disabled {
@@ -141,21 +142,21 @@
 .submitBtn {
     flex: 1;
     padding: 12px 24px;
-    background: linear-gradient(135deg, #475569, #334155);
+    background: var(--accent);
     color: #ffffff;
-    border: none;
-    border-radius: 8px;
+    border: 2px solid #1e293b;
+    border-radius: 9999px;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 4px 4px 0 0 #1e293b;
 }
 
 .submitBtn:hover:not(:disabled) {
-    background: linear-gradient(135deg, #334155, #1e293b);
-    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.25);
-    transform: translateY(-1px);
+    background: var(--accent-hover);
+    box-shadow: 6px 6px 0 0 #1e293b;
+    transform: translate(-2px, -2px);
 }
 
 .submitBtn:disabled {

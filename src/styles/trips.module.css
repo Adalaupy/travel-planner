@@ -15,7 +15,7 @@
 
 .header h1 {
     margin: 0;
-    font-size: 2rem;
+    font-size: 2.4rem;
     color: var(--text);
     font-weight: 800;
     letter-spacing: -0.02em;
@@ -24,50 +24,52 @@
 
 .createTrip {
     display: flex;
-    gap: 30px;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
 
 .MenuBtns {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     text-align: center;
 }
 
 
 .input {
     padding: 10px 16px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
+    border: 2px solid #1e293b;
+    border-radius: 16px;
     font-size: 0.95rem;
     min-width: 200px;
-    background: var(--panel-2);
+    background: #ffffff;
     color: var(--text);
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
 }
 
 .input:focus {
     outline: none;
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--ring);
+    box-shadow: 4px 4px 0 0 var(--accent);
 }
 
 .createBtn {
     padding: 10px 20px;
     background: var(--accent);
     color: #ffffff;
-    border: none;
-    border-radius: 6px;
+    border: 2px solid #1e293b;
+    border-radius: 9999px;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
-    box-shadow: 0 2px 8px rgba(0, 102, 204, 0.12);
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+    box-shadow: 4px 4px 0 0 #1e293b;
 }
 
 .createBtn:hover {
-    background: var(--accent-2);
-    box-shadow: 0 4px 12px rgba(0, 102, 204, 0.18);
-    transform: translateY(-1px);
+    background: var(--accent-hover);
+    box-shadow: 6px 6px 0 0 #1e293b;
+    transform: translate(-2px, -2px);
 }
 
 .search {
@@ -80,10 +82,10 @@
 .searchInput {
     flex: 1;
     padding: 12px 16px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
+    border: 2px solid #1e293b;
+    border-radius: 16px;
     font-size: 0.95rem;
-    background: var(--panel-2);
+    background: #ffffff;
     color: var(--text);
     transition: border-color 0.2s, box-shadow 0.2s;
 }
@@ -91,7 +93,7 @@
 .searchInput:focus {
     outline: none;
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--ring);
+    box-shadow: 4px 4px 0 0 var(--accent);
 }
 
 .backupSection {
@@ -102,21 +104,21 @@
 
 .backupBtn {
     padding: 10px 20px;
-    background: #0d9488;
+    background: #34d399;
     color: #ffffff;
-    border: none;
-    border-radius: 6px;
+    border: 2px solid #1e293b;
+    border-radius: 9999px;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
     white-space: nowrap;
-    box-shadow: 0 2px 8px rgba(13, 148, 136, 0.12);
+    box-shadow: 4px 4px 0 0 #1e293b;
 }
 
 .backupBtn:hover {
-    background: #059669;
-    box-shadow: 0 4px 12px rgba(13, 148, 136, 0.18);
-    transform: translateY(-1px);
+    background: #10b981;
+    box-shadow: 6px 6px 0 0 #1e293b;
+    transform: translate(-2px, -2px);
 }
 
 .backupMenu {
@@ -124,9 +126,9 @@
     top: calc(100% + 8px);
     right: 0;
     background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.2);
+    border: 2px solid #1e293b;
+    border-radius: 16px;
+    box-shadow: 6px 6px 0 0 #1e293b;
     min-width: 180px;
     z-index: 10;
     overflow: hidden;
@@ -135,41 +137,46 @@
 }
 
 .menuItem {
-    /* width: 100%; */
     padding: 12px 16px;
-    background: transparent;
-    border: none;
+    background: #ffffff;
+    border: 2px solid #1e293b;
     text-align: left;
     cursor: pointer;
     font-size: 0.95rem;
-    transition: background 0.2s;
-    border-bottom: 1px solid var(--border);
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s;
     color: var(--text);
     font-weight: 500;
     text-align: center;
+    border-radius: 9999px;
+    box-shadow: 3px 3px 0 0 #1e293b;
 }
 
 .createNewTrip {
     display: flex;
     gap: 10px;
-    padding: 5px;
-    border-radius: 10px;
-    border: 2px solid rgba(0, 102, 204, 0.12)
+    padding: 8px;
+    border-radius: 24px;
+    border: 2px dashed #1e293b;
+    background: #fff3cf;
 }
 
 .menuItem:last-child {
-    border-bottom: none;
+    border-bottom: 2px solid #1e293b;
 }
 
 .menuItem:hover {
-    background: var(--bg-2);
-    color: var(--accent);
+    background: #fbbf24;
+    color: #1e293b;
+    transform: translate(-1px, -1px);
 }
 
 .empty {
     text-align: center;
     padding: 80px 20px;
     color: var(--muted);
+    border: 2px dashed #1e293b;
+    border-radius: 24px;
+    background: #ffffff;
 }
 
 .emptyIcon {
@@ -203,13 +210,13 @@
 }
 
 .modalContent {
-    background: var(--panel);
-    border-radius: 12px;
+    background: #fffdf5;
+    border-radius: 20px;
     padding: 24px;
     max-width: 400px;
     width: 90%;
-    border: 1px solid var(--border);
-    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.12);
+    border: 2px solid #1e293b;
+    box-shadow: 8px 8px 0 0 #1e293b;
 }
 
 .modalContent h3 {
@@ -230,12 +237,12 @@
     align-items: center;
     padding: 10px;
     cursor: pointer;
-    border-radius: 6px;
+    border-radius: 12px;
     transition: background 0.2s;
 }
 
 .tripCheckbox:hover {
-    background: var(--bg-2);
+    background: #efe6ff;
 }
 
 .tripCheckbox input {
@@ -258,34 +265,35 @@
     padding: 10px 16px;
     background: var(--accent);
     color: #ffffff;
-    border: none;
-    border-radius: 6px;
+    border: 2px solid #1e293b;
+    border-radius: 9999px;
     cursor: pointer;
     font-weight: 600;
-    transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
-    box-shadow: 0 2px 8px rgba(0, 102, 204, 0.12);
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+    box-shadow: 4px 4px 0 0 #1e293b;
 }
 
 .modalPrimaryBtn:hover {
-    background: var(--accent-2);
-    box-shadow: 0 4px 12px rgba(0, 102, 204, 0.18);
-    transform: translateY(-1px);
+    background: var(--accent-hover);
+    box-shadow: 6px 6px 0 0 #1e293b;
+    transform: translate(-2px, -2px);
 }
 
 .modalSecondaryBtn {
     padding: 10px 16px;
-    background: var(--bg-2);
+    background: #ffffff;
     color: var(--text);
-    border: 1px solid var(--border);
-    border-radius: 6px;
+    border: 2px solid #1e293b;
+    border-radius: 9999px;
     cursor: pointer;
     font-weight: 600;
-    transition: background 0.2s, border-color 0.2s;
+    transition: background 0.2s, transform 0.2s;
+    box-shadow: 3px 3px 0 0 #1e293b;
 }
 
 .modalSecondaryBtn:hover {
-    background: var(--panel-2);
-    border-color: var(--accent);
+    background: #fbbf24;
+    transform: translate(-1px, -1px);
 }
 
 .tripGrid {
@@ -295,38 +303,46 @@
 }
 
 .tripCard {
-    background: linear-gradient(135deg, #ffffff, #f8fafc);
-    border: 2px solid transparent;
-    border-radius: 16px;
+    background: #ffffff;
+    border: 2px solid #1e293b;
+    border-radius: 24px;
     position: relative;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 8px 8px 0 0 #e2e8f0;
     background-clip: padding-box;
 }
 
 .tripCard::before {
     content: '';
     position: absolute;
-    inset: 0;
-    border-radius: 16px;
-    padding: 2px;
-    background: linear-gradient(135deg, #64748b, #475569, #334155);
-    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 0;
-    transition: opacity 0.3s;
-    pointer-events: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: #34d399;
+    border: 2px solid #1e293b;
+    top: -14px;
+    left: 18px;
 }
 
 .tripCard:hover {
-    transform: translateY(-6px) scale(1.02);
-    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.15);
+    transform: translateY(-6px) rotate(-1deg) scale(1.01);
+    box-shadow: 10px 10px 0 0 #f472b6;
 }
 
-.tripCard:hover::before {
-    opacity: 1;
+.tripCardShared {
+    background: linear-gradient(135deg, #fff4d8 0%, #ffffff 70%);
+}
+
+.sharedTag {
+    display: inline-block;
+    padding: 4px 10px;
+    margin-bottom: 8px;
+    border: 2px solid #1e293b;
+    border-radius: 9999px;
+    background: #fbbf24;
+    color: #1e293b;
+    font-size: 0.75rem;
+    font-weight: 700;
 }
 
 .tripLink {
@@ -347,7 +363,7 @@
 
 .tripMeta {
     margin: 0 0 8px;
-    color: var(--accent);
+    color: var(--accent-hover);
     font-size: 0.9rem;
     font-weight: 600;
 }
@@ -362,21 +378,22 @@
     position: absolute;
     top: 16px;
     right: 16px;
-    background: #404041;
-    border: none;
-    font-size: 1.25rem;
+    background: #ef4444;
+    border: 2px solid #1e293b;
+    border-radius: 9999px;
+    font-size: 1rem;
     cursor: pointer;
-    opacity: 0.5;
+    opacity: 1;
     transition: opacity 0.2s, transform 0.2s, color 0.2s;
-    padding: 8px;
-    color: #ef4444;
+    padding: 6px;
+    color: #ffffff;
     z-index: 10;
+    box-shadow: 3px 3px 0 0 #1e293b;
 }
 
 .deleteBtn:hover {
-    opacity: 1;
-    transform: scale(1.15);
-    color: #dc2626;
+    transform: translate(-1px, -1px) scale(1.05);
+    color: #ffffff;
 }
 
 @media (max-width: 768px) {
@@ -401,7 +418,7 @@
     }
 
     .menuItem {
-        width: 50%;
+        width: 100%;
         font-weight: 500;
         font-size: 0.9rem;
     }
@@ -411,7 +428,7 @@
     }
 
     .search {
-        flex-direction: flex;
+        flex-direction: column;
     }
 
     .backupBtn {
@@ -429,7 +446,7 @@
 
     .createBtn {
         min-width: 120px;
-        padding: 0;
+        padding: 10px 14px;
 
     }
 

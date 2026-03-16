@@ -4,10 +4,10 @@
 
     padding: 32px 20px;
     min-height: calc(100vh - 80px);
-    background: linear-gradient(to bottom, #ffffff, #f8fafc);
-    border-radius: 16px;
-    border: 1px solid #cbd5e1;
-    box-shadow: 0 10px 40px rgba(15, 23, 42, 0.08);
+    background: linear-gradient(135deg, #fffdf5 0%, #fff6e8 100%);
+    border-radius: 24px;
+    border: 2px solid #1e293b;
+    box-shadow: 8px 8px 0 0 #1e293b;
 }
 
 .breadcrumb {
@@ -15,21 +15,27 @@
 }
 
 .breadcrumb a {
-    color: var(--muted);
+    color: var(--accent);
     text-decoration: none;
     font-size: 0.9rem;
     transition: color 0.2s;
-    font-weight: 500;
+    font-weight: 700;
+    padding: 6px 12px;
+    border: 2px solid #1e293b;
+    border-radius: 9999px;
+    background: #ffffff;
+    box-shadow: 3px 3px 0 0 #1e293b;
 }
 
 .breadcrumb a:hover {
-    color: var(--accent);
+    color: var(--accent-hover);
+    background: #fbbf24;
 }
 
 .header {
     margin-bottom: 32px;
     padding-bottom: 16px;
-    border-bottom: 2px solid var(--border);
+    border-bottom: 2px dashed #1e293b;
     background: transparent;
     border-radius: 12px 12px 0 0;
 }
@@ -47,49 +53,52 @@
     display: flex;
     gap: 12px;
     margin-bottom: 24px;
-    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    background: #ffffff;
     padding: 12px 15px;
-    border-radius: 12px;
-    border: 1px solid #cbd5e1;
-    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+    border-radius: 20px;
+    border: 2px solid #1e293b;
+    box-shadow: 6px 6px 0 0 #1e293b;
+    flex-wrap: wrap;
 }
 
 .tab {
     padding: 10px 18px;
-    background: transparent;
-    border: none;
-    border-radius: 6px;
+    background: #ffffff;
+    border: 2px solid #1e293b;
+    border-radius: 9999px;
     cursor: pointer;
     font-size: 0.95rem;
-    color: var(--muted);
+    color: var(--text);
     font-weight: 500;
-    transition: background 0.2s, color 0.2s;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
     min-width: 150px;
+    box-shadow: 3px 3px 0 0 #1e293b;
 }
 
 .tab:hover {
-    background: var(--panel-2);
+    background: #fbbf24;
     color: var(--text);
+    transform: translate(-1px, -1px);
 }
 
 .tabActive {
-    background: linear-gradient(135deg, #475569, #334155);
+    background: var(--accent);
     color: #ffffff;
     font-weight: 600;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+    box-shadow: 4px 4px 0 0 #1e293b;
     min-width: 150px;
 }
 
 .tabActive:hover {
-    background: linear-gradient(135deg, #334155, #1e293b);
-    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.3);
+    background: var(--accent-hover);
+    box-shadow: 5px 5px 0 0 #1e293b;
 }
 
 .tabContent {
     margin-top: 8px;
-    background: var(--panel-2);
-    border-radius: 8px;
-    border: 1px solid var(--border);
+    background: #ffffff;
+    border-radius: 20px;
+    border: 2px solid #1e293b;
     box-shadow: var(--shadow);
     padding: 24px 12px;
     min-height: 320px;
@@ -113,10 +122,11 @@
     justify-content: center;
     padding: 100px 20px;
     text-align: center;
-    background: linear-gradient(135deg, #fef2f2, #fee2e2);
-    border: 2px solid #fca5a5;
-    border-radius: 12px;
+    background: #fee2e2;
+    border: 2px solid #1e293b;
+    border-radius: 20px;
     margin: 40px 0;
+    box-shadow: 6px 6px 0 0 #1e293b;
 }
 
 .accessDenied h1 {
@@ -139,6 +149,57 @@
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin-bottom: 16px;
+}
+
+.titleRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.titleActions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+}
+
+.titleForm {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.titleInput {
+    font-size: 2rem;
+    font-weight: 700;
+    padding: 8px 16px;
+    border-radius: 16px;
+    border: 2px solid #1e293b;
+    width: 100%;
+    background: #ffffff;
+}
+
+.titleBtn {
+    padding: 8px 16px;
+    min-width: 80px;
+    text-align: center;
+    background: var(--accent);
+    border: 2px solid #1e293b;
+    border-radius: 9999px;
+    color: #ffffff;
+    box-shadow: 3px 3px 0 0 #1e293b;
+}
+
+.titleBtnGhost {
+    padding: 8px 16px;
+    background: #ffffff;
+    color: #1e293b;
+    border: 2px solid #1e293b;
+    border-radius: 9999px;
+    box-shadow: 3px 3px 0 0 #1e293b;
 }
 
 @keyframes spin {
@@ -167,6 +228,20 @@
 
     .header h1 {
         font-size: 1.75rem;
+    }
+
+    .titleRow {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .titleForm {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .titleInput {
+        font-size: 1.4rem;
     }
 
     .tabsRow {

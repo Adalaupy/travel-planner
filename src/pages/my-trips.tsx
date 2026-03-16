@@ -238,7 +238,7 @@ export default function MyTrips() {
                 />
 
                 <div className={styles.backupSection}>
-                    <button onClick={handleExportClick}>
+                    <button onClick={handleExportClick} className={styles.backupBtn}>
                         📥 Export Trip(s)
                     </button>
                 </div>
@@ -324,16 +324,17 @@ export default function MyTrips() {
                         
                         const isOwner = trip.owner_id === currentUserId
                         const isShared = currentUserId && !isOwner && (trip.share_with as string[])?.includes(currentUserId)
-                        const cardStyle = isShared ? { backgroundColor: '#fef3c7', borderColor: '#fbbf24' } : {}
-
                         return (
-                            <div key={String(linkId)} className={styles.tripCard} style={cardStyle}>
+                            <div
+                                key={String(linkId)}
+                                className={`${styles.tripCard} ${isShared ? styles.tripCardShared : ''}`}
+                            >
                                 <Link
                                     href={`/trip/${linkId}`}
                                     className={styles.tripLink}
                                 >
                                     <h3>{trip.title}</h3>
-                                    {isShared && <span style={{ fontSize: '12px', color: '#d97706', fontWeight: '600' }}>📤 Shared with you</span>}
+                                    {isShared && <span className={styles.sharedTag}>📤 Shared with you</span>}
                                     {trip.start_date && trip.end_date && (
                                         <div className={styles.tripMeta}>
                                             {trip.start_date} to {trip.end_date}
