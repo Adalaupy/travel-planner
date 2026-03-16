@@ -532,6 +532,7 @@
 }
 
 .itineraryItem {
+    width: 100%;
     justify-content: space-between;
     align-items: center;
 }
@@ -723,19 +724,34 @@
 
     .packingContainer,
     .travelersContainer,
-    .expensesContainer,
+    .expensesContainer {
+        margin: 8px;
+        padding: 12px;
+    }
+
     .itineraryContainer {
         margin: 8px;
         padding: 12px;
     }
 
     .addTravelerRow,
-    .addRow,
     .addItineraryRow,
     .addExpenseRow,
     .dateRangeRow,
     .shareRow {
         display: grid;
+    }
+
+    .addRow {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+    }
+
+    .addRow input[type="text"],
+    .addRow input:not([type="color"]) {
+        flex: 1;
+        min-width: 0;
     }
 
     .addItineraryRow input,
@@ -753,8 +769,7 @@
     }
 
     .dayTab {
-        flex-grow: 1;
-        max-width: 48%;
+        flex: 1 1 0;
     }
 
     .itineraryItem {

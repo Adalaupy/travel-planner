@@ -21,10 +21,9 @@
     font-size: 1.4rem;
     font-weight: 800;
     font-family: "Outfit", system-ui, sans-serif;
-    background: linear-gradient(120deg, #8b5cf6, #f472b6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #1e293b;
+    background: none;
+    -webkit-text-fill-color: #1e293b;
     text-decoration: none;
     display: flex;
     align-items: center;
@@ -35,6 +34,29 @@
 
 .logo:hover {
     transform: scale(1.05);
+}
+
+.logoMark {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    border: 2px solid #1e293b;
+    background: #ffffff;
+    box-shadow: 2px 2px 0 0 #1e293b;
+    font-size: 1.15rem;
+    line-height: 1;
+    color: #1e293b;
+}
+
+.logoText {
+    font-family: "Outfit", system-ui, sans-serif;
+    font-weight: 800;
+    color: #1e293b;
+    text-rendering: geometricPrecision;
+    -webkit-font-smoothing: antialiased;
 }
 
 .nav {
@@ -225,13 +247,23 @@
     }
 
     .logo {
-        font-size: 0.8rem;
-        display: grid;
+        font-size: 1rem;
+        display: flex;
         align-items: center;
         text-align: center;
-        justify-content: center;
-        width: 60px;
+        justify-content: flex-start;
+        width: auto;
 
+    }
+
+    .logoMark {
+        width: 30px;
+        height: 30px;
+        font-size: 1rem;
+    }
+
+    .logoText {
+        font-size: 1rem;
     }
 
     .navIcon {
@@ -257,15 +289,21 @@
 
     .userGreeting {
         margin-left: 0;
-        font-size: 0.8rem;
-        display: grid;
-        text-align: center;
         background: none;
-        border: 2px solid #1e293b;
+        border: none;
         padding: 0;
+        box-shadow: none;
     }
 
-
+    .logoutBtn {
+        margin-left: 0;
+        width: 90px;
+        display: grid;
+        font-size: 0.8rem;
+        box-shadow: 2px 2px 0 0 #1e293b;
+        padding: 8px 4px;
+        text-align: center;
+    }
 
     .greetingText {
         display: none;

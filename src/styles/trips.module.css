@@ -417,6 +417,10 @@
         flex-direction: column;
     }
 
+    .createNewTrip {
+        width: 100%;
+    }
+
     .menuItem {
         width: 100%;
         font-weight: 500;
@@ -428,11 +432,21 @@
     }
 
     .search {
-        flex-direction: column;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: center;
+    }
+
+    .searchInput {
+        min-width: 0;
+    }
+
+    .backupSection {
+        flex-shrink: 0;
     }
 
     .backupBtn {
-        width: 100%;
+        width: auto;
     }
 
     .backupMenu {

@@ -27,18 +27,12 @@
     top: -56px;
     left: -54px;
     border: 2px solid #1e293b;
+    z-index: 0;
 }
 
-.hero::after {
-    content: "";
-    position: absolute;
-    right: 20px;
-    bottom: 20px;
-    width: 98px;
-    height: 98px;
-    background: repeating-linear-gradient(45deg, #34d399 0 8px, #ffffff 8px 16px);
-    border: 2px solid #1e293b;
-    border-radius: 20px;
+.hero>* {
+    position: relative;
+    z-index: 1;
 }
 
 .title {
@@ -165,6 +159,13 @@
     .hero {
         padding: 40px 20px;
         margin-bottom: 40px;
+    }
+
+    .hero::before {
+        width: 120px;
+        height: 120px;
+        top: -68px;
+        left: -74px;
     }
 
     .title {

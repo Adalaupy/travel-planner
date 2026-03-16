@@ -24,13 +24,8 @@ export const Header = () => {
         <header className={styles.header}>
             <div className={styles.container}>
                 <Link href="/" className={styles.logo}>
-                    
-
-                    ✈️ 
-                    
-                    <div>
-                        Travel Planner
-                    </div>
+                    <span className={styles.logoMark}>✈</span>
+                    <span className={styles.logoText}>Travel Planner</span>
                 </Link>
                 <nav className={styles.nav}>
                     <Link href="/" className={isHome ? styles.navLinkActive : styles.navLink}>

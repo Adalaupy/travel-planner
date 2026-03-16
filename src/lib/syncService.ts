@@ -177,13 +177,13 @@ export async function syncTripFromSupabase(tripId: string): Promise<void> {
                     updated_at: tripData.updated_at,
                     issync: true,
                 })
-                console.log('✓ Updated trip metadata in Dexie:', tripId)
+                // console.log('✓ Updated trip metadata in Dexie:', tripId)
             }
         } else if (tripError) {
             console.warn('Could not fetch trip metadata from Supabase:', tripError)
         }
 
-        console.log('✓ Successfully synced trip and related data from Supabase:', tripId)
+        // console.log('✓ Successfully synced trip and related data from Supabase:', tripId)
     } catch (err) {
         console.error('Error in syncTripFromSupabase:', err)
         throw err
@@ -229,7 +229,7 @@ export async function syncTripMetadataFromSupabase(tripId: string): Promise<Trip
                 issync: true,
             })
             dexieTrip = await db.trips.get(dexieTrip.__dexieid)
-            console.log('✓ Updated trip metadata:', tripId, { owner_id: tripData.owner_id, share_count: tripData.share_with?.length ?? 0 })
+            // console.log('✓ Updated trip metadata:', tripId, { owner_id: tripData.owner_id, share_count: tripData.share_with?.length ?? 0 })
         } else {
             // Create new record if doesn't exist
             const numericId = await db.trips.add({
@@ -245,7 +245,7 @@ export async function syncTripMetadataFromSupabase(tripId: string): Promise<Trip
                 issync: true,
             })
             dexieTrip = await db.trips.get(numericId)
-            console.log('✓ Created new trip metadata record:', tripId)
+            // console.log('✓ Created new trip metadata record:', tripId)
         }
 
         return dexieTrip || null
@@ -452,7 +452,7 @@ export async function importTripsToSupabase(
                 const supaTripId = data.trip_id ?? data.id
                 const localTripId = tripData.local_trip_id ?? trip.trip_id ?? (trip.__dexieid ? String(trip.__dexieid) : undefined)
                 results.push({ localTripId, supaTripId })
-                console.log('Trip imported to Supabase:', supaTripId)
+                // console.log('Trip imported to Supabase:', supaTripId)
 
                 if (includeRelated) {
                     const travelerIdMap = new Map<string, string>()
@@ -783,7 +783,7 @@ export async function shareTrip(
                 console.error('Error sharing trip to Supabase:', error)
                 return { success: false, error: 'Failed to sync share to Supabase' }
             } else {
-                console.log('✓ Trip shared and synced to Supabase:', { trip_id: trip.trip_id, shared_with: userId })
+                // console.log('✓ Trip shared and synced to Supabase:', { trip_id: trip.trip_id, shared_with: userId })
             }
         }
 
@@ -828,7 +828,7 @@ export async function unshareTrip(
                 console.error('Error unsharing trip on Supabase:', error)
                 return { success: false, error: 'Failed to sync unshare to Supabase' }
             } else {
-                console.log('✓ Trip unshared and synced to Supabase:', { trip_id: trip.trip_id, removed_from: userId })
+                // console.log('✓ Trip unshared and synced to Supabase:', { trip_id: trip.trip_id, removed_from: userId })
             }
         }
 
@@ -1671,7 +1671,7 @@ export async function getTripItineraryOnline(tripId: string | null): Promise<Iti
                     order: item.order ?? 0,
                 }))
                 await db.itinerary.bulkAdd(transformedData)
-                console.log('✓ Cached itinerary from Supabase:', tripId, data.length)
+                // console.log('✓ Cached itinerary from Supabase:', tripId, data.length)
                 return transformedData
             } else if (error) {
                 console.warn('Error fetching itinerary from Supabase:', error)
@@ -1716,7 +1716,7 @@ export async function getTripPackingOnline(tripId: string | null): Promise<Packi
                     order: item.order ?? 0,
                 }))
                 await db.packing.bulkAdd(transformedData)
-                console.log('✓ Cached packing items from Supabase:', tripId, data.length)
+                // console.log('✓ Cached packing items from Supabase:', tripId, data.length)
                 return transformedData
             } else if (error) {
                 console.warn('Error fetching packing from Supabase:', error)
@@ -1771,7 +1771,7 @@ export async function getTripExpensesOnline(tripId: string | null): Promise<Expe
                     }
                 })
                 await db.expenses.bulkAdd(transformedData)
-                console.log('✓ Cached expenses from Supabase:', tripId, data.length)
+                // console.log('✓ Cached expenses from Supabase:', tripId, data.length)
                 return transformedData
             } else if (error) {
                 console.warn('Error fetching expenses from Supabase:', error)

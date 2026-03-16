@@ -334,7 +334,9 @@ export default function MyTrips() {
                                     className={styles.tripLink}
                                 >
                                     <h3>{trip.title}</h3>
-                                    {isShared && <span className={styles.sharedTag}>📤 Shared with you</span>}
+                                                    {isShared && (
+                                                        <span className={styles.sharedTag}>📤 Shared with you</span>
+                                                    )}
                                     {trip.start_date && trip.end_date && (
                                         <div className={styles.tripMeta}>
                                             {trip.start_date} to {trip.end_date}
