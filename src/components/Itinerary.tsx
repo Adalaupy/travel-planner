@@ -49,6 +49,7 @@ export const Itinerary = ({ tripId: _ }: Props = {}) => {
     const [mapLink, setMapLink] = useState("");
     const [url, setUrl] = useState("");
     const [remark, setRemark] = useState("");
+    const [editingItemId, setEditingItemId] = useState<number | string | null>(null);
     const [parsing, setParsing] = useState(false);
     const [parsedData, setParsedData] = useState<{
         name?: string;
@@ -216,16 +217,49 @@ export const Itinerary = ({ tripId: _ }: Props = {}) => {
             setParsedData(null);
             return;
         }
+
         setParsing(true);
         const placeData = await parseMapLink(mapLink.trim());
         const cleanName = placeData.name
             ? placeData.name.replace(/\+/g, " ")
             : undefined;
-        setParsedData({ name: cleanName, lat: placeData.lat, lng: placeData.lng });
+        setParsedData({
+            name: cleanName,
+            lat: placeData.lat,
+            lng: placeData.lng,
+        });
         setParsing(false);
     };
 
-    const addItem = async () => {
+    const resetInputForm = () => {
+        setTitle("");
+        setTime("");
+        setMapLink("");
+        setUrl("");
+        setRemark("");
+        setParsedData(null);
+        setEditingItemId(null);
+    };
+
+    const startEditItem = (item: ItineraryItemType) => {
+        const id = item.__dexieid ?? item.itinerary_id;
+        if (!id) return;
+
+        setSelectedDay(item.day_index);
+        setEditingItemId(id);
+        setTitle(item.title || "");
+        setTime(item.time || "");
+        setMapLink(item.map_link || "");
+        setUrl(item.url || "");
+        setRemark(item.remark || "");
+        setParsedData({
+            name: item.place_name || undefined,
+            lat: item.lat,
+            lng: item.lng,
+        });
+    };
+
+    const saveItem = async () => {
         if (!title.trim() && !mapLink.trim()) return;
         let placeData: {
             name?: string;
@@ -244,14 +278,59 @@ export const Itinerary = ({ tripId: _ }: Props = {}) => {
                 lng: parsedData.lng,
             };
         }
+
+        const finalMapLink = mapLink.trim() || undefined;
+
         const finalTitle = title.trim() || placeData.name || "Untitled";
+        if (editingItemId !== null) {
+            const updated = await updateItineraryItem(tripId, editingItemId, {
+                dayIndex: selectedDay,
+                title: finalTitle,
+                time: time || undefined,
+                url: url.trim() || undefined,
+                remark: remark.trim() || undefined,
+                mapLink: finalMapLink,
+                lat: placeData.lat,
+                lng: placeData.lng,
+                placeName: placeData.name,
+            });
+            if (updated) {
+                setItems((prev) =>
+                    prev
+                        .map((item) => {
+                            const id = item.__dexieid ?? item.itinerary_id;
+                            if (String(id) !== String(editingItemId)) return item;
+                            return {
+                                ...item,
+                                day_index: updated.day_index,
+                                title: updated.title,
+                                time: updated.time,
+                                url: updated.url,
+                                remark: updated.remark,
+                                map_link: updated.map_link,
+                                lat: updated.lat,
+                                lng: updated.lng,
+                                place_name: updated.place_name,
+                                order: updated.order,
+                            };
+                        })
+                        .sort(
+                            (a, b) =>
+                                a.day_index - b.day_index || (a.order ?? 0) - (b.order ?? 0),
+                        ),
+                );
+                resetInputForm();
+            }
+            return;
+        }
+
         const it = await addItineraryItem(tripId || null, {
             dayIndex: selectedDay,
             title: finalTitle,
             time: time || undefined,
             url: url.trim() || undefined,
             remark: remark.trim() || undefined,
-            mapLink: mapLink.trim() || undefined,
+            mapLink: finalMapLink,
             lat: placeData.lat,
             lng: placeData.lng,
             placeName: placeData.name,
@@ -259,12 +338,7 @@ export const Itinerary = ({ tripId: _ }: Props = {}) => {
         });
         if (it) {
             setItems((prev) => [...prev, it]);
-            setTitle("");
-            setTime("");
-            setMapLink("");
-            setUrl("");
-            setRemark("");
-            setParsedData(null);
+            resetInputForm();
         }
     };
 
@@ -391,9 +465,14 @@ export const Itinerary = ({ tripId: _ }: Props = {}) => {
                     value={remark}
                     onChange={(e) => setRemark(e.target.value)}
                 />
-                <button onClick={addItem} disabled={parsing}>
-                    {parsing ? "Parsing..." : "Add"}
+                <button onClick={saveItem} disabled={parsing}>
+                    {parsing ? "Parsing..." : editingItemId !== null ? "Edit" : "Add"}
                 </button>
+                {editingItemId !== null && (
+                    <button type="button" onClick={resetInputForm}>
+                        Cancel
+                    </button>
+                )}
             </div>
 
 
@@ -454,6 +533,7 @@ export const Itinerary = ({ tripId: _ }: Props = {}) => {
                                 dayItems={dayItems}
                                 removeItem={removeItem}
                                 itemId={getItemId(item, idx)}
+                                onEditItem={startEditItem}
                             />
                         ))}
                     </ul>
@@ -470,12 +550,14 @@ function SortableItineraryItem({
     dayItems,
     removeItem,
     itemId,
+    onEditItem,
 }: {
     item: ItineraryItemType;
     idx: number;
     dayItems: ItineraryItemType[];
     removeItem: (id: number) => void;
     itemId: string | number;
+    onEditItem: (item: ItineraryItemType) => void;
 }) {
     const {
         attributes,
@@ -515,6 +597,7 @@ function SortableItineraryItem({
                 cursor: isDragging ? 'grabbing' : 'grab',
             }}
             className={styles.itineraryItem}
+            onDoubleClick={() => onEditItem(item)}
             {...attributes}
             {...listeners}
         >

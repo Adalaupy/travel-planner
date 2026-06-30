@@ -1,9 +1,10 @@
 ﻿import Link from "next/link";
-import { useEffect, useState, useRef } from "react";
+import { ChangeEvent, useEffect, useState, useRef } from "react";
 import { useRouter } from "next/router";
 import { TripItem } from "../lib/db";
 import { getUserTrips, createTrip, deleteTrip as deleteFromSync } from "../lib/syncService";
 import { getLocalUserIdentity } from "../lib/userIdentity";
+import { parseAiItineraryImport, ParsedAiItinerary } from "../lib/aiItineraryParser";
 import {
     exportTripsData,
     importTripsData,
@@ -11,6 +12,44 @@ import {
     readBackupFile,
 } from "../lib/dataExport";
 import styles from "../styles/trips.module.css";
+
+const AI_PROMPT_TEMPLATE = `You are helping me plan a trip.
+
+Return ONLY plain text using this exact format:
+
+TRIP_TITLE: <trip title>
+DESTINATION: <city/country>
+START_DATE: YYYY-MM-DD
+END_DATE: YYYY-MM-DD
+
+ITINERARY:
+DAY <number> | <time optional> | <activity title required> | <google_maps_url optional> | <url optional> | <remark optional>
+
+Field rules for each itinerary line:
+- DAY: required
+- date: derived from START_DATE and END_DATE, do not provide it in each line
+- time: optional
+- activity title: required
+- google_maps_url: always leave blank
+- url: optional
+- remark: optional
+- You can include multiple DAY lines.
+- Add one line for each day in the trip, in ascending order starting from DAY 1.
+- Continue until the last travel day.
+
+NOTES: <optional extra notes>
+
+Rules:
+- Do not use markdown.
+- Do not use JSON.
+- Do not add extra headings.
+- Do not explain the answer.
+- Keep the itinerary section only.
+- Use one line per itinerary item.
+- Always keep google_maps_url blank (do not provide any map link).
+- Follow the field rules exactly and do not add extra fields.
+- The app will derive the itinerary date from DAY number plus START_DATE and END_DATE.
+- Generate all trip days, not just the first day.`;
 
 export default function MyTrips() {
     const [trips, setTrips] = useState<TripItem[]>([]);
@@ -22,7 +61,15 @@ export default function MyTrips() {
     const [selectedTripsForExport, setSelectedTripsForExport] = useState<
         Array<string | number>
     >([]);
+    const [aiImportText, setAiImportText] = useState("");
+    const [parsedAiImport, setParsedAiImport] = useState<ParsedAiItinerary | null>(null);
+    const [aiImportStatus, setAiImportStatus] = useState<{
+        kind: "success" | "error";
+        message: string;
+    } | null>(null);
+    const [promptCopied, setPromptCopied] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const aiTxtInputRef = useRef<HTMLInputElement>(null);
     const router = useRouter();
 
     useEffect(() => {
@@ -131,7 +178,7 @@ export default function MyTrips() {
         }
     };
 
-    const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImportFile = async (e: ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files ? Array.from(e.target.files) : [];
         if (files.length === 0) return;
 
@@ -181,6 +228,60 @@ export default function MyTrips() {
             );
         }
         e.target.value = ""; // Reset file input
+    };
+
+    const handleAiTxtImport = async (e: ChangeEvent<HTMLInputElement>) => {
+        const selectedFile = e.target.files?.[0];
+        if (!selectedFile) return;
+
+        try {
+            const text = await selectedFile.text();
+            setAiImportText(text);
+            setAiImportStatus({
+                kind: "success",
+                message: `Loaded ${selectedFile.name}. Click Parse to validate format.`,
+            });
+        } catch {
+            setAiImportStatus({
+                kind: "error",
+                message: "Failed to read the selected .txt file.",
+            });
+        }
+
+        e.target.value = "";
+    };
+
+    const parseAiImport = async () => {
+        try {
+            const parsed = await parseAiItineraryImport(aiImportText);
+            setParsedAiImport(parsed);
+            setAiImportStatus({
+                kind: "success",
+                message: `Parsed ${parsed.itinerary.length} itinerary row(s) successfully.`,
+            });
+        } catch (error) {
+            setParsedAiImport(null);
+            setAiImportStatus({
+                kind: "error",
+                message:
+                    error instanceof Error
+                        ? error.message
+                        : "Failed to parse AI itinerary text.",
+            });
+        }
+    };
+
+    const copyPromptTemplate = async () => {
+        try {
+            await navigator.clipboard.writeText(AI_PROMPT_TEMPLATE);
+            setPromptCopied(true);
+            setTimeout(() => setPromptCopied(false), 1800);
+        } catch {
+            setAiImportStatus({
+                kind: "error",
+                message: "Unable to copy prompt automatically. Please copy it manually.",
+            });
+        }
     };
 
     const filteredTrips = trips.filter((trip) =>
@@ -243,6 +344,85 @@ export default function MyTrips() {
                     </button>
                 </div>
             </div>
+
+            <section className={styles.aiImportCard}>
+                <div className={styles.aiPromptHeader}>
+                    <h2>AI Itinerary Import</h2>
+                    <button
+                        type="button"
+                        className={styles.aiActionBtn}
+                        onClick={copyPromptTemplate}
+                    >
+                        {promptCopied ? "Prompt Copied" : "Copy Prompt"}
+                    </button>
+                </div>
+                <p className={styles.aiHintText}>
+                    Use this on My Plan first: copy the prompt, get AI plain text, paste/upload it, and parse.
+                </p>
+
+                <textarea
+                    className={styles.aiPromptBox}
+                    readOnly
+                    value={AI_PROMPT_TEMPLATE}
+                />
+
+                <div className={styles.aiInputArea}>
+                    <textarea
+                        className={styles.aiImportInput}
+                        value={aiImportText}
+                        onChange={(e) => setAiImportText(e.target.value)}
+                        placeholder="Paste AI output here (forced format)."
+                    />
+                    <div className={styles.aiImportActions}>
+                        <button
+                            type="button"
+                            className={styles.aiActionBtn}
+                            onClick={() => aiTxtInputRef.current?.click()}
+                        >
+                            Upload .txt
+                        </button>
+                        <button
+                            type="button"
+                            className={styles.aiActionBtn}
+                            onClick={parseAiImport}
+                        >
+                            Parse Text
+                        </button>
+                    </div>
+                </div>
+
+                <input
+                    ref={aiTxtInputRef}
+                    type="file"
+                    accept=".txt,text/plain"
+                    onChange={handleAiTxtImport}
+                    style={{ display: "none" }}
+                />
+
+                {aiImportStatus && (
+                    <div
+                        className={
+                            aiImportStatus.kind === "error"
+                                ? styles.importStatusError
+                                : styles.importStatusSuccess
+                        }
+                    >
+                        {aiImportStatus.message}
+                    </div>
+                )}
+
+                {parsedAiImport && (
+                    <div className={styles.aiParsedSummary}>
+                        <h3>Parsed Preview</h3>
+                        <p>Trip: {parsedAiImport.tripTitle}</p>
+                        <p>Destination: {parsedAiImport.destination}</p>
+                        <p>
+                            Date Range: {parsedAiImport.startDate} to {parsedAiImport.endDate}
+                        </p>
+                        <p>Rows: {parsedAiImport.itinerary.length}</p>
+                    </div>
+                )}
+            </section>
 
             {showExportDialog && (
                 <div

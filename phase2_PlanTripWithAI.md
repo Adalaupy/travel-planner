@@ -27,9 +27,7 @@ NOTES: <optional extra notes>
 ### Itinerary tab fields
 - Required: day number, activity title
 - Optional: time, Google Maps link, URL, remark
-- Google Maps link must be a valid Google Maps place/search URL, for example:
-	- https://www.google.com/maps/place/Tokyo/@35.6895,139.6917,15z
-	- https://www.google.com/maps/search/?api=1&query=Tokyo
+- For AI output, keep `google_maps_url` blank to avoid invalid links.
 - If a Google Maps link is provided, the app can parse the place name and coordinates when the URL format is valid.
 
 ### Prompt template
@@ -53,7 +51,7 @@ Field rules for each itinerary line:
 - date: derived from START_DATE and END_DATE, do not provide it in each line
 - time: optional
 - activity title: required
-- google_maps_url: optional, must be a valid Google Maps place/search URL
+- google_maps_url: always leave blank in AI output
 - url: optional
 - remark: optional
 - You can include multiple DAY lines.
@@ -69,7 +67,7 @@ Rules:
 - Do not explain the answer.
 - Keep the itinerary section only.
 - Use one line per itinerary item.
-- If you include a Google Maps link, use a valid Google Maps place or search URL.
+- Always keep google_maps_url blank (do not provide any map link).
 - Follow the field rules exactly and do not add extra fields.
 - The app will derive the itinerary date from DAY number plus START_DATE and END_DATE.
 - Generate all trip days, not just the first day.

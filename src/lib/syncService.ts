@@ -1342,52 +1342,104 @@ export async function addItineraryItem(
 export async function updateItineraryItem(
     tripId: string | null | number | undefined,
     itemId: number | string | undefined,
-    updates: { order?: number }
+    updates: {
+        order?: number
+        dayIndex?: number
+        title?: string
+        time?: string
+        url?: string
+        remark?: string
+        mapLink?: string
+        lat?: number
+        lng?: number
+        placeName?: string
+    }
 ): Promise<ItineraryItem | null> {
     if (!itemId) return null
 
     const online = await isOnline()
 
+    const dbUpdates: any = {
+        order: updates.order,
+        day_index: updates.dayIndex,
+        title: updates.title,
+        time: updates.time,
+        url: updates.url,
+        remark: updates.remark,
+        map_link: updates.mapLink,
+        lat: updates.lat,
+        lng: updates.lng,
+        place_name: updates.placeName,
+    }
+
+    Object.keys(dbUpdates).forEach((key) => {
+        if (dbUpdates[key] === undefined) {
+            delete dbUpdates[key]
+        }
+    })
+
     if (typeof itemId === 'number') {
         if (!online) {
-            await db.itinerary.update(itemId, updates)
+            await db.itinerary.update(itemId, dbUpdates)
             return (await db.itinerary.get(itemId)) ?? null
         }
 
         try {
             const item = await db.itinerary.get(itemId)
             if (!item || !item.itinerary_id) {
-                await db.itinerary.update(itemId, updates)
+                await db.itinerary.update(itemId, dbUpdates)
                 return (await db.itinerary.get(itemId)) ?? null
             }
 
             const { data, error } = await supabase
                 .from('itinerary')
-                .update({ order: updates.order })
+                .update(dbUpdates)
                 .eq('itinerary_id', item.itinerary_id)
                 .select()
                 .single()
 
             if (!error && data) {
-                await db.itinerary.update(itemId, { order: data.order })
+                await db.itinerary.update(itemId, {
+                    day_index: data.day_index,
+                    title: data.title,
+                    time: data.time,
+                    url: data.url,
+                    remark: data.remark,
+                    map_link: data.map_link,
+                    lat: data.lat,
+                    lng: data.lng,
+                    place_name: data.place_name,
+                    order: data.order,
+                })
                 return (await db.itinerary.get(itemId)) ?? null
             }
         } catch (err) {
             console.log('Error updating itinerary item:', err)
-            await db.itinerary.update(itemId, updates)
+            await db.itinerary.update(itemId, dbUpdates)
             return (await db.itinerary.get(itemId)) ?? null
         }
     } else {
         try {
             const { data, error } = await supabase
                 .from('itinerary')
-                .update({ order: updates.order })
+                .update(dbUpdates)
                 .eq('itinerary_id', String(itemId))
                 .select()
                 .single()
 
             if (!error && data) {
-                await db.itinerary.where('itinerary_id').equals(String(itemId)).modify({ order: data.order })
+                await db.itinerary.where('itinerary_id').equals(String(itemId)).modify({
+                    day_index: data.day_index,
+                    title: data.title,
+                    time: data.time,
+                    url: data.url,
+                    remark: data.remark,
+                    map_link: data.map_link,
+                    lat: data.lat,
+                    lng: data.lng,
+                    place_name: data.place_name,
+                    order: data.order,
+                })
                 return {
                     __dexieid: undefined,
                     itinerary_id: data.itinerary_id,
@@ -1407,7 +1459,7 @@ export async function updateItineraryItem(
             }
         } catch (err) {
             console.log('Error updating itinerary item:', err)
-            await db.itinerary.where('itinerary_id').equals(String(itemId)).modify({ order: updates.order })
+            await db.itinerary.where('itinerary_id').equals(String(itemId)).modify(dbUpdates)
             const local = await db.itinerary.where('itinerary_id').equals(String(itemId)).first()
             return local ?? null
         }
