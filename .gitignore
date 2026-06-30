@@ -6,6 +6,7 @@ out/
 dist/
 coverage/
 *_local.md
+git_guide.md
 !README.md
 *.sql
-
+phase2_PlanTripWithAI.md
