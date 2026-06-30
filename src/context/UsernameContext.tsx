@@ -36,7 +36,7 @@ interface UsernameContextType {
 
 const UsernameContext = createContext<UsernameContextType | undefined>(undefined);
 
-async function upsertUserIdentity(identity: UserIdentity): Promise<UserIdentity> {
+async function upsertUserIdentity(identity: UserIdentity): Promise<UserIdentity | null> {
     const { username, birthday, gender } = identity;
     const normalizedShortCode = normalizeShortCode(identity.short_code);
     const hasBirthdayGender = !!birthday && !!gender;
@@ -89,7 +89,11 @@ async function upsertUserIdentity(identity: UserIdentity): Promise<UserIdentity>
     }
 
     if (!hasBirthdayGender) {
-        throw new Error('Birthday and gender are required to create a new user');
+        const message = 'Birthday and gender are required to create a new user';
+        if (isBrowser()) {
+            window.alert(message);
+        }
+        return null;
     }
 
     const { data: created, error: insertError } = await supabase
@@ -278,6 +282,10 @@ export const UsernameProvider = ({ children }: { children: ReactNode }) => {
             }
 
             const synced = await upsertUserIdentity(stored);
+            if (!synced) {
+                setError('Birthday and gender are required to create a new user');
+                return;
+            }
             setLocalUserIdentity(synced);
             saveIdentityToState(synced);
 
@@ -421,6 +429,11 @@ export const UsernameProvider = ({ children }: { children: ReactNode }) => {
                 issync: true,
             });
 
+            if (!resolved) {
+                setError('Birthday and gender are required to create a new user');
+                return;
+            }
+
             // Check if username case matches exactly (prevents signup with wrong case)
             if (resolved.username !== normalizedUsername) {
                 throw new Error(`This username already exists with different casing. Please use: ${resolved.username}`);
@@ -493,6 +506,11 @@ export const UsernameProvider = ({ children }: { children: ReactNode }) => {
                 short_code: normalizedShortCode,
                 issync: true,
             });
+
+            if (!resolved) {
+                setError('Birthday and gender are required to create a new user');
+                return;
+            }
 
             await db.users.add({
                 user_id: resolved.user_id ?? null,

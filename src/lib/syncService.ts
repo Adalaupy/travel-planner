@@ -1541,7 +1541,11 @@ export async function getOrCreateUser(
         }
 
         if (!birthday || !gender) {
-            throw new Error('Birthday and gender are required to create a new user')
+            const message = 'Birthday and gender are required to create a new user'
+            if (typeof window !== 'undefined') {
+                window.alert(message)
+            }
+            return null
         }
 
         // Create new user
