@@ -59,10 +59,10 @@ const TripDetailTabs = ({
                 ))}
             </div>
             <div className={styles.tabContent}>
-                {activeTab === "itinerary" && <Itinerary tripId={numericId} />}
-                {activeTab === "packing" && <PackingChecklist tripId={numericId} />}
-                {activeTab === "travelers" && <TravelersList tripId={numericId} />}
-                {activeTab === "expenses" && <ExpensesManager tripId={numericId} />}
+                {activeTab === "itinerary" && <Itinerary />}
+                {activeTab === "packing" && <PackingChecklist />}
+                {activeTab === "travelers" && <TravelersList />}
+                {activeTab === "expenses" && <ExpensesManager />}
             </div>
         </>
     );

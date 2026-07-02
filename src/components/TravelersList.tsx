@@ -26,8 +26,6 @@ import {
 
 } from "react-icons/fa";
 
-type Props = { tripId?: number };
-
 const REUSABLE_ICON_ID = "FaUserCircle";
 
 const ICONS = [
@@ -57,7 +55,7 @@ const ICONS = [
 
 ];
 
-export const TravelersList = ({ tripId }: Props = {}) => {
+export const TravelersList = () => {
     const { trip } = useTrip();
     const actualTripId = trip?.trip_id;
     const { data: travelers, loading, error, isOnline } = useTripData<TravelerItem>('travelers', actualTripId);

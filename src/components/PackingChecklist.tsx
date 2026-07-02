@@ -18,9 +18,7 @@ import { addPackingItem, updatePackingItem, deletePackingItem } from "../lib/syn
 import { useTripData } from "../hooks/useTripData";
 import styles from "../styles/components.module.css";
 
-type Props = { tripId?: number };
-
-export const PackingChecklist = ({ tripId: _ }: Props = {}) => {
+export const PackingChecklist = () => {
     const { trip } = useTrip();
     const tripId = trip?.trip_id;
     const { data: packingData } = useTripData<PackingItem>('packing', tripId);

@@ -5,9 +5,7 @@ import { getTrip, addExpense, deleteExpense } from "../lib/syncService";
 import { useTripData } from "../hooks/useTripData";
 import styles from "../styles/components.module.css";
 
-type Props = { tripId?: number };
-
-export const ExpensesManager = ({ tripId: _ }: Props = {}) => {
+export const ExpensesManager = () => {
     const { trip } = useTrip();
     const tripId = trip?.trip_id || null;
     // Load expenses and travelers with online-first strategy

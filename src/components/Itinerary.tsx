@@ -19,9 +19,7 @@ import { useTripData } from "../hooks/useTripData";
 import { parseMapLink } from "../lib/mapParser";
 import styles from "../styles/components.module.css";
 
-type Props = { tripId?: number };
-
-export const Itinerary = ({ tripId: _ }: Props = {}) => {
+export const Itinerary = () => {
     const { trip } = useTrip();
     const tripId = trip?.trip_id;
     // Apply the selected date range to the trip
