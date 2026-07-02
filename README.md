@@ -10,6 +10,7 @@ Plan trips collaboratively with real-time sync, sharing, and offline support.
 - [Getting Started](#getting-started)
 - [Trip Sharing](#trip-sharing)
 - [Import/Export](#importexport)
+- [AI Itinerary Import](#ai-itinerary-import)
 - [Data Sync & Consistency](#data-sync--consistency)
 - [Try Me](#try-me)
 
@@ -22,6 +23,7 @@ Plan trips collaboratively with real-time sync, sharing, and offline support.
 - **Packing Checklist**: Color-coded items with completion tracking
 - **Travelers & Expenses**: Manage group members and split costs with instant visibility
 - **Import/Export**: Bulk import/export trips as JSON (supports multi-file import)
+- **AI Itinerary Import**: Paste or upload `.txt` AI output in My Trips and submit directly
 - **Templates**: Downloadable import templates for reference
 - **Offline Support**: Works offline with automatic Supabase sync when online
 - **Real-Time Data**: Online-first data fetching ensures all users see fresh data
@@ -93,6 +95,35 @@ Share your trips with other users for collaborative planning:
 - Export: choose one or more trips and download a JSON backup.
 - Import: select one or more JSON files to import.
 - Template: use "Download Import Template" to get a ready-to-fill sample.
+
+## AI Itinerary Import
+
+AI itinerary import is available on the **My Trips** page.
+
+- Input: paste plain text or upload a `.txt` file.
+- Flow: `Upload .txt` (optional) -> `Submit`.
+- If trip title does not exist, the app auto-creates the trip.
+- If trip title exists and is owned by current user, app shows a Yes/No replace modal.
+- If trip title matches a shared-only trip, replacement is blocked and user must rename `TRIP_TITLE`.
+
+Required plain-text format:
+
+```text
+TRIP_TITLE: <trip title>
+DESTINATION: <city/country>
+START_DATE: YYYY-MM-DD
+END_DATE: YYYY-MM-DD
+
+ITINERARY:
+DAY <number> | <time HH:MM optional> | <activity title required> | <google_maps_url optional> | <url optional> | <remark optional>
+```
+
+Time rule:
+- `time` is optional, but if provided it must be `HH:MM` (24-hour), for example `09:30`.
+
+Map URL rule:
+- In AI output, keep `google_maps_url` blank.
+- Users can add map links later in trip detail edit mode.
 
 ## Data Sync & Consistency
 
