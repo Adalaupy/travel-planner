@@ -11,6 +11,7 @@ import {
     updateTrip,
 } from "../lib/syncService";
 import { getLocalUserIdentity } from "../lib/userIdentity";
+import { supabase } from "../lib/supabase";
 import { parseAiItineraryImport, ParsedAiItinerary } from "../lib/aiItineraryParser";
 import {
     exportTripsData,
@@ -59,6 +60,7 @@ Rules:
 export default function MyTrips() {
     const [trips, setTrips] = useState<TripItem[]>([]);
     const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+    const [sharedByLabels, setSharedByLabels] = useState<Record<string, string>>({});
     const [newTripTitle, setNewTripTitle] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
     const [isCreating, setIsCreating] = useState(false);
@@ -88,6 +90,59 @@ export default function MyTrips() {
         setCurrentUserId(identity?.user_id ?? null);
         loadTrips();
     }, []);
+
+    useEffect(() => {
+        if (!currentUserId) {
+            setSharedByLabels({});
+            return;
+        }
+
+        const sharedTrips = trips.filter((trip) => {
+            const isOwner = trip.owner_id === currentUserId;
+            const isShared = !isOwner && (trip.share_with as string[])?.includes(currentUserId);
+            return isShared && !!trip.owner_id;
+        });
+
+        const ownerIds = Array.from(
+            new Set(sharedTrips.map((trip) => trip.owner_id).filter((id): id is string => !!id)),
+        );
+
+        let cancelled = false;
+
+        const loadSharedLabels = async () => {
+            const entries = await Promise.all(
+                ownerIds.map(async (ownerId) => {
+                    const owner = await db.users.where("user_id").equals(ownerId).first();
+                    if (owner?.username) {
+                        return [ownerId, owner.username] as const;
+                    }
+
+                    const { data } = await supabase
+                        .from("users")
+                        .select("username")
+                        .eq("user_id", ownerId)
+                        .maybeSingle();
+
+                    return [ownerId, data?.username || "another user"] as const;
+                }),
+            );
+
+            if (!cancelled) {
+                setSharedByLabels(Object.fromEntries(entries));
+            }
+        };
+
+        if (ownerIds.length === 0) {
+            setSharedByLabels({});
+            return;
+        }
+
+        void loadSharedLabels();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [currentUserId, trips]);
 
     const loadTrips = async () => {
         const allTrips = await getUserTrips();
@@ -729,6 +784,7 @@ export default function MyTrips() {
                         
                         const isOwner = trip.owner_id === currentUserId
                         const isShared = currentUserId && !isOwner && (trip.share_with as string[])?.includes(currentUserId)
+                        const sharedBy = trip.owner_id ? sharedByLabels[trip.owner_id] : undefined;
                         return (
                             <div
                                 key={String(linkId)}
@@ -739,9 +795,11 @@ export default function MyTrips() {
                                     className={styles.tripLink}
                                 >
                                     <h3>{trip.title}</h3>
-                                                    {isShared && (
-                                                        <span className={styles.sharedTag}>📤 Shared with you</span>
-                                                    )}
+                                    {isShared && (
+                                        <span className={styles.sharedTag}>
+                                            📤 Shared by {sharedBy || "another user"}
+                                        </span>
+                                    )}
                                     {trip.start_date && trip.end_date && (
                                         <div className={styles.tripMeta}>
                                             {formatDisplayDate(trip.start_date)} to {formatDisplayDate(trip.end_date)}

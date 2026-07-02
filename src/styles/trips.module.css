@@ -139,6 +139,13 @@
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.aiImportActions button:last-child {
+    margin-left: auto;
 }
 
 .aiActionBtn {
