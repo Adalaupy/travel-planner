@@ -1468,22 +1468,35 @@ export async function updateItineraryItem(
     return null
 }
 
-export async function deleteItineraryItem(tripId: string | null | number | undefined, itemId: number): Promise<boolean> {
+export async function deleteItineraryItem(
+    tripId: string | null | number | undefined,
+    itemId: number | string,
+): Promise<boolean> {
     const online = await isOnline()
 
     if (!online) {
         if (typeof itemId === 'number') {
             await db.itinerary.delete(itemId)
+        } else {
+            await db.itinerary.where('itinerary_id').equals(String(itemId)).delete()
         }
         return true
     }
 
     try {
-        const { error } = await supabase.from('itinerary').delete().eq('itinerary_id', String(itemId))
+        let targetId = String(itemId)
+        if (typeof itemId === 'number') {
+            const localItem = await db.itinerary.get(itemId)
+            targetId = localItem?.itinerary_id ? String(localItem.itinerary_id) : String(itemId)
+        }
+
+        const { error } = await supabase.from('itinerary').delete().eq('itinerary_id', targetId)
 
         if (!error) {
             if (typeof itemId === 'number') {
                 await db.itinerary.delete(itemId)
+            } else {
+                await db.itinerary.where('itinerary_id').equals(String(itemId)).delete()
             }
             return true
         }
@@ -1491,6 +1504,8 @@ export async function deleteItineraryItem(tripId: string | null | number | undef
         console.log('Error deleting itinerary item:', err)
         if (typeof itemId === 'number') {
             await db.itinerary.delete(itemId)
+        } else {
+            await db.itinerary.where('itinerary_id').equals(String(itemId)).delete()
         }
     }
 

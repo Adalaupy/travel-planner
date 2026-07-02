@@ -342,10 +342,12 @@ export const Itinerary = ({ tripId: _ }: Props = {}) => {
         }
     };
 
-    const removeItem = async (id: number) => {
+    const removeItem = async (id: number | string) => {
         const success = await deleteItineraryItem(tripId, id);
         if (success) {
-            setItems((prev) => prev.filter((i) => i.__dexieid !== id));
+            setItems((prev) =>
+                prev.filter((i) => String(i.__dexieid ?? i.itinerary_id) !== String(id)),
+            );
         }
     };
 
@@ -482,6 +484,9 @@ export const Itinerary = ({ tripId: _ }: Props = {}) => {
             <p style={{ fontSize: "12px", color: "#666", marginTop: "8px" }}>
                 💡 <strong>Note:</strong> Time input is optional and for display only—it does not affect ordering. Use drag and drop to reorder items.
             </p>
+            <p style={{ fontSize: "12px", color: "#666", marginTop: "4px" }}>
+                ✏️ <strong>Edit:</strong> Double-click an itinerary item to load it into the input area, then click Edit to save.
+            </p>
             {parsedData && (
                 <div className={styles.parsedDataDisplay}>
                     <strong>Parsed Map Data:</strong>
@@ -555,7 +560,7 @@ function SortableItineraryItem({
     item: ItineraryItemType;
     idx: number;
     dayItems: ItineraryItemType[];
-    removeItem: (id: number) => void;
+    removeItem: (id: number | string) => void;
     itemId: string | number;
     onEditItem: (item: ItineraryItemType) => void;
 }) {
@@ -577,6 +582,8 @@ function SortableItineraryItem({
     const prevItem = idx > 0 ? dayItems[idx - 1] : null;
     let dirFromCurrent = "";
     let dirFromPrev = "";
+    const hasCurrentMapLink = !!item.map_link?.trim();
+    const hasPrevMapLink = !!prevItem?.map_link?.trim();
     const destinationParam =
         item.lat && item.lng
             ? `${item.lat},${item.lng}`
@@ -625,26 +632,11 @@ function SortableItineraryItem({
 
 
 
-
-                {/* {(item.place_name || item.lat || item.lng) && (
-                    <div className={styles.itineraryParsedInfo}>
-                        {item.place_name && <span>📍 {item.place_name}</span>}
-                        <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                            {item.lat && item.lng && (
-                            <span className={styles.coords}>
-                                {" "}
-                                ({item.lat.toFixed(4)}, {item.lng.toFixed(4)})
-                            </span>
-                        )}
-                    </div>
-                )} */}
-
-
                 {item.remark && (
                     <div className={styles.itineraryRemark}>{item.remark}</div>
                 )}
                 <div className={styles.itineraryLinks}>
-                    {item.map_link && (
+                    {hasCurrentMapLink && (
                         <a
                             href={item.map_link}
                             target="_blank"
@@ -667,19 +659,22 @@ function SortableItineraryItem({
                         </a>
                     )}
 
-                    <div style={{display:'flex', justifyContent:'space-between', gap:'15px'}}>
-                        <a
-                            href={dirFromCurrent}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={styles.dirLink}
-                        >
-                            🧭 
-                            <label>
-                                From Here
-                            </label>
-                        </a>
-                        {dirFromPrev && (
+                    {hasCurrentMapLink && (
+                        <div style={{display:'flex', justifyContent:'space-between', gap:'15px'}}>
+                        {hasCurrentMapLink && (
+                            <a
+                                href={dirFromCurrent}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={styles.dirLink}
+                            >
+                                🧭 
+                                <label>
+                                    From Here
+                                </label>
+                            </a>
+                        )}
+                        {hasCurrentMapLink && hasPrevMapLink && dirFromPrev && (
                             <a
                                 href={dirFromPrev}
                                 target="_blank"
@@ -692,7 +687,8 @@ function SortableItineraryItem({
                                 </label>
                             </a>
                         )}
-                    </div>
+                        </div>
+                    )}
                 </div>
             </div>
             <button
@@ -700,7 +696,9 @@ function SortableItineraryItem({
                 onClick={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
-                    removeItem(item.__dexieid!);
+                    const removeId = item.__dexieid ?? item.itinerary_id;
+                    if (!removeId) return;
+                    removeItem(removeId);
                 }}
                 onPointerDown={(e) => e.stopPropagation()}
                 type="button"

@@ -18,10 +18,8 @@ START_DATE: YYYY-MM-DD
 END_DATE: YYYY-MM-DD
 
 ITINERARY:
-DAY 1 | <time optional> | <activity title required> | <google_maps_url optional> | <url optional> | <remark optional>
-DAY 2 | <time optional> | <activity title required> | <google_maps_url optional> | <url optional> | <remark optional>
-
-NOTES: <optional extra notes>
+DAY 1 | <time HH:MM optional> | <activity title required> | <google_maps_url optional> | <url optional> | <remark optional>
+DAY 2 | <time HH:MM optional> | <activity title required> | <google_maps_url optional> | <url optional> | <remark optional>
 ```
 
 ### Itinerary tab fields
@@ -44,12 +42,12 @@ START_DATE: YYYY-MM-DD
 END_DATE: YYYY-MM-DD
 
 ITINERARY:
-DAY <number> | <time optional> | <activity title required> | <google_maps_url optional> | <url optional> | <remark optional>
+DAY <number> | <time HH:MM optional> | <activity title required> | <google_maps_url optional> | <url optional> | <remark optional>
 
 Field rules for each itinerary line:
 - DAY: required
 - date: derived from START_DATE and END_DATE, do not provide it in each line
-- time: optional
+- time: optional, but if provided it must be exactly HH:MM (24-hour), for example 09:30
 - activity title: required
 - google_maps_url: always leave blank in AI output
 - url: optional
@@ -57,8 +55,6 @@ Field rules for each itinerary line:
 - You can include multiple DAY lines.
 - Add one line for each day in the trip, in ascending order starting from DAY 1.
 - Continue until the last travel day.
-
-NOTES: <optional extra notes>
 
 Rules:
 - Do not use markdown.
@@ -117,3 +113,15 @@ Not used in this phase:
 ### Success check
 - A user can paste the AI result, review the parsed itinerary, and either create a new trip or replace their own existing trip.
 - A shared trip with the same title cannot be overwritten through this flow.
+
+### Current implementation status (2026-07-02)
+- Done: AI import UI is under My Trips page, with `.txt` upload plus `Submit` actions.
+- Done: Parser enforces the line format and no longer accepts `NOTES`.
+- Done: Prompt/template keeps `google_maps_url` blank in AI output.
+- Done: Missing trip titles are auto-created during submit.
+- Done: Duplicate-title import shows a Yes/No replace modal.
+- Done: Shared-only matched trips are blocked from replacement with a rename guidance message.
+- Done: Trip detail supports double-click edit, Add/Edit toggle, and Cancel.
+- Done: Map and direction links are shown only when map links exist.
+- Done: My Trips date display uses `dd/mm/yyyy` format.
+- Done: Itinerary delete supports both local Dexie IDs and synced itinerary IDs.

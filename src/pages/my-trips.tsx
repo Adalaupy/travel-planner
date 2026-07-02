@@ -1,8 +1,15 @@
 ﻿import Link from "next/link";
 import { ChangeEvent, useEffect, useState, useRef } from "react";
 import { useRouter } from "next/router";
-import { TripItem } from "../lib/db";
-import { getUserTrips, createTrip, deleteTrip as deleteFromSync } from "../lib/syncService";
+import { db, TripItem } from "../lib/db";
+import {
+    addItineraryItem,
+    createTrip,
+    deleteItineraryItem,
+    deleteTrip as deleteFromSync,
+    getUserTrips,
+    updateTrip,
+} from "../lib/syncService";
 import { getLocalUserIdentity } from "../lib/userIdentity";
 import { parseAiItineraryImport, ParsedAiItinerary } from "../lib/aiItineraryParser";
 import {
@@ -23,12 +30,12 @@ START_DATE: YYYY-MM-DD
 END_DATE: YYYY-MM-DD
 
 ITINERARY:
-DAY <number> | <time optional> | <activity title required> | <google_maps_url optional> | <url optional> | <remark optional>
+DAY <number> | <time HH:MM optional> | <activity title required> | <google_maps_url optional> | <url optional> | <remark optional>
 
 Field rules for each itinerary line:
 - DAY: required
 - date: derived from START_DATE and END_DATE, do not provide it in each line
-- time: optional
+- time: optional, but if provided it must be exactly HH:MM (24-hour), e.g. 09:30
 - activity title: required
 - google_maps_url: always leave blank
 - url: optional
@@ -36,8 +43,6 @@ Field rules for each itinerary line:
 - You can include multiple DAY lines.
 - Add one line for each day in the trip, in ascending order starting from DAY 1.
 - Continue until the last travel day.
-
-NOTES: <optional extra notes>
 
 Rules:
 - Do not use markdown.
@@ -67,7 +72,13 @@ export default function MyTrips() {
         kind: "success" | "error";
         message: string;
     } | null>(null);
+    const [isSubmittingAiImport, setIsSubmittingAiImport] = useState(false);
     const [promptCopied, setPromptCopied] = useState(false);
+    const [showAiReplaceDialog, setShowAiReplaceDialog] = useState(false);
+    const [pendingAiReplace, setPendingAiReplace] = useState<{
+        parsed: ParsedAiItinerary;
+        matchedTrip: TripItem;
+    } | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const aiTxtInputRef = useRef<HTMLInputElement>(null);
     const router = useRouter();
@@ -81,6 +92,17 @@ export default function MyTrips() {
     const loadTrips = async () => {
         const allTrips = await getUserTrips();
         setTrips(allTrips);
+    };
+
+    const formatDisplayDate = (value?: string | null) => {
+        if (!value) return "";
+        const parsed = new Date(`${value}T00:00:00`);
+        if (Number.isNaN(parsed.getTime())) return value;
+        return parsed.toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+        });
     };
 
     const createTripHandler = async () => {
@@ -239,25 +261,7 @@ export default function MyTrips() {
             setAiImportText(text);
             setAiImportStatus({
                 kind: "success",
-                message: `Loaded ${selectedFile.name}. Click Parse to validate format.`,
-            });
-        } catch {
-            setAiImportStatus({
-                kind: "error",
-                message: "Failed to read the selected .txt file.",
-            });
-        }
-
-        e.target.value = "";
-    };
-
-    const parseAiImport = async () => {
-        try {
-            const parsed = await parseAiItineraryImport(aiImportText);
-            setParsedAiImport(parsed);
-            setAiImportStatus({
-                kind: "success",
-                message: `Parsed ${parsed.itinerary.length} itinerary row(s) successfully.`,
+                message: `Uploaded ${selectedFile.name}. Click \"Submit\" to update itinerary.`,
             });
         } catch (error) {
             setParsedAiImport(null);
@@ -265,11 +269,198 @@ export default function MyTrips() {
                 kind: "error",
                 message:
                     error instanceof Error
-                        ? error.message
-                        : "Failed to parse AI itinerary text.",
+                        ? `Upload failed validation: ${error.message}`
+                        : "Upload failed: unable to parse AI itinerary text.",
             });
         }
+
+        e.target.value = "";
     };
+
+    const applyParsedAiToTrip = async (
+        parsed: ParsedAiItinerary,
+        matchedTrip: TripItem,
+        autoCreated = false,
+    ) => {
+        const targetTripId = matchedTrip.trip_id || String(matchedTrip.__dexieid || "");
+        if (!targetTripId) {
+            setAiImportStatus({
+                kind: "error",
+                message: "Matched trip has no valid ID.",
+            });
+            return;
+        }
+
+        await updateTrip(targetTripId, {
+            title: parsed.tripTitle,
+            startDate: parsed.startDate,
+            endDate: parsed.endDate,
+        });
+
+        const existingItems = await db.itinerary
+            .where("trip_id")
+            .equals(String(targetTripId))
+            .toArray();
+
+        for (const item of existingItems) {
+            const deleteId = item.itinerary_id || item.__dexieid;
+            if (!deleteId) continue;
+            await deleteItineraryItem(targetTripId, deleteId);
+        }
+
+        const dayOrderCounter = new Map<number, number>();
+        for (const row of parsed.itinerary) {
+            const dayIndex = Math.max(0, row.day - 1);
+            const currentOrder = dayOrderCounter.get(dayIndex) ?? 0;
+
+            await addItineraryItem(targetTripId, {
+                dayIndex,
+                title: row.activityTitle,
+                time: row.time,
+                url: row.url,
+                remark: row.remark,
+                mapLink: row.googleMapsUrl,
+                order: currentOrder,
+            });
+
+            dayOrderCounter.set(dayIndex, currentOrder + 1);
+        }
+
+        await loadTrips();
+        setAiImportStatus({
+            kind: "success",
+            message: autoCreated
+                ? `Created trip \"${matchedTrip.title}\" and submitted ${parsed.itinerary.length} itinerary row(s).`
+                : `Parsed and submitted ${parsed.itinerary.length} row(s) to \"${matchedTrip.title}\" itinerary.`,
+        });
+    };
+
+    const parseAndSubmitAiImport = async () => {
+        if (!aiImportText.trim()) {
+            setAiImportStatus({
+                kind: "error",
+                message: "Please upload or paste AI text first.",
+            });
+            return;
+        }
+
+        setIsSubmittingAiImport(true);
+        try {
+            const parsed = await parseAiItineraryImport(aiImportText);
+            setParsedAiImport(parsed);
+
+            let matchedTrip = trips.find(
+                (trip) =>
+                    (trip.title || "").trim().toLowerCase() ===
+                    parsed.tripTitle.trim().toLowerCase(),
+            );
+            let autoCreated = false;
+
+            if (matchedTrip) {
+                const isOwner =
+                    !matchedTrip.owner_id || matchedTrip.owner_id === currentUserId;
+                const isSharedOnly =
+                    !!currentUserId &&
+                    !isOwner &&
+                    ((matchedTrip.share_with as string[]) || []).includes(currentUserId);
+
+                if (isSharedOnly) {
+                    setAiImportStatus({
+                        kind: "error",
+                        message:
+                            "A shared trip with the same title already exists. Please rename TRIP_TITLE and import again.",
+                    });
+                    return;
+                }
+
+                setPendingAiReplace({ parsed, matchedTrip });
+                setShowAiReplaceDialog(true);
+                return;
+            } else {
+                const createdTrip = await createTrip(parsed.tripTitle.trim());
+                if (!createdTrip) {
+                    setAiImportStatus({
+                        kind: "error",
+                        message: `Unable to auto-create trip \"${parsed.tripTitle}\".`,
+                    });
+                    return;
+                }
+                matchedTrip = createdTrip;
+                autoCreated = true;
+            }
+            await applyParsedAiToTrip(parsed, matchedTrip, autoCreated);
+        } catch (error) {
+            setParsedAiImport(null);
+            setAiImportStatus({
+                kind: "error",
+                message:
+                    error instanceof Error
+                        ? error.message
+                        : "Failed to parse and submit AI itinerary.",
+            });
+        } finally {
+            setIsSubmittingAiImport(false);
+        }
+    };
+
+    const confirmAiReplaceImport = async () => {
+        if (!pendingAiReplace) return;
+
+        setIsSubmittingAiImport(true);
+        try {
+            const { parsed, matchedTrip } = pendingAiReplace;
+            await applyParsedAiToTrip(parsed, matchedTrip);
+        } catch (error) {
+            setParsedAiImport(null);
+            setAiImportStatus({
+                kind: "error",
+                message:
+                    error instanceof Error
+                        ? error.message
+                        : "Failed to parse and submit AI itinerary.",
+            });
+        } finally {
+            setIsSubmittingAiImport(false);
+            setShowAiReplaceDialog(false);
+            setPendingAiReplace(null);
+        }
+    };
+
+    const cancelAiReplaceImport = () => {
+        setShowAiReplaceDialog(false);
+        setPendingAiReplace(null);
+        setAiImportStatus({
+            kind: "success",
+            message: "Import canceled. No changes were made.",
+        });
+    };
+
+    useEffect(() => {
+        if (!showAiReplaceDialog) return;
+
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (isSubmittingAiImport) return;
+
+            if (event.key === "Escape") {
+                event.preventDefault();
+                cancelAiReplaceImport();
+                return;
+            }
+
+            if (event.key === "Enter") {
+                const target = event.target as HTMLElement | null;
+                if (target?.tagName === "INPUT" || target?.tagName === "TEXTAREA") {
+                    return;
+                }
+
+                event.preventDefault();
+                void confirmAiReplaceImport();
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [showAiReplaceDialog, isSubmittingAiImport, pendingAiReplace]);
 
     const copyPromptTemplate = async () => {
         try {
@@ -357,7 +548,7 @@ export default function MyTrips() {
                     </button>
                 </div>
                 <p className={styles.aiHintText}>
-                    Use this on My Plan first: copy the prompt, get AI plain text, paste/upload it, and parse.
+                    Use this on My Plan first: copy prompt, upload/paste AI text, then click Submit.
                 </p>
 
                 <textarea
@@ -371,7 +562,7 @@ export default function MyTrips() {
                         className={styles.aiImportInput}
                         value={aiImportText}
                         onChange={(e) => setAiImportText(e.target.value)}
-                        placeholder="Paste AI output here (forced format)."
+                        placeholder="Uploaded AI output will appear here."
                     />
                     <div className={styles.aiImportActions}>
                         <button
@@ -384,9 +575,10 @@ export default function MyTrips() {
                         <button
                             type="button"
                             className={styles.aiActionBtn}
-                            onClick={parseAiImport}
+                            onClick={parseAndSubmitAiImport}
+                            disabled={isSubmittingAiImport}
                         >
-                            Parse Text
+                            {isSubmittingAiImport ? "Submitting..." : "Submit"}
                         </button>
                     </div>
                 </div>
@@ -417,7 +609,7 @@ export default function MyTrips() {
                         <p>Trip: {parsedAiImport.tripTitle}</p>
                         <p>Destination: {parsedAiImport.destination}</p>
                         <p>
-                            Date Range: {parsedAiImport.startDate} to {parsedAiImport.endDate}
+                            Date Range: {formatDisplayDate(parsedAiImport.startDate)} to {formatDisplayDate(parsedAiImport.endDate)}
                         </p>
                         <p>Rows: {parsedAiImport.itinerary.length}</p>
                     </div>
@@ -478,6 +670,39 @@ export default function MyTrips() {
                 </div>
             )}
 
+            {showAiReplaceDialog && pendingAiReplace && (
+                <div
+                    className={styles.modalOverlay}
+                    onClick={cancelAiReplaceImport}
+                >
+                    <div
+                        className={styles.modalContent}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <h3>This trip already exists</h3>
+                        <p>
+                            Replace current work in "{pendingAiReplace.matchedTrip.title}" itinerary?
+                        </p>
+                        <div className={styles.modalButtonGroup}>
+                            <button
+                                onClick={confirmAiReplaceImport}
+                                className={styles.modalPrimaryBtn}
+                                disabled={isSubmittingAiImport}
+                            >
+                                {isSubmittingAiImport ? "Replacing..." : "Yes, Replace"}
+                            </button>
+                            <button
+                                onClick={cancelAiReplaceImport}
+                                className={styles.modalSecondaryBtn}
+                                disabled={isSubmittingAiImport}
+                            >
+                                No
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <input
                 ref={fileInputRef}
                 type="file"
@@ -519,12 +744,16 @@ export default function MyTrips() {
                                                     )}
                                     {trip.start_date && trip.end_date && (
                                         <div className={styles.tripMeta}>
-                                            {trip.start_date} to {trip.end_date}
+                                            {formatDisplayDate(trip.start_date)} to {formatDisplayDate(trip.end_date)}
                                         </div>
                                     )}
                                     <p className={styles.tripUpdated}>
                                         Updated:{" "}
-                                        {new Date(trip.updated_at || 0).toLocaleDateString()}
+                                        {new Date(trip.updated_at || 0).toLocaleDateString("en-GB", {
+                                            day: "2-digit",
+                                            month: "2-digit",
+                                            year: "numeric",
+                                        })}
                                     </p>
                                 </Link>
                                 {isOwner && (

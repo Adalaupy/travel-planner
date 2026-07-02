@@ -13,7 +13,6 @@ export type ParsedAiItinerary = {
     startDate: string;
     endDate: string;
     itinerary: ParsedItineraryLine[];
-    notes?: string;
 };
 
 function readLabeledLine(line: string, label: string): string {
@@ -22,6 +21,10 @@ function readLabeledLine(line: string, label: string): string {
     }
 
     return line.slice(label.length).trim();
+}
+
+function isValidTimeHHMM(value: string): boolean {
+    return /^([01]\d|2[0-3]):([0-5]\d)$/.test(value);
 }
 
 export async function parseAiItineraryImport(
@@ -56,7 +59,6 @@ export async function parseAiItineraryImport(
     cursor += 1;
 
     const itinerary: ParsedItineraryLine[] = [];
-    let notes: string | undefined;
 
     while (cursor < lines.length) {
         const rawLine = lines[cursor].trim();
@@ -64,12 +66,6 @@ export async function parseAiItineraryImport(
         if (!rawLine) {
             cursor += 1;
             continue;
-        }
-
-        if (rawLine.startsWith("NOTES:")) {
-            notes = rawLine.slice("NOTES:".length).trim() || undefined;
-            cursor += 1;
-            break;
         }
 
         const dayMatch = rawLine.match(/^DAY\s+(\d+)\s*\|\s*(.*)$/i);
@@ -88,6 +84,11 @@ export async function parseAiItineraryImport(
         }
 
         const [time, activityTitle, googleMapsUrl, url, remark] = parts;
+        if (time && !isValidTimeHHMM(time)) {
+            throw new Error(
+                `Invalid time format in itinerary line: "${rawLine}". Use HH:MM (24-hour), e.g. 09:30.`,
+            );
+        }
         const finalGoogleMapsUrl = googleMapsUrl || undefined;
 
         itinerary.push({
@@ -104,7 +105,7 @@ export async function parseAiItineraryImport(
 
     while (cursor < lines.length) {
         const trailing = lines[cursor].trim();
-        if (trailing && !trailing.startsWith("NOTES:")) {
+        if (trailing) {
             throw new Error(`Unexpected trailing line after itinerary: "${trailing}".`);
         }
         cursor += 1;
@@ -120,6 +121,5 @@ export async function parseAiItineraryImport(
         startDate,
         endDate,
         itinerary,
-        notes,
     };
 }
