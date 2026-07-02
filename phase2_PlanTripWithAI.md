@@ -113,15 +113,3 @@ Not used in this phase:
 ### Success check
 - A user can paste the AI result, review the parsed itinerary, and either create a new trip or replace their own existing trip.
 - A shared trip with the same title cannot be overwritten through this flow.
-
-### Current implementation status (2026-07-02)
-- Done: AI import UI is under My Trips page, with `.txt` upload plus `Submit` actions.
-- Done: Parser enforces the line format and no longer accepts `NOTES`.
-- Done: Prompt/template keeps `google_maps_url` blank in AI output.
-- Done: Missing trip titles are auto-created during submit.
-- Done: Duplicate-title import shows a Yes/No replace modal.
-- Done: Shared-only matched trips are blocked from replacement with a rename guidance message.
-- Done: Trip detail supports double-click edit, Add/Edit toggle, and Cancel.
-- Done: Map and direction links are shown only when map links exist.
-- Done: My Trips date display uses `dd/mm/yyyy` format.
-- Done: Itinerary delete supports both local Dexie IDs and synced itinerary IDs.
