@@ -319,7 +319,7 @@ export const PackingChecklist = () => {
                     title="Default color for new items"
                 />
                 <button onClick={addItem}>Add</button>
-                <button type="button" onClick={openImportModal}>
+                <button type="button" onClick={openImportModal} style={{ marginLeft: "auto" }}>
                     Copy
                 </button>
             </div>
