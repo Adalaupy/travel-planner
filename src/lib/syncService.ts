@@ -34,10 +34,10 @@ export async function getTrip(tripId: string | number) {
                 // Return directly from Supabase, don't cache UUID
                 return data
             } else {
-                console.log('Supabase error:', error)
+                // console.log('Supabase error:', error)
             }
         } catch (err) {
-            console.log('Error fetching from Supabase, using cache:', err)
+            // console.log('Error fetching from Supabase, using cache:', err)
         }
     }
 
@@ -308,7 +308,7 @@ export async function validateAndRecoverTripSync(tripId: string): Promise<{ vali
 
         // If local trip is synced but no related data exists, try to sync
         if (localTrip.issync && localDataCount === 0) {
-            console.log('Local trip has no related data - attempting to sync from Supabase')
+            // console.log('Local trip has no related data - attempting to sync from Supabase')
             try {
                 await syncTripFromSupabase(tripId)
                 return { valid: true, recovered: true, details: 'Related data recovered from Supabase' }
@@ -380,7 +380,7 @@ export async function getUserTrips() {
                 .order('updated_at', { ascending: false })
 
             if ((ownedError && sharedError) || (!ownedData && !sharedData)) {
-                console.log('Supabase error:', ownedError || sharedError)
+                // console.log('Supabase error:', ownedError || sharedError)
             }
 
             // Combine and deduplicate
@@ -398,7 +398,7 @@ export async function getUserTrips() {
                 trip_id: item.trip_id ?? item.id
             }))
         } catch (err) {
-            console.log('Error fetching trips from Supabase, using cache:', err)
+            // console.log('Error fetching trips from Supabase, using cache:', err)
         }
     }
 
@@ -420,7 +420,7 @@ export async function importTripsToSupabase(
 ): Promise<Array<{ localTripId?: string; supaTripId?: string }>> {
     const online = await isOnline()
     if (!online) {
-        console.log('Offline: skipping Supabase import')
+        // console.log('Offline: skipping Supabase import')
         return []
     }
 
@@ -473,7 +473,7 @@ export async function importTripsToSupabase(
                                 .single()
 
                             if (travelerError) {
-                                console.log('Error importing traveler to Supabase:', travelerError)
+                                // console.log('Error importing traveler to Supabase:', travelerError)
                             }
                             if (!travelerError && travelerRow && traveler.traveler_id !== undefined) {
                                 travelerIdMap.set(String(traveler.traveler_id), travelerRow.traveler_id)
@@ -497,7 +497,7 @@ export async function importTripsToSupabase(
                         }))
                         const { error: itineraryError } = await supabase.from('itinerary').insert(rows)
                         if (itineraryError) {
-                            console.log('Error importing itinerary to Supabase:', itineraryError)
+                            // console.log('Error importing itinerary to Supabase:', itineraryError)
                         }
                     }
 
@@ -511,7 +511,7 @@ export async function importTripsToSupabase(
                         }))
                         const { error: packingError } = await supabase.from('packing').insert(rows)
                         if (packingError) {
-                            console.log('Error importing packing to Supabase:', packingError)
+                            // console.log('Error importing packing to Supabase:', packingError)
                         }
                     }
 
@@ -537,16 +537,16 @@ export async function importTripsToSupabase(
                         })
                         const { error: expensesError } = await supabase.from('expenses').insert(rows)
                         if (expensesError) {
-                            console.log('Error importing expenses to Supabase:', expensesError)
+                            // console.log('Error importing expenses to Supabase:', expensesError)
                         }
                     }
                 }
             } else {
-                console.log('Error importing trip to Supabase:', error)
+                // console.log('Error importing trip to Supabase:', error)
             }
         }
     } catch (err) {
-        console.log('Error in importTripsToSupabase:', err)
+        // console.log('Error in importTripsToSupabase:', err)
     }
 
     return results
@@ -595,7 +595,7 @@ export async function createTrip(title: string) {
             return trip || null
         }
     } catch (err) {
-        console.log('Error creating trip on Supabase, saving locally:', err)
+        // console.log('Error creating trip on Supabase, saving locally:', err)
         // Fallback: save locally with numeric trip_id
         const numericId = await db.trips.add({
             title,
@@ -682,7 +682,7 @@ export async function updateTrip(
             return data
         }
     } catch (err) {
-        console.log('Error updating trip on Supabase:', err)
+        // console.log('Error updating trip on Supabase:', err)
         // Fallback: update local only
         if (typeof tripId === 'number') {
             await db.trips.update(tripId, {
@@ -886,7 +886,7 @@ export async function deleteTrip(tripId: string | number): Promise<boolean> {
             return true
         }
     } catch (err) {
-        console.log('Error deleting trip:', err)
+        // console.log('Error deleting trip:', err)
         if (typeof tripId === 'number') {
             await db.trips.delete(tripId)
         }
@@ -943,7 +943,7 @@ export async function addPackingItem(
             return packingItem
         }
     } catch (err) {
-        console.log('Error adding packing item to Supabase, saving locally:', err)
+        // console.log('Error adding packing item to Supabase, saving locally:', err)
         const id = await db.packing.add({
             trip_id: tripId,
             title: item.title,
@@ -1003,7 +1003,7 @@ export async function updatePackingItem(
                 return (await db.packing.get(itemId)) ?? null
             }
         } catch (err) {
-            console.log('Error updating packing item:', err)
+            // console.log('Error updating packing item:', err)
             await db.packing.update(itemId, updates)
             return (await db.packing.get(itemId)) ?? null
         }
@@ -1025,7 +1025,7 @@ export async function updatePackingItem(
                 return data as PackingItem
             }
         } catch (err) {
-            console.log('Error updating packing item:', err)
+            // console.log('Error updating packing item:', err)
         }
     }
 
@@ -1073,7 +1073,7 @@ export async function deletePackingItem(tripId: string | null | number | undefin
             return true
         }
     } catch (err) {
-        console.log('Error deleting packing item:', err)
+        // console.log('Error deleting packing item:', err)
         if (typeof itemId === 'number') {
             await db.packing.delete(itemId)
         }
@@ -1118,7 +1118,7 @@ export async function addTraveler(
             return item
         }
     } catch (err) {
-        console.log('Error adding traveler:', err)
+        // console.log('Error adding traveler:', err)
         const id = await db.travelers.add({ trip_id: tripId, issync: false, ...traveler })
         return (await db.travelers.get(id)) ?? null
     }
@@ -1146,7 +1146,7 @@ export async function deleteTraveler(tripId: string | null, travelerId: number):
             return true
         }
     } catch (err) {
-        console.log('Error deleting traveler:', err)
+        // console.log('Error deleting traveler:', err)
         if (typeof travelerId === 'number') {
             await db.travelers.delete(travelerId)
         }
@@ -1202,7 +1202,7 @@ export async function addExpense(
             return item
         }
     } catch (err) {
-        console.log('Error adding expense:', err)
+        // console.log('Error adding expense:', err)
         const id = await db.expenses.add({
             trip_id: tripId,
             issync: false,
@@ -1234,7 +1234,7 @@ export async function deleteExpense(tripId: string | null, expenseId: number): P
             return true
         }
     } catch (err) {
-        console.log('Error deleting expense:', err)
+        // console.log('Error deleting expense:', err)
         if (typeof expenseId === 'number') {
             await db.expenses.delete(expenseId)
         }
@@ -1319,7 +1319,7 @@ export async function addItineraryItem(
             }
         }
     } catch (err) {
-        console.log('Error adding itinerary item:', err)
+        // console.log('Error adding itinerary item:', err)
         const id = await db.itinerary.add({
             trip_id: tripId ?? undefined,
             day_index: item.dayIndex,
@@ -1414,7 +1414,7 @@ export async function updateItineraryItem(
                 return (await db.itinerary.get(itemId)) ?? null
             }
         } catch (err) {
-            console.log('Error updating itinerary item:', err)
+            // console.log('Error updating itinerary item:', err)
             await db.itinerary.update(itemId, dbUpdates)
             return (await db.itinerary.get(itemId)) ?? null
         }
@@ -1458,7 +1458,7 @@ export async function updateItineraryItem(
                 }
             }
         } catch (err) {
-            console.log('Error updating itinerary item:', err)
+            // console.log('Error updating itinerary item:', err)
             await db.itinerary.where('itinerary_id').equals(String(itemId)).modify(dbUpdates)
             const local = await db.itinerary.where('itinerary_id').equals(String(itemId)).first()
             return local ?? null
@@ -1501,7 +1501,7 @@ export async function deleteItineraryItem(
             return true
         }
     } catch (err) {
-        console.log('Error deleting itinerary item:', err)
+        // console.log('Error deleting itinerary item:', err)
         if (typeof itemId === 'number') {
             await db.itinerary.delete(itemId)
         } else {
