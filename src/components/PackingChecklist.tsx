@@ -13,18 +13,28 @@ import {
     verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { db, PackingItem } from "../lib/db";
-import { addPackingItem, updatePackingItem, deletePackingItem } from "../lib/syncService";
+import { db, PackingItem, TripItem } from "../lib/db";
+import {
+    addPackingItem,
+    updatePackingItem,
+    deletePackingItem,
+    getUserTrips,
+    getTripPackingOnline,
+} from "../lib/syncService";
 import { useTripData } from "../hooks/useTripData";
 import styles from "../styles/components.module.css";
 
 export const PackingChecklist = () => {
     const { trip } = useTrip();
     const tripId = trip?.trip_id;
-    const { data: packingData } = useTripData<PackingItem>('packing', tripId);
+    const { data: packingData, refetch: refetchPacking } = useTripData<PackingItem>('packing', tripId);
     const [items, setItems] = useState<PackingItem[]>([]);
     const [text, setText] = useState("");
     const [lastColor, setLastColor] = useState("#ffffff");
+    const [showImportModal, setShowImportModal] = useState(false);
+    const [otherTrips, setOtherTrips] = useState<TripItem[]>([]);
+    const [selectedImportTripId, setSelectedImportTripId] = useState<string>("");
+    const [isImporting, setIsImporting] = useState(false);
     const sensors = useSensors(useSensor(PointerSensor));
 
     // Update items when data from hook changes
@@ -213,6 +223,80 @@ export const PackingChecklist = () => {
         setItems(newOrder);
     };
 
+    const getTripKey = (tripItem: TripItem): string =>
+        String(tripItem.trip_id ?? tripItem.__dexieid ?? "");
+
+    const openImportModal = async () => {
+        const allTrips = await getUserTrips();
+        const currentTripKey = String(trip?.trip_id ?? trip?.__dexieid ?? "");
+        const candidates = allTrips.filter((t) => getTripKey(t) && getTripKey(t) !== currentTripKey);
+        setOtherTrips(candidates);
+        setSelectedImportTripId(candidates.length ? getTripKey(candidates[0]) : "");
+        setShowImportModal(true);
+    };
+
+    const importFromSelectedTrip = async () => {
+        if (!tripId) {
+            alert("Current trip is not ready yet.");
+            return;
+        }
+        if (!selectedImportTripId) return;
+
+        const sourceTrip = otherTrips.find((t) => getTripKey(t) === selectedImportTripId);
+        if (!sourceTrip) return;
+
+        setIsImporting(true);
+        try {
+            const sourceTripId = sourceTrip.trip_id ?? null;
+            let sourceItems: PackingItem[] = [];
+
+            if (sourceTripId) {
+                sourceItems = await getTripPackingOnline(String(sourceTripId));
+            } else if (sourceTrip.__dexieid) {
+                sourceItems = await db.packing
+                    .where("trip_id")
+                    .equals(String(sourceTrip.__dexieid))
+                    .toArray();
+            }
+
+            const sortedSourceItems = sourceItems
+                .slice()
+                .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+            for (const item of items) {
+                const itemId = item.__dexieid || item.packing_id || undefined;
+                if (!itemId) continue;
+                await deletePackingItem(tripId, itemId);
+            }
+
+            for (let i = 0; i < sortedSourceItems.length; i++) {
+                const source = sortedSourceItems[i];
+                const created = await addPackingItem(tripId, {
+                    title: source.title,
+                    color: source.color,
+                    order: i + 1,
+                });
+
+                if (created && source.completed) {
+                    const createdId = created.__dexieid || created.packing_id || undefined;
+                    if (createdId) {
+                        await updatePackingItem(tripId, createdId, { completed: true });
+                    }
+                }
+            }
+
+            await refetchPacking();
+            setShowImportModal(false);
+        } catch (error) {
+            alert(
+                "Failed to import packing list: " +
+                    (error instanceof Error ? error.message : "Unknown error"),
+            );
+        } finally {
+            setIsImporting(false);
+        }
+    };
+
     return (
         <div className={styles.packingContainer}>
             <h2>Packing Checklist</h2>
@@ -235,7 +319,68 @@ export const PackingChecklist = () => {
                     title="Default color for new items"
                 />
                 <button onClick={addItem}>Add</button>
+                <button type="button" onClick={openImportModal}>
+                    Copy
+                </button>
             </div>
+
+            {showImportModal && (
+                <div
+                    className={styles.modalOverlay}
+                    onClick={() => !isImporting && setShowImportModal(false)}
+                >
+                    <div
+                        className={styles.modalContent}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <h3>Import Packing List</h3>
+                        {otherTrips.length === 0 ? (
+                            <p>No other trips available to import from.</p>
+                        ) : (
+                            <>
+                                <label htmlFor="packing-import-trip">Select a trip </label>
+                                <select
+                                    id="packing-import-trip"
+                                    className={styles.input}
+                                    value={selectedImportTripId}
+                                    onChange={(e) => setSelectedImportTripId(e.target.value)}
+                                    disabled={isImporting}
+                                >
+                                    {otherTrips.map((t) => {
+                                        const key = getTripKey(t);
+                                        return (
+                                            <option key={key} value={key}>
+                                                {t.title || "Untitled"}
+                                            </option>
+                                        );
+                                    })}
+                                </select>
+                                <p style={{ marginTop: "12px", color: "#666", fontSize: "0.9rem" }}>
+                                    This will replace the current packing list.
+                                </p>
+                                <div style={{ display: "flex", gap: "10px", marginTop: "12px" }}>
+                                    <button
+                                        type="button"
+                                        className={styles.shareBtn}
+                                        onClick={importFromSelectedTrip}
+                                        disabled={isImporting || !selectedImportTripId}
+                                    >
+                                        {isImporting ? "Importing..." : "Import"}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={styles.closeShareBtn}
+                                        onClick={() => setShowImportModal(false)}
+                                        disabled={isImporting}
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
 
             <DndContext
                 sensors={sensors}

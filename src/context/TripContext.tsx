@@ -1,4 +1,4 @@
-﻿import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState } from 'react'
 import { db, TripItem } from '../lib/db'
 import { getLocalUserIdentity } from '../lib/userIdentity'
 
