@@ -157,7 +157,11 @@ export const UsernameModal = () => {
                     <>
                         <h2 className={styles.title}>Welcome back, {inputValue}!</h2>
                         <p className={styles.description}>
-                            Please enter your short code OR birthday + gender to log in.
+                            Please enter your short code
+                            <br />
+                            <span className={styles.orText}>OR</span> 
+                            <br />
+                            birthday + gender to log in.
                         </p>
 
                         <form onSubmit={handleAuthSubmit} className={styles.form}>

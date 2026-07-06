@@ -38,6 +38,11 @@
     text-align: center;
 }
 
+.orText {
+    color: #dc2626;
+    font-weight: 700;
+}
+
 .form {
     display: flex;
     flex-direction: column;
